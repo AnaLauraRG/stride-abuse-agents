@@ -1,0 +1,290 @@
+{
+  "version": "1.0",
+  "caso_estudio": "Venta de productos voluminosos en un ecommerce (marketplace)",
+  "reglas_negocio": {
+    "RN-1": "Cada cliente debe tener un único registro en la plataforma.",
+    "RN-2": "El costo de envío se calcula según el perfil del usuario.",
+    "RN-3": "El entregador debe estar en la localización de entrega cuando hace el registro de entrega (entregas a domicilio).",
+    "RN-4": "El usuario puede utilizar cupones de descuento."
+  },
+  "limites_confianza": {
+    "LC-1": "Internet ↔ Marketplace: el cliente (no confiable) interactúa con la plataforma.",
+    "LC-2": "Marketplace ↔ APIs internas (clients-api, cupons-api, delivery-api).",
+    "LC-3": "Empleados ↔ frontends administrativos internos ↔ APIs internas.",
+    "LC-4": "Empresa de logística (tercero) ↔ delivery-api, mediante la integración logistic.",
+    "LC-5": "Mundo físico ↔ sistemas: dispositivo del repartidor, escaneos en almacén y centros de distribución, entrega y recolección física.",
+    "LC-6": "Plataforma ↔ pasarela de pago externa."
+  },
+  "casos_de_uso": [
+    {
+      "id": "UC-01",
+      "nombre": "Registro y gestión de la cuenta del cliente",
+      "descripcion": "El cliente crea su cuenta en el Marketplace y mantiene sus datos de perfil (identidad, contacto, direcciones).",
+      "actores": ["Cliente"],
+      "componentes": ["Marketplace", "clients-api"],
+      "flujo": [
+        "El cliente ingresa correo, teléfono y datos personales en el Marketplace.",
+        "clients-api valida que no exista otro registro con los mismos identificadores (RN-1).",
+        "Se verifican el correo y el teléfono con un código de un solo uso.",
+        "El cliente inicia sesión y edita su perfil y sus direcciones."
+      ],
+      "datos": ["Datos personales", "Correo y teléfono", "Direcciones", "Credenciales de acceso", "Atributos del perfil"],
+      "reglas_negocio": ["RN-1", "RN-2"],
+      "limites_confianza": ["LC-1", "LC-2"],
+      "supuestos": ["S-01", "S-07", "S-08", "S-09"]
+    },
+    {
+      "id": "UC-02",
+      "nombre": "Selección del producto y carrito",
+      "descripcion": "El cliente busca un producto voluminoso, lo selecciona y lo agrega al carrito con su cantidad y variante.",
+      "actores": ["Cliente"],
+      "componentes": ["Marketplace"],
+      "flujo": [
+        "El cliente busca y abre la ficha del producto voluminoso.",
+        "Agrega el producto al carrito indicando cantidad y variante.",
+        "El Marketplace calcula el subtotal y muestra el carrito."
+      ],
+      "datos": ["Identificador del producto", "Precio", "Cantidad", "Disponibilidad"],
+      "reglas_negocio": [],
+      "limites_confianza": ["LC-1"],
+      "supuestos": ["S-01", "S-02"]
+    },
+    {
+      "id": "UC-03",
+      "nombre": "Captura de datos de envío y contacto",
+      "descripcion": "Durante el pago, el cliente indica la dirección de entrega y los datos de contacto para la orden.",
+      "actores": ["Cliente"],
+      "componentes": ["Marketplace", "clients-api", "delivery-api"],
+      "flujo": [
+        "El cliente elige una dirección guardada o captura una nueva.",
+        "Indica nombre y teléfono de contacto para la entrega.",
+        "La dirección se envía a delivery-api para determinar la cobertura y el costo de envío."
+      ],
+      "datos": ["Dirección de entrega", "Coordenadas o código postal", "Nombre y teléfono de contacto"],
+      "reglas_negocio": ["RN-2"],
+      "limites_confianza": ["LC-1", "LC-2"],
+      "supuestos": ["S-09", "S-10"]
+    },
+    {
+      "id": "UC-04",
+      "nombre": "Aplicación de cupón de descuento",
+      "descripcion": "El cliente ingresa un código de cupón que se valida y se aplica a la orden o al envío.",
+      "actores": ["Cliente"],
+      "componentes": ["Marketplace", "cupons-api", "delivery-api"],
+      "flujo": [
+        "El cliente escribe un código de cupón en el checkout.",
+        "cupons-api valida vigencia, elegibilidad del cliente, monto mínimo y usos disponibles.",
+        "El descuento se aplica al total del producto o al costo de envío.",
+        "El uso del cupón se consume al confirmar el pago."
+      ],
+      "datos": ["Código del cupón", "Reglas del cupón", "Historial de uso por cliente"],
+      "reglas_negocio": ["RN-4", "RN-1"],
+      "limites_confianza": ["LC-1", "LC-2"],
+      "supuestos": ["S-11", "S-12"]
+    },
+    {
+      "id": "UC-05",
+      "nombre": "Cálculo del costo de envío según el perfil",
+      "descripcion": "delivery-api calcula el costo de envío del producto voluminoso a partir del perfil del cliente, la dirección, el producto y los cupones.",
+      "actores": ["Cliente", "delivery-api"],
+      "componentes": ["delivery-api", "clients-api", "cupons-api", "Marketplace"],
+      "flujo": [
+        "El Marketplace solicita la cotización de envío a delivery-api.",
+        "delivery-api consulta a clients-api los atributos del perfil (nivel, membresía, zona).",
+        "delivery-api consulta a cupons-api si hay un cupón de envío aplicable.",
+        "delivery-api calcula el costo según peso, volumen, distancia y perfil, y lo devuelve al Marketplace."
+      ],
+      "datos": ["Atributos del perfil", "Dimensiones y peso del producto", "Dirección de destino", "Tarifa calculada"],
+      "reglas_negocio": ["RN-2", "RN-4"],
+      "limites_confianza": ["LC-1", "LC-2"],
+      "supuestos": ["S-03", "S-09", "S-10"]
+    },
+    {
+      "id": "UC-06",
+      "nombre": "Elección de la modalidad de entrega",
+      "descripcion": "El cliente elige entre entrega a domicilio y recolección en tienda, con su costo y ventana de entrega.",
+      "actores": ["Cliente"],
+      "componentes": ["Marketplace", "delivery-api"],
+      "flujo": [
+        "delivery-api devuelve las opciones disponibles con su costo y fecha estimada.",
+        "El cliente selecciona entrega a domicilio o recolección en una tienda.",
+        "Si elige recolección, selecciona la tienda y se asigna a la orden."
+      ],
+      "datos": ["Modalidad de entrega", "Tienda de recolección", "Ventana de entrega", "Costo de cada opción"],
+      "reglas_negocio": ["RN-2"],
+      "limites_confianza": ["LC-1", "LC-2"],
+      "supuestos": ["S-10", "S-18"]
+    },
+    {
+      "id": "UC-07",
+      "nombre": "Pago y registro de la orden",
+      "descripcion": "El cliente paga y la orden queda registrada con su producto, precio, descuento, envío y modalidad de entrega.",
+      "actores": ["Cliente", "Pasarela de pago"],
+      "componentes": ["Marketplace", "Pasarela de pago", "delivery-api"],
+      "flujo": [
+        "El Marketplace muestra el total final (producto, envío y descuentos).",
+        "El cliente paga en la pasarela de pago externa.",
+        "La pasarela confirma el pago al Marketplace.",
+        "Se registra la orden y se crea la orden de entrega en delivery-api, que inicia la preparación."
+      ],
+      "datos": ["Total de la orden", "Confirmación de pago", "Medio de pago tokenizado", "Orden de entrega"],
+      "reglas_negocio": ["RN-2", "RN-4"],
+      "limites_confianza": ["LC-1", "LC-2", "LC-6"],
+      "supuestos": ["S-02", "S-04", "S-05"]
+    },
+    {
+      "id": "UC-08",
+      "nombre": "Preparación y empaquetado en almacén",
+      "descripcion": "El almacén recibe la orden, prepara y empaqueta el producto voluminoso y lo deja listo para el proveedor logístico.",
+      "actores": ["Personal de almacén"],
+      "componentes": ["delivery-api", "Red de logística"],
+      "flujo": [
+        "La orden aparece en la cola de preparación del almacén.",
+        "El personal localiza el producto, lo inspecciona y lo empaqueta.",
+        "Se registra peso y dimensiones, se etiqueta y se escanea el paquete.",
+        "La orden cambia a estado listo para recolección."
+      ],
+      "datos": ["Orden de entrega", "Etiqueta y código del paquete", "Peso y dimensiones reales", "Estado de la orden"],
+      "reglas_negocio": [],
+      "limites_confianza": ["LC-5"],
+      "supuestos": ["S-13", "S-14"]
+    },
+    {
+      "id": "UC-09",
+      "nombre": "Recolección y transporte por el proveedor logístico",
+      "descripcion": "El proveedor logístico recoge el paquete y lo transporta a través de centros de distribución y puntos de control hasta el destino.",
+      "actores": ["Empresa de logística", "Personal de centros de distribución", "Repartidor"],
+      "componentes": ["Red de logística", "logistic"],
+      "flujo": [
+        "El proveedor logístico recoge el paquete en el almacén y escanea la entrega.",
+        "El paquete pasa por uno o más centros de distribución y puntos de control.",
+        "En cada punto se escanea el paquete y se registra el evento.",
+        "El paquete se asigna a una ruta y a un repartidor para la entrega final."
+      ],
+      "datos": ["Eventos de escaneo", "Ubicación del paquete", "Asignación de ruta y repartidor"],
+      "reglas_negocio": [],
+      "limites_confianza": ["LC-4", "LC-5"],
+      "supuestos": ["S-06", "S-14", "S-15"]
+    },
+    {
+      "id": "UC-10",
+      "nombre": "Actualización de estados por la integración logística",
+      "descripcion": "La empresa de logística envía a delivery-api, mediante la integración logistic, los cambios de estado de la orden de entrega.",
+      "actores": ["Empresa de logística"],
+      "componentes": ["logistic", "delivery-api", "Marketplace"],
+      "flujo": [
+        "El sistema del proveedor logístico genera un evento (recolectado, en tránsito, en reparto, entregado, fallido).",
+        "logistic envía el evento a delivery-api con la credencial de la integración.",
+        "delivery-api actualiza el estado de la orden de entrega.",
+        "El Marketplace muestra el nuevo estado al cliente."
+      ],
+      "datos": ["Identificador de la orden", "Estado de entrega", "Marca de tiempo", "Ubicación reportada", "Credencial de integración"],
+      "reglas_negocio": ["RN-3"],
+      "limites_confianza": ["LC-4"],
+      "supuestos": ["S-06", "S-15", "S-16"]
+    },
+    {
+      "id": "UC-11",
+      "nombre": "Registro de entrega a domicilio con geolocalización",
+      "descripcion": "El repartidor registra la entrega en la dirección del cliente; el registro solo es válido si su ubicación coincide con la de entrega.",
+      "actores": ["Repartidor", "Cliente"],
+      "componentes": ["App del repartidor", "logistic", "delivery-api"],
+      "flujo": [
+        "El repartidor llega a la dirección y entrega el producto al cliente o a quien lo recibe.",
+        "En su app registra la entrega con la evidencia (código de confirmación, foto o firma).",
+        "La app adjunta la geolocalización del dispositivo.",
+        "logistic envía el registro a delivery-api, que valida la distancia a la dirección de entrega (RN-3) y marca la orden como entregada."
+      ],
+      "datos": ["Coordenadas del dispositivo", "Marca de tiempo", "Evidencia de entrega", "Código de confirmación"],
+      "reglas_negocio": ["RN-3"],
+      "limites_confianza": ["LC-4", "LC-5"],
+      "supuestos": ["S-15", "S-16", "S-17"]
+    },
+    {
+      "id": "UC-12",
+      "nombre": "Recolección en tienda",
+      "descripcion": "El cliente recoge el producto voluminoso en la tienda elegida, identificándose con los datos de la orden.",
+      "actores": ["Cliente", "Personal de tienda"],
+      "componentes": ["Marketplace", "delivery-api", "Punto de recolección"],
+      "flujo": [
+        "El cliente recibe la notificación de que su producto está listo para recolección.",
+        "En la tienda presenta el código de retiro y una identificación.",
+        "El personal valida el código contra la orden y entrega el producto.",
+        "La orden se marca como entregada."
+      ],
+      "datos": ["Código de retiro", "Identificación del cliente o autorizado", "Estado de la orden"],
+      "reglas_negocio": [],
+      "limites_confianza": ["LC-1", "LC-5"],
+      "supuestos": ["S-18"]
+    },
+    {
+      "id": "UC-13",
+      "nombre": "Cancelación posterior a la recepción y devolución",
+      "descripcion": "Después de recibir el producto, el cliente cancela la compra desde la aplicación; el producto se devuelve y se emite el reembolso.",
+      "actores": ["Cliente", "Empresa de logística", "Personal de almacén"],
+      "componentes": ["Marketplace", "delivery-api", "logistic", "Pasarela de pago"],
+      "flujo": [
+        "El cliente solicita la cancelación desde la misma aplicación donde compró, indicando el motivo.",
+        "Se genera una orden de recolección inversa del producto voluminoso.",
+        "El proveedor logístico recoge el producto y lo lleva al almacén.",
+        "El almacén inspecciona el producto devuelto.",
+        "Se emite el reembolso y, si aplica, se restituye el cupón."
+      ],
+      "datos": ["Motivo de cancelación", "Orden de recolección inversa", "Resultado de la inspección", "Reembolso"],
+      "reglas_negocio": ["RN-4"],
+      "limites_confianza": ["LC-1", "LC-4", "LC-5", "LC-6"],
+      "supuestos": ["S-12", "S-19", "S-20"]
+    },
+    {
+      "id": "UC-14",
+      "nombre": "Administración interna de clientes y perfiles",
+      "descripcion": "Un empleado consulta y modifica clientes y sus perfiles desde clients-admin-front.",
+      "actores": ["Operador de atención a clientes"],
+      "componentes": ["clients-admin-front", "clients-api"],
+      "flujo": [
+        "El empleado se autentica en clients-admin-front.",
+        "Busca un cliente y consulta su perfil y sus datos personales.",
+        "Modifica datos o atributos del perfil (por ejemplo, nivel o membresía).",
+        "clients-api guarda el cambio."
+      ],
+      "datos": ["Datos personales", "Atributos del perfil", "Historial de cambios"],
+      "reglas_negocio": ["RN-1", "RN-2"],
+      "limites_confianza": ["LC-3"],
+      "supuestos": ["S-07", "S-09", "S-21"]
+    },
+    {
+      "id": "UC-15",
+      "nombre": "Administración interna de cupones",
+      "descripcion": "Un empleado crea, modifica y distribuye cupones de descuento desde cupons-frontend.",
+      "actores": ["Operador de marketing y promociones"],
+      "componentes": ["cupons-frontend", "cupons-api"],
+      "flujo": [
+        "El empleado se autentica en cupons-frontend.",
+        "Crea o edita un cupón: valor, vigencia, usos, monto mínimo y segmento de clientes.",
+        "Activa el cupón y lo asigna o distribuye.",
+        "cupons-api lo deja disponible para su validación en el checkout."
+      ],
+      "datos": ["Definición del cupón", "Segmento asignado", "Presupuesto de la campaña"],
+      "reglas_negocio": ["RN-4"],
+      "limites_confianza": ["LC-3"],
+      "supuestos": ["S-11", "S-21"]
+    },
+    {
+      "id": "UC-16",
+      "nombre": "Administración interna de órdenes de entrega",
+      "descripcion": "Un empleado gestiona órdenes de entrega desde delivery-admin-front: consulta, reasignación, cambios de dirección y excepciones.",
+      "actores": ["Operador de entregas"],
+      "componentes": ["delivery-admin-front", "delivery-api"],
+      "flujo": [
+        "El empleado se autentica en delivery-admin-front.",
+        "Consulta órdenes de entrega y su estado.",
+        "Gestiona excepciones: reprograma, cambia la dirección o la tienda, o cambia el estado manualmente.",
+        "delivery-api registra el cambio y lo comunica al proveedor logístico."
+      ],
+      "datos": ["Órdenes de entrega", "Direcciones", "Estados", "Costos de envío"],
+      "reglas_negocio": ["RN-2", "RN-3"],
+      "limites_confianza": ["LC-3", "LC-4"],
+      "supuestos": ["S-16", "S-21"]
+    }
+  ]
+}
