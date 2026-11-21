@@ -1,0 +1,58 @@
+// DFD C · Backoffice: administración interna de clientes, cupones y órdenes de entrega.
+// Generar: dot -Tsvg dfd-c-backoffice.dot -o dfd-c-backoffice.svg && dot -Tpng -Gdpi=150 dfd-c-backoffice.dot -o dfd-c-backoffice.png
+//
+// Notación: rectángulo = entidad externa · rectángulo redondeado = proceso ·
+// cilindro = almacén de datos · recuadro punteado = zona de confianza.
+
+digraph DFD_C {
+  graph [rankdir=LR, fontname="DejaVu Sans", fontsize=13, nodesep=0.55, ranksep=1.1,
+         newrank=true, pad=0.3, bgcolor="white",
+         label=<<B>DFD C · Backoffice: administración interna (usuarios internos)</B><BR/><FONT POINT-SIZE="10">Flujos F24–F30 · Casos de uso UC-14 a UC-16</FONT>>,
+         labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=11, style="filled", penwidth=1.2, margin="0.15,0.08"];
+  edge  [fontname="DejaVu Sans", fontsize=9, color="#555555", arrowsize=0.7, penwidth=1.1];
+
+  subgraph cluster_backoffice {
+    label=<<B>Zona 4 · Backoffice corporativo (empleados)</B>>; style="dashed,rounded"; color="#7D3C98"; penwidth=2;
+    fontcolor="#6C3483"; bgcolor="#F5EEF8";
+    op_clientes    [label="Operador de\natención a clientes", shape=box, fillcolor="#E8DAEF", color="#6C3483"];
+    op_cupones     [label="Operador de\nmarketing", shape=box, fillcolor="#E8DAEF", color="#6C3483"];
+    op_entregas    [label="Operador de\nentregas", shape=box, fillcolor="#E8DAEF", color="#6C3483"];
+    clients_front  [label="clients-admin-front", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+    cupons_front   [label="cupons-frontend", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+    delivery_front [label="delivery-admin-front", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+  }
+
+  subgraph cluster_internal {
+    label=<<B>Zona 3 · Servicios internos</B>>; style="dashed,rounded"; color="#1F618D"; penwidth=2;
+    fontcolor="#1A5276"; bgcolor="#EAF2F8";
+    clients_api  [label="clients-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276"];
+    cupons_api   [label="cupons-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276"];
+    delivery_api [label="delivery-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276", penwidth=2];
+    clients_db   [label="Clientes\ny perfiles", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+    cupons_db    [label="Cupones\ny usos", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+    delivery_db  [label="Órdenes de entrega\ny estados", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+  }
+
+  subgraph cluster_logistics {
+    label=<<B>Zona 6 · Tercero: logística</B>>; style="dashed,rounded"; color="#B9770E"; penwidth=2;
+    fontcolor="#9A7D0A"; bgcolor="#FEF9E7";
+    logistic [label="logistic\n(integración)", shape=box, style="filled,rounded", fillcolor="#FCF3CF", color="#9A7D0A"];
+  }
+
+  {rank=same; op_clientes; op_cupones; op_entregas;}
+  {rank=same; clients_front; cupons_front; delivery_front;}
+  {rank=same; clients_api; cupons_api; delivery_api;}
+  {rank=same; clients_db; cupons_db; delivery_db; logistic;}
+
+  op_clientes -> clients_front    [label="F24 · SSO"];
+  op_cupones  -> cupons_front     [label="F25 · SSO"];
+  op_entregas -> delivery_front   [label="F26 · SSO"];
+  clients_front  -> clients_api   [label="F27 · editar cliente\ny perfil [LC-3]", color="#7D3C98", fontcolor="#6C3483"];
+  cupons_front   -> cupons_api    [label="F28 · crear y editar\ncupones [LC-3]", color="#7D3C98", fontcolor="#6C3483"];
+  delivery_front -> delivery_api  [label="F29 · excepciones y\ncambios de estado [LC-3]", color="#7D3C98", fontcolor="#6C3483"];
+  clients_api -> clients_db   [dir=both, label="F11"];
+  cupons_api -> cupons_db     [dir=both, label="F12"];
+  delivery_api -> delivery_db [dir=both, label="F13"];
+  delivery_api -> logistic    [label="F30 · cambios de orden\n[LC-4]", color="#B9770E", fontcolor="#9A7D0A", style=dashed];
+}

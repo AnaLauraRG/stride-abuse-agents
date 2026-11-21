@@ -14,10 +14,10 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ completo
 
 | ID | Requisito | Entregable | Estado |
 |---|---|---|---|
-| A1 | Componente de **Memoria**, describiendo la segmentación propuesta | Documento de arquitectura | ⬜ |
-| A2 | **Long-Term Memory obligatoria**, que el agente consulta para abstraer los casos de abuso | Supabase (pgvector) + documento de arquitectura | ⬜ |
-| A3 | Componente de **Fuentes de Datos** y su comunicación con el componente de Memoria | Flujo de ingesta en n8n + documento | ⬜ |
-| A4 | **Agentic Layer**, describiendo los agentes que se utilizarán | Flujos de agentes en n8n + documento | ⬜ |
+| A1 | Componente de **Memoria**, describiendo la segmentación propuesta | Documento de arquitectura: [`docs/03-arquitectura.md`](docs/03-arquitectura.md) §4 | ✅ diseño |
+| A2 | **Long-Term Memory obligatoria**, que el agente consulta para abstraer los casos de abuso | Supabase (pgvector) + documento de arquitectura: [`docs/03-arquitectura.md`](docs/03-arquitectura.md) §4.4–4.5 | 🟨 diseño listo, falta implementar |
+| A3 | Componente de **Fuentes de Datos** y su comunicación con el componente de Memoria | Flujo de ingesta en n8n + documento: [`docs/03-arquitectura.md`](docs/03-arquitectura.md) §3 | 🟨 diseño listo, falta implementar |
+| A4 | **Agentic Layer**, describiendo los agentes que se utilizarán | Flujos de agentes en n8n + documento: [`docs/03-arquitectura.md`](docs/03-arquitectura.md) §5 | 🟨 diseño listo, falta implementar |
 | A5 | **Implementación obligatoria** de la arquitectura (stack a elección; sugerido n8n + Supabase) | Flujos de n8n exportados, scripts de base de datos | ⬜ |
 | A6 | **Pruebas de la ejecución** de la implementación | Capturas y salidas de ejecución | ⬜ |
 | A7 | El objetivo de la arquitectura es **soportar la proposición de casos de uso/abuso** durante el análisis del flujo | Trazabilidad entre salidas de los agentes e informe | ⬜ |
@@ -37,7 +37,7 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ completo
 
 | ID | Requisito | Entregable | Estado |
 |---|---|---|---|
-| C1 | **Diagrama** que modele el caso y las interacciones entre actores y sistemas | Diagrama de flujo de datos con límites de confianza | ⬜ |
+| C1 | **Diagrama** que modele el caso y las interacciones entre actores y sistemas | Diagrama de flujo de datos con límites de confianza: [`docs/02-diagrama.md`](docs/02-diagrama.md) | ✅ |
 | C2 | **Informe de Threat Modelling** con amenazas según **STRIDE** | Informe | ⬜ |
 | C2a | Vulnerabilidades en la lógica de los procesos / casos de abuso de **usuarios internos (empleados)** | Informe | ⬜ |
 | C2b | Vulnerabilidades en la lógica de los procesos / casos de abuso de **usuarios externos (clientes)** | Informe | ⬜ |

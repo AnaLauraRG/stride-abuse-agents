@@ -1,0 +1,73 @@
+// DFD A · Compra: cliente, plataforma, pagos y servicios internos.
+// Generar: dot -Tsvg dfd-a-compra.dot -o dfd-a-compra.svg && dot -Tpng -Gdpi=150 dfd-a-compra.dot -o dfd-a-compra.png
+//
+// Notación: rectángulo = entidad externa · rectángulo redondeado = proceso ·
+// cilindro = almacén de datos · recuadro punteado = zona de confianza.
+// Flujos con su identificador (F#) y, si cruzan un límite, el límite (LC-#).
+// * = no aparece en el diagrama original; se agrega como supuesto.
+
+digraph DFD_A {
+  graph [rankdir=LR, fontname="DejaVu Sans", fontsize=13, nodesep=0.35, ranksep=1.1,
+         newrank=true, pad=0.3, bgcolor="white", splines=spline,
+         label=<<B>DFD A · Compra: cliente, plataforma, pagos y servicios internos</B><BR/><FONT POINT-SIZE="10">Flujos F1–F13 · Casos de uso UC-01 a UC-07 y UC-13 · * agregado como supuesto</FONT>>,
+         labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=11, style="filled", penwidth=1.2, margin="0.15,0.08"];
+  edge  [fontname="DejaVu Sans", fontsize=9, color="#555555", arrowsize=0.7, penwidth=1.1];
+
+  subgraph cluster_internet {
+    label=<<B>Zona 1 · Internet (no confiable)</B>>; style="dashed,rounded"; color="#C0392B"; penwidth=2;
+    fontcolor="#922B21"; bgcolor="#FDEDEC";
+    cliente [label="Cliente\n(comprador)", shape=box, fillcolor="#FADBD8", color="#922B21"];
+  }
+
+  subgraph cluster_edge {
+    label=<<B>Zona 2 · Plataforma expuesta</B>>; style="dashed,rounded"; color="#1F618D"; penwidth=2;
+    fontcolor="#1A5276"; bgcolor="#EBF5FB";
+    marketplace [label="Marketplace\n+ API gateway*", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276", penwidth=2];
+    ordenes_db  [label="Órdenes\nde compra*", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+  }
+
+  subgraph cluster_psp {
+    label=<<B>Zona 5 · Tercero: pagos</B>>; style="dashed,rounded"; color="#B9770E"; penwidth=2;
+    fontcolor="#9A7D0A"; bgcolor="#FEF9E7";
+    pasarela [label="Pasarela\nde pago*", shape=box, fillcolor="#FCF3CF", color="#9A7D0A"];
+  }
+
+  subgraph cluster_internal {
+    label=<<B>Zona 3 · Servicios internos</B>>; style="dashed,rounded"; color="#1F618D"; penwidth=2;
+    fontcolor="#1A5276"; bgcolor="#EAF2F8";
+    clients_api  [label="clients-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276"];
+    delivery_api [label="delivery-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276", penwidth=2];
+    cupons_api   [label="cupons-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276"];
+    clients_db   [label="Clientes\ny perfiles", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+    delivery_db  [label="Órdenes de entrega\ny estados", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+    cupons_db    [label="Cupones\ny usos", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+    clients_api -> delivery_api -> cupons_api [style=invis];
+    clients_db -> delivery_db -> cupons_db [style=invis];
+  }
+
+
+
+  // Columnas: cliente | marketplace, pasarela | APIs | almacenes y logistic
+  {rank=same; cliente;}
+  {rank=same; marketplace;}
+  {rank=same; clients_api; cupons_api; delivery_api;}
+  {rank=same; clients_db; cupons_db; delivery_db; pasarela;}
+
+  // Compra
+  cliente -> marketplace      [label="F1 · registro, perfil, carrito, cupón,\nenvío, pago, cancelación [LC-1]", color="#C0392B", fontcolor="#922B21", penwidth=1.8];
+  marketplace -> cliente      [label="F2 · totales y\nestados [LC-1]", color="#C0392B", fontcolor="#922B21", style=dashed];
+  marketplace -> pasarela     [dir=both, label="F6 · pago y reembolso\nF7 · confirmación\nde pago [LC-6]", color="#B9770E", fontcolor="#9A7D0A"];
+  marketplace -> ordenes_db   [label="F8", dir=both];
+  marketplace -> clients_api  [label="F3 · alta y consulta\nde cliente [LC-2]"];
+  marketplace -> cupons_api   [label="F4 · validar cupón\n[LC-2]"];
+  marketplace -> delivery_api [label="F5 · cotizar envío, crear\no cancelar orden [LC-2]", penwidth=1.8];
+
+  delivery_api -> clients_api [label="F9 · atributos del perfil", constraint=false];
+  delivery_api -> cupons_api  [label="F10 · cupón de envío", constraint=false];
+  clients_api -> clients_db   [dir=both, label="F11"];
+  cupons_api -> cupons_db     [dir=both, label="F12"];
+  delivery_api -> delivery_db [dir=both, label="F13"];
+
+
+}

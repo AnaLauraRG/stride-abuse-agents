@@ -127,7 +127,7 @@ El cliente busca un producto voluminoso, lo selecciona y lo agrega al carrito co
 | **Reglas de negocio** | Ninguna |
 | **Límites de confianza** | LC-1 |
 | **Datos involucrados** | Identificador del producto, Precio, Cantidad, Disponibilidad |
-| **Supuestos** | S-01, S-02 |
+| **Supuestos** | S-01, S-02, S-26 |
 
 **Flujo:**
 
@@ -165,7 +165,7 @@ El cliente ingresa un código de cupón que se valida y se aplica a la orden o a
 | **Reglas de negocio** | RN-4, RN-1 |
 | **Límites de confianza** | LC-1, LC-2 |
 | **Datos involucrados** | Código del cupón, Reglas del cupón, Historial de uso por cliente |
-| **Supuestos** | S-11, S-12 |
+| **Supuestos** | S-11, S-12, S-26 |
 
 **Flujo:**
 
@@ -224,7 +224,7 @@ El cliente paga y la orden queda registrada con su producto, precio, descuento, 
 | **Reglas de negocio** | RN-2, RN-4 |
 | **Límites de confianza** | LC-1, LC-2, LC-6 |
 | **Datos involucrados** | Total de la orden, Confirmación de pago, Medio de pago tokenizado, Orden de entrega |
-| **Supuestos** | S-02, S-04, S-05 |
+| **Supuestos** | S-02, S-04, S-05, S-26 |
 
 **Flujo:**
 
@@ -244,7 +244,7 @@ El almacén recibe la orden, prepara y empaqueta el producto voluminoso y lo dej
 | **Reglas de negocio** | Ninguna |
 | **Límites de confianza** | LC-5 |
 | **Datos involucrados** | Orden de entrega, Etiqueta y código del paquete, Peso y dimensiones reales, Estado de la orden |
-| **Supuestos** | S-13, S-14 |
+| **Supuestos** | S-13, S-14, S-27 |
 
 **Flujo:**
 
@@ -264,7 +264,7 @@ El proveedor logístico recoge el paquete y lo transporta a través de centros d
 | **Reglas de negocio** | Ninguna |
 | **Límites de confianza** | LC-4, LC-5 |
 | **Datos involucrados** | Eventos de escaneo, Ubicación del paquete, Asignación de ruta y repartidor |
-| **Supuestos** | S-06, S-14, S-15 |
+| **Supuestos** | S-06, S-14, S-15, S-27 |
 
 **Flujo:**
 
@@ -304,7 +304,7 @@ El repartidor registra la entrega en la dirección del cliente; el registro solo
 | **Reglas de negocio** | RN-3 |
 | **Límites de confianza** | LC-4, LC-5 |
 | **Datos involucrados** | Coordenadas del dispositivo, Marca de tiempo, Evidencia de entrega, Código de confirmación |
-| **Supuestos** | S-15, S-16, S-17 |
+| **Supuestos** | S-15, S-16, S-17, S-27 |
 
 **Flujo:**
 
@@ -324,7 +324,7 @@ El cliente recoge el producto voluminoso en la tienda elegida, identificándose 
 | **Reglas de negocio** | Ninguna |
 | **Límites de confianza** | LC-1, LC-5 |
 | **Datos involucrados** | Código de retiro, Identificación del cliente o autorizado, Estado de la orden |
-| **Supuestos** | S-18 |
+| **Supuestos** | S-18, S-27 |
 
 **Flujo:**
 
@@ -344,7 +344,7 @@ Después de recibir el producto, el cliente cancela la compra desde la aplicaci�
 | **Reglas de negocio** | RN-4 |
 | **Límites de confianza** | LC-1, LC-4, LC-5, LC-6 |
 | **Datos involucrados** | Motivo de cancelación, Orden de recolección inversa, Resultado de la inspección, Reembolso |
-| **Supuestos** | S-12, S-19, S-20 |
+| **Supuestos** | S-12, S-19, S-20, S-26 |
 
 **Flujo:**
 
@@ -454,3 +454,16 @@ Los supuestos sobre controles existentes y sobre la implementación de los agent
 | S-23 | Alcance | Los productos voluminosos son de alto valor y difíciles de manipular: la entrega se agenda, puede requerir dos personas y deja evidencia (foto, firma o código de confirmación). | El alto valor por orden aumenta el impacto de cada abuso exitoso; la evidencia de entrega es un control a evaluar. | Todos |
 | S-24 | Arquitectura | La comunicación entre componentes usa HTTPS y las APIs internas no están expuestas a internet, salvo a través del gateway del Marketplace (S-01) y de la integración logística (S-06). | Las amenazas de interceptación en la red interna se consideran de baja probabilidad y no son foco del análisis. | Todos |
 | S-25 | Actores de amenaza | Externos: clientes legítimos que abusan de las reglas, defraudadores organizados y atacantes con cuentas robadas. Internos: empleados del ecommerce (atención a clientes, marketing, entregas, almacén, tiendas). Internos de tercero: repartidores y personal del proveedor logístico. | Cada caso de abuso del informe indica a cuál de estos grupos pertenece el actor. | Todos |
+
+### 6.3 Supuestos agregados con el diagrama (Fase 2)
+
+Al modelar el diagrama de flujo de datos ([`02-diagrama.md`](02-diagrama.md)) aparecieron dos elementos que el diagrama original no muestra:
+
+| ID | Tema | Supuesto | Implicación para el análisis | Casos de uso |
+|---|---|---|---|---|
+| S-26 | Arquitectura | El Marketplace (o su backend) guarda las órdenes de compra: productos, precios, cupón aplicado, total cobrado y referencia del pago. delivery-api guarda solo la orden de entrega asociada. Ninguno de estos dos almacenes de datos aparece en el diagrama original. | Existen dos registros de la misma compra que deben mantenerse consistentes: una discrepancia entre el total cobrado y la orden de entrega (o entre los estados de ambas) es una oportunidad de abuso. | UC-02, UC-04, UC-07, UC-13 |
+| S-27 | Operación física | El almacén y el punto de recolección reciben de delivery-api las órdenes que deben preparar o entregar y confirman cada paso (empaquetado, entrega al proveedor, retiro del cliente) con su propio sistema o con el delivery-admin-front. | Los traspasos de custodia del paquete (almacén → proveedor → repartidor → cliente, o tienda → cliente) son puntos donde un actor interno puede registrar un paso que no ocurrió. | UC-08, UC-09, UC-11, UC-12 |
+
+### 6.4 Supuestos de la arquitectura de agentes (Fase 3)
+
+Los supuestos S-28 a S-35, sobre las fuentes de conocimiento, el orquestador, la revisión humana, los modelos y la infraestructura, están en la sección 10 de [`03-arquitectura.md`](03-arquitectura.md).

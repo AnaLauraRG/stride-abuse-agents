@@ -1,0 +1,110 @@
+// Arquitectura de agentes para la generación de casos de abuso STRIDE.
+// Generar: dot -Tsvg arquitectura.dot -o arquitectura.svg && dot -Tpng -Gdpi=150 arquitectura.dot -o arquitectura.png
+//
+// Tres flujos de n8n: WF-1 ingesta de la memoria, WF-2 generación de casos de abuso,
+// WF-3 consolidación de casos validados en la memoria de largo plazo.
+
+digraph ARQ {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=13, nodesep=0.35, ranksep=0.55,
+         newrank=true, pad=0.3, bgcolor="white", compound=true,
+         label=<<B>Arquitectura de agentes · Generación de casos de abuso STRIDE</B><BR/><FONT POINT-SIZE="10">n8n (orquestación) · Claude API (LLM) · Ollama bge-m3 (embeddings) · Supabase + pgvector (memoria)</FONT>>,
+         labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=10, style="filled", penwidth=1.2, margin="0.12,0.06"];
+  edge  [fontname="DejaVu Sans", fontsize=9, color="#555555", arrowsize=0.7, penwidth=1.1];
+
+  // ---------------- Fuentes de datos ----------------
+  subgraph cluster_fuentes {
+    label=<<B>1 · Fuentes de datos</B>>; style="rounded"; color="#626567"; penwidth=1.6; bgcolor="#F8F9F9"; fontcolor="#424949";
+    subgraph cluster_f_neg {
+      label="Negocio (repositorio)"; style="dashed,rounded"; color="#1F618D"; fontcolor="#1A5276"; fontsize=10;
+      f_uc   [label="casos_de_uso.json\n16 casos de uso, RN, LC", shape=note, fillcolor="#D6EAF8", color="#1A5276"];
+      f_dfd  [label="flujos.json\ncatálogo F1–F30 (DFD)", shape=note, fillcolor="#D6EAF8", color="#1A5276"];
+      f_sup  [label="supuestos.json\nS-01…S-27+", shape=note, fillcolor="#D6EAF8", color="#1A5276"];
+    }
+    subgraph cluster_f_ame {
+      label="Conocimiento de amenazas"; style="dashed,rounded"; color="#922B21"; fontcolor="#922B21"; fontsize=10;
+      f_stride [label="STRIDE por tipo\nde elemento (curado)", shape=note, fillcolor="#FADBD8", color="#922B21"];
+      f_capec  [label="MITRE CAPEC\n(vista 1000, CSV)", shape=note, fillcolor="#FADBD8", color="#922B21"];
+      f_owasp  [label="OWASP API Top 10 2023\nOWASP Automated Threats", shape=note, fillcolor="#FADBD8", color="#922B21"];
+      f_fraude [label="Patrones de fraude\nen ecommerce (curado)", shape=note, fillcolor="#FADBD8", color="#922B21"];
+    }
+  }
+
+  // ---------------- WF-1 Ingesta ----------------
+  subgraph cluster_wf1 {
+    label=<<B>WF-1 · Ingesta (n8n)</B>>; style="rounded"; color="#7D3C98"; penwidth=1.6; bgcolor="#F5EEF8"; fontcolor="#6C3483";
+    i_load  [label="Cargar y\nverificar hash", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+    i_chunk [label="Normalizar,\nfragmentar y\netiquetar segmento", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+    i_emb   [label="Embeddings\nOllama bge-m3", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+  }
+
+  // ---------------- Memoria ----------------
+  subgraph cluster_mem {
+    label=<<B>2 · Memoria (Supabase)</B>>; style="rounded"; color="#1E8449"; penwidth=1.6; bgcolor="#EAFAF1"; fontcolor="#196F3D";
+    subgraph cluster_stm {
+      label="Corto plazo (tablas)"; style="dashed,rounded"; color="#1E8449"; fontcolor="#196F3D"; fontsize=10;
+      m_stm [label="ejecuciones +\nejecucion_pasos\nestado por run_id", shape=cylinder, fillcolor="#FFFFFF", color="#196F3D"];
+    }
+    subgraph cluster_ltm {
+      label="Largo plazo (pgvector)"; style="dashed,rounded"; color="#1E8449"; fontcolor="#196F3D"; fontsize=10;
+      m_neg [label="ltm_negocio\ncontexto del caso", shape=cylinder, fillcolor="#FFFFFF", color="#196F3D"];
+      m_ame [label="ltm_amenazas\nconocimiento general", shape=cylinder, fillcolor="#FFFFFF", color="#196F3D"];
+      m_abu [label="ltm_abusos\ncasos validados\ny patrones abstractos", shape=cylinder, fillcolor="#FFFFFF", color="#196F3D", penwidth=2];
+    }
+  }
+
+  // ---------------- WF-2 Capa agéntica ----------------
+  subgraph cluster_wf2 {
+    label=<<B>3 · Capa agéntica · WF-2 Generación (n8n)</B>>; style="rounded"; color="#1F618D"; penwidth=1.6; bgcolor="#EBF5FB"; fontcolor="#1A5276";
+    a_in   [label="Entrada\n1..N casos de uso", shape=box, fillcolor="#FFFFFF", color="#1A5276"];
+    a_orq  [label="Orquestador\n(determinista)", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276", penwidth=2];
+    a_ctx  [label="Recuperador\nde contexto", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276"];
+    a_gen  [label="Agente generador\nSTRIDE\n(Claude Sonnet)", shape=box, style="filled,rounded", fillcolor="#AED6F1", color="#1A5276", penwidth=2];
+    a_rev  [label="Agente revisor\n(Claude Sonnet)", shape=box, style="filled,rounded", fillcolor="#AED6F1", color="#1A5276", penwidth=2];
+    a_mit  [label="Agente de\nmitigación\n(Claude Sonnet)", shape=box, style="filled,rounded", fillcolor="#AED6F1", color="#1A5276", penwidth=2];
+    a_out  [label="Salida\nJSON + Markdown", shape=box, fillcolor="#FFFFFF", color="#1A5276"];
+  }
+
+  // ---------------- WF-3 Consolidación ----------------
+  subgraph cluster_wf3 {
+    label=<<B>WF-3 · Consolidación (n8n)</B>>; style="rounded"; color="#B9770E"; penwidth=1.6; bgcolor="#FEF9E7"; fontcolor="#9A7D0A";
+    h_anal [label="Analista de\nseguridad", shape=box, fillcolor="#FCF3CF", color="#9A7D0A"];
+    c_abs  [label="Agente de\nabstracción\n(Claude Haiku)", shape=box, style="filled,rounded", fillcolor="#F9E79F", color="#9A7D0A", penwidth=2];
+  }
+
+  // Alineación
+  {rank=same; f_uc; f_dfd; f_sup; f_stride; f_capec; f_owasp; f_fraude;}
+  {rank=same; i_load; i_chunk; i_emb;}
+  {rank=same; m_stm; m_neg; m_ame; m_abu;}
+  {rank=same; a_in; a_orq; a_ctx; a_gen; a_rev; a_mit; a_out;}
+  {rank=same; h_anal; c_abs;}
+  // Orden horizontal dentro de cada fila
+  f_uc -> f_dfd -> f_sup -> f_stride -> f_capec -> f_owasp -> f_fraude [style=invis];
+  m_stm -> m_neg -> m_ame -> m_abu [style=invis];
+  a_in -> a_orq -> a_ctx -> a_gen -> a_rev -> a_mit -> a_out [style=invis];
+
+  // Fuentes -> ingesta -> memoria
+  f_uc -> i_load; f_dfd -> i_load; f_sup -> i_load;
+  f_stride -> i_load; f_capec -> i_load; f_owasp -> i_load; f_fraude -> i_load;
+  i_load -> i_chunk -> i_emb;
+  i_emb -> m_neg [label="segmento\nnegocio"];
+  i_emb -> m_ame [label="segmento\namenazas"];
+
+  // Ejecución
+  a_in -> a_orq [label="1"];
+  a_orq -> a_ctx [label="2 · por caso\nde uso"];
+  m_neg -> a_ctx [label="k=6", color="#1E8449", fontcolor="#196F3D"];
+  m_ame -> a_ctx [label="k=8", color="#1E8449", fontcolor="#196F3D"];
+  m_abu -> a_ctx [label="k=5", color="#1E8449", fontcolor="#196F3D", penwidth=1.8 ];
+  a_ctx -> a_gen [label="3 · caso de uso\n+ contexto"];
+  a_gen -> a_rev [label="4 · casos\nde abuso"];
+  a_rev -> a_gen [label="5 · rechazados\n(máx. 2 reintentos)", constraint=false, style=dashed, color="#C0392B", fontcolor="#922B21"];
+  a_rev -> a_mit [label="6 · aprobados"];
+  a_mit -> a_out [label="7"];
+  m_stm -> a_orq [dir=back, label="estado y\nresultados por paso", style=dotted, color="#1E8449", fontcolor="#196F3D"];
+
+  // Consolidación con revisión humana
+  a_out -> h_anal [label="8 · revisa"];
+  h_anal -> c_abs [label="9 · aprueba"];
+  c_abs -> m_abu [label="10 · caso + patrón\nabstracto (bge-m3)", color="#B9770E", fontcolor="#9A7D0A", penwidth=1.8];
+}

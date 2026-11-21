@@ -1,0 +1,73 @@
+// DFD B · Logística y entrega: almacén, transporte, entrega a domicilio y recolección en tienda.
+// Generar: dot -Tsvg dfd-b-logistica.dot -o dfd-b-logistica.svg && dot -Tpng -Gdpi=150 dfd-b-logistica.dot -o dfd-b-logistica.png
+//
+// Notación: rectángulo = entidad externa · rectángulo redondeado = proceso ·
+// cilindro = almacén de datos · recuadro punteado = zona de confianza.
+// Línea gruesa = movimiento físico del paquete (cadena de custodia).
+// * = no aparece en el diagrama original; se agrega como supuesto.
+
+digraph DFD_B {
+  graph [rankdir=LR, fontname="DejaVu Sans", fontsize=13, nodesep=0.5, ranksep=1.0,
+         newrank=true, pad=0.3, bgcolor="white",
+         label=<<B>DFD B · Logística y entrega: almacén, transporte, entrega y recolección</B><BR/><FONT POINT-SIZE="10">Flujos F14–F23, F30 · Casos de uso UC-08 a UC-13 · línea gruesa = paquete físico · * agregado como supuesto</FONT>>,
+         labelloc=t];
+  node  [fontname="DejaVu Sans", fontsize=11, style="filled", penwidth=1.2, margin="0.15,0.08"];
+  edge  [fontname="DejaVu Sans", fontsize=9, color="#555555", arrowsize=0.7, penwidth=1.1];
+
+  subgraph cluster_internal {
+    label=<<B>Zona 3 · Servicios internos</B>>; style="dashed,rounded"; color="#1F618D"; penwidth=2;
+    fontcolor="#1A5276"; bgcolor="#EAF2F8";
+    delivery_api [label="delivery-api", shape=box, style="filled,rounded", fillcolor="#D6EAF8", color="#1A5276", penwidth=2];
+    delivery_db  [label="Órdenes de entrega\ny estados", shape=cylinder, fillcolor="#FFFFFF", color="#1A5276"];
+  }
+
+  subgraph cluster_physical {
+    label=<<B>Zona 7 · Operación física del ecommerce</B>>; style="dashed,rounded"; color="#626567"; penwidth=2;
+    fontcolor="#424949"; bgcolor="#F4F6F6";
+    almacen [label="Almacén\n(personal + sistema*)", shape=box, fillcolor="#E5E8E8", color="#424949"];
+    tienda  [label="Punto de\nrecolección*\n(personal de tienda)", shape=box, fillcolor="#E5E8E8", color="#424949"];
+  }
+
+  subgraph cluster_logistics {
+    label=<<B>Zona 6 · Tercero: empresa de logística</B>>; style="dashed,rounded"; color="#B9770E"; penwidth=2;
+    fontcolor="#9A7D0A"; bgcolor="#FEF9E7";
+    logistic   [label="logistic\n(integración)", shape=box, style="filled,rounded", fillcolor="#FCF3CF", color="#9A7D0A", penwidth=2];
+    red_log    [label="Red de logística\n(centros de distribución\ny puntos de control)", shape=box, style="filled,rounded", fillcolor="#FCF3CF", color="#9A7D0A"];
+    repartidor [label="Repartidor", shape=box, fillcolor="#FCF3CF", color="#9A7D0A"];
+    app_rep    [label="App del\nrepartidor*\n(GPS, evidencia)", shape=box, style="filled,rounded", fillcolor="#FCF3CF", color="#9A7D0A"];
+  }
+
+  subgraph cluster_internet {
+    label=<<B>Zona 1 · Cliente</B>>; style="dashed,rounded"; color="#C0392B"; penwidth=2;
+    fontcolor="#922B21"; bgcolor="#FDEDEC";
+    cliente [label="Cliente\n(domicilio)", shape=box, fillcolor="#FADBD8", color="#922B21"];
+    cliente_t [label="Cliente o\nautorizado\n(en tienda)", shape=box, fillcolor="#FADBD8", color="#922B21"];
+  }
+
+  {rank=same; delivery_api;}
+  {rank=same; almacen; logistic;}
+  {rank=same; red_log; app_rep;}
+  {rank=same; repartidor; tienda;}
+  {rank=same; cliente; cliente_t;}
+
+  delivery_api -> delivery_db [dir=both, label="F13"];
+
+  // Preparación y despacho (UC-08)
+  delivery_api -> almacen  [dir=both, label="F14 · orden a preparar /\nempaquetado y despacho\nconfirmados [LC-5]", color="#626567"];
+
+  // Cadena de custodia física (UC-08, UC-09, UC-11)
+  almacen -> red_log      [label="F15 · paquete\nentregado al proveedor\n[LC-5]", style=bold, penwidth=2.6, color="#424949"];
+  red_log -> repartidor   [label="F20 · paquete\nasignado a ruta", style=bold, penwidth=2.6, color="#424949"];
+  repartidor -> cliente   [label="F21 · entrega física\n[LC-5]", style=bold, penwidth=2.6, color="#424949"];
+
+  // Eventos digitales de la logística (UC-09, UC-10, UC-11)
+  red_log -> logistic     [label="F16 · escaneos en cada\ntraspaso de custodia [LC-5]", constraint=false];
+  repartidor -> app_rep   [label="F17 · registra entrega,\nGPS y evidencia [LC-5]", color="#9A7D0A", fontcolor="#9A7D0A"];
+  app_rep -> logistic     [label="F18 · registro\nde entrega", color="#9A7D0A", fontcolor="#9A7D0A", constraint=false];
+  logistic -> delivery_api [label="F19 · eventos de estado y\nentrega, ubicación [LC-4]", color="#B9770E", fontcolor="#9A7D0A", penwidth=2.2];
+  delivery_api -> logistic [label="F30 · cambios de orden\ny recolección inversa [LC-4]", color="#B9770E", fontcolor="#9A7D0A", style=dashed];
+
+  // Recolección en tienda (UC-12)
+  delivery_api -> tienda  [dir=both, label="F23 · orden lista para retiro /\nretiro confirmado [LC-5]", color="#626567"];
+  tienda -> cliente_t     [label="F22 · retiro con código\ne identificación [LC-5]", style=bold, penwidth=2.6, color="#424949"];
+}
