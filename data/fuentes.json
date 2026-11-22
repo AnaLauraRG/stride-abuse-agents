@@ -1,0 +1,57 @@
+{
+  "generado": "2026-11-20",
+  "publicas": {
+    "owasp-api": {
+      "nombre": "OWASP API Security Top 10 2023",
+      "repo": "https://github.com/OWASP/API-Security.git",
+      "commit": "33cea37b2ffde3e2e62f6b5d79a029a22a846633",
+      "ruta": "editions/2023/en",
+      "licencia": "CC BY-SA 4.0, © OWASP Foundation"
+    },
+    "owasp-oat": {
+      "nombre": "OWASP Automated Threats to Web Applications",
+      "repo": "https://github.com/OWASP/www-project-automated-threats-to-web-applications.git",
+      "commit": "14da2ff2ca1f430b8c9d8742396fbc433a7240e6",
+      "ruta": "assets/oats/EN",
+      "licencia": "CC BY-SA 4.0, © OWASP Foundation"
+    },
+    "capec": {
+      "nombre": "MITRE CAPEC (formato STIX 2.1, repositorio mitre/cti)",
+      "repo": "https://github.com/mitre/cti.git",
+      "commit": "e79c7c53d13c08cc21ba3ad77d4f8f49bf64ff07",
+      "ruta": "capec/2.1/attack-pattern",
+      "licencia": "CAPEC Terms of Use, © The MITRE Corporation"
+    }
+  },
+  "propias": {
+    "casos_de_uso": "data/casos_de_uso.json",
+    "flujos": "data/flujos.json",
+    "supuestos": "data/supuestos.json",
+    "stride": "data/conocimiento/stride.md",
+    "fraude": "data/conocimiento/fraude-ecommerce.md"
+  },
+  "fragmentos_por_fuente": {
+    "reglas": 4,
+    "limites": 6,
+    "casos_de_uso": 16,
+    "flujos": 30,
+    "supuestos": 35,
+    "stride": 7,
+    "fraude": 17,
+    "owasp-api": 19,
+    "owasp-oat": 20,
+    "capec": 218
+  },
+  "archivos": {
+    "data/memoria/negocio.json": {
+      "tabla": "ltm_negocio",
+      "fragmentos": 91,
+      "sha256": "350a148b41410b4af245133d8e60bed4ed3d0b699cc14b4cd1e815338d871e7f"
+    },
+    "data/memoria/amenazas.json": {
+      "tabla": "ltm_amenazas",
+      "fragmentos": 281,
+      "sha256": "f840c4da6cba11e8d7b026e5bff6f97b1bdff025a382270af120be50fa6dadb6"
+    }
+  }
+}

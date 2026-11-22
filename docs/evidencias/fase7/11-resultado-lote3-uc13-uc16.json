@@ -1,0 +1,2397 @@
+{
+  "modelo": "claude-sonnet-5-5",
+  "run_id": "f1e3ff28-5908-4e29-8843-2cb3f190899d",
+  "resumen": {
+    "tokens": {
+      "salida": 81315,
+      "entrada": 228008
+    },
+    "descartados": 0,
+    "casos_de_uso": 4,
+    "casos_de_abuso_aprobados": 25,
+    "casos_de_uso_sin_caso_de_abuso": []
+  },
+  "generado": "2026-11-22T02:25:38.483Z",
+  "casos_de_uso": [
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-13",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC13-01",
+          "actor": {
+            "rol": "Cliente comprador que cancela después de recibir el producto voluminoso",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El producto voluminoso tiene alto valor y el reembolso puede salir antes de una inspección real (S-19), por lo que el fraude es plausible y la pérdida es total."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Devolución de un artículo distinto, dañado o una caja con peso equivalente para cobrar el reembolso",
+          "impacto": "Pérdida del valor del producto voluminoso, que queda en poder del cliente, más el costo logístico de ida y vuelta y la recepción de un artículo sin valor en el inventario. Si la conducta se repite, el fraude se escala y las disputas con el cliente se vuelven difíciles de resolver sin evidencia.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Condicionar el reembolso en la pasarela al resultado 'conforme' de la inspección en almacén, nunca a la confirmación de recolección del proveedor; el reembolso parcial o retenido se libera solo con inspección completa.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Registrar número de serie y fotos del producto al despachar, y exigir en la inspección el escaneo del número de serie y la comparación con el registro del despacho, además del peso con tolerancia definida.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en la recolección inversa fotos con marca de tiempo y ubicación del producto y del embalaje antes de sellar el bulto, junto con un precinto numerado cuyo número se registra en logistic.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Puntuar devoluciones por cliente, dirección y medio de pago (frecuencia, motivo genérico repetido, diferencias de peso o serie) y alertar al equipo antifraude cuando se supere el umbral.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Abrir caso de disputa con la evidencia fotográfica y de serie, reclamar el importe al cliente, bloquear nuevas cancelaciones con reembolso en su cuenta y marcar el medio de pago para revisión manual.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-19: no se sabe si el reembolso se emite antes de la inspección; se evalúan ambos escenarios",
+            "No se asume que se registre número de serie al despachar"
+          ],
+          "caso_de_uso": "UC-13",
+          "como_ocurre": [
+            "El cliente cancela desde el Marketplace, elige un motivo genérico como 'no cumple expectativas' y se genera la orden de recolección inversa",
+            "Antes de la recogida sustituye el contenido por un artículo similar más barato, una unidad dañada o una caja con peso parecido, y conserva el original",
+            "El proveedor logístico recoge el bulto sellado y registra la recolección en logistic, que lo notifica a delivery-api",
+            "Escenario A: el Marketplace dispara el reembolso en la pasarela al recibir la confirmación de recolección, y el fraude se completa antes de abrir el paquete",
+            "Escenario B: el almacén compara solo peso y embalaje exterior, registra 'conforme' y se emite el reembolso",
+            "Cuando se detecta la diferencia, el cliente ya cobró y niega haber enviado algo distinto"
+          ],
+          "referencias": [
+            "FE-02",
+            "CAPEC-207",
+            "OWASP Business Logic Abuse"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "logistic",
+            "Pasarela de pago"
+          ],
+          "precondiciones": [
+            "El cliente ya recibió el producto y está dentro de la ventana de días para cancelar (S-19)",
+            "No se registró número de serie ni fotos del producto al despachar, o no se comparan en la recolección inversa",
+            "Escenario A: el reembolso se emite al confirmar la recolección inversa, antes de la inspección. Escenario B: se emite tras la inspección, pero esta es superficial"
+          ],
+          "patrones_usados": [
+            "FE-02"
+          ],
+          "vector_practico": "El cliente usa la función de cancelación del Marketplace y entrega un bulto físico alterado. El dato manipulado es el contenido del paquete devuelto, mientras el estado de recolección inversa y el resultado de inspección se alimentan de controles débiles (confirmación del proveedor o chequeo de peso). La automatización que vincula la confirmación de recolección con la orden de reembolso en la pasarela permite cobrar sin verificar el artículo.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-4",
+            "LC-5",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC13-04",
+          "actor": {
+            "rol": "Atacante autenticado como cliente con una cuenta propia",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Se desconocen el formato de los identificadores y la autorización por objeto en delivery-api; la enumeración es sencilla si no hay control y afecta datos personales y pedidos ajenos, aunque cada incidente es de valor acotado."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "I",
+              "T"
+            ]
+          },
+          "titulo": "Cancelación o consulta de devolución sobre órdenes ajenas por referencia directa al identificador",
+          "impacto": "Cancelación indebida de pedidos de terceros y exposición de datos personales (dirección, nombre, teléfono). También se generan recolecciones inversas innecesarias, con costos logísticos y deterioro de la experiencia de clientes legítimos.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Validar en delivery-api, en cada endpoint de cancelación y consulta de recolección inversa, que la orden pertenece al cliente autenticado del token de sesión, sin confiar en el identificador enviado por el cliente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Usar identificadores de orden y de recolección inversa aleatorios e impredecibles (UUIDv4), y autenticar la llamada de delivery-api a logistic con credenciales de servicio, de modo que logistic solo acepte órdenes originadas allí.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Incluir pruebas automatizadas de autorización por objeto (usuario A contra recursos de usuario B) en el pipeline, que bloqueen el despliegue si fallan.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Aplicar límite de tasa y alertar por ráfagas de respuestas 403/404 o de identificadores distintos consultados por una misma cuenta o IP sobre los endpoints de cancelación y recolección inversa.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Anular las cancelaciones y recolecciones inversas creadas sobre órdenes ajenas, restaurar el estado de la orden, notificar al cliente afectado y revocar las sesiones de la cuenta atacante.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se conoce el formato de los identificadores de orden ni los controles de autorización por objeto en delivery-api"
+          ],
+          "caso_de_uso": "UC-13",
+          "como_ocurre": [
+            "El atacante inicia una cancelación legítima y observa con un proxy de interceptación las peticiones que el Marketplace envía a delivery-api",
+            "Identifica el identificador de orden y de recolección inversa en las peticiones",
+            "Sustituye el identificador por otros cercanos y reenvía la petición de cancelación o consulta",
+            "Delivery-api acepta la petición y crea recolecciones inversas de pedidos ajenos, o devuelve dirección, teléfono y estado de recolección del otro cliente",
+            "El cliente afectado ve su compra cancelada, con una recolección inversa programada en su domicilio, o recibe visitas no esperadas"
+          ],
+          "referencias": [
+            "OWASP API1:2023 Broken Object Level Authorization",
+            "CAPEC-39"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "logistic"
+          ],
+          "precondiciones": [
+            "El atacante tiene una cuenta válida en el Marketplace y una orden propia",
+            "Los identificadores de orden y de recolección inversa son secuenciales o predecibles, o se pueden obtener por otro medio",
+            "Delivery-api no verifica que la orden pertenezca al cliente autenticado al cancelar o consultar"
+          ],
+          "patrones_usados": [
+            "API1:2023"
+          ],
+          "vector_practico": "El atacante usa un proxy de interceptación y un script de enumeración sobre el identificador de orden en las peticiones de cancelación y consulta de recolección inversa. El dato manipulado es el identificador de orden o de recolección, que se acepta sin comprobar propiedad en el servidor.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC13-05",
+          "actor": {
+            "rol": "Personal de recolección de la empresa de logística",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El estado informado por el proveedor dispara el reembolso (S-19, S-20) y el producto es voluminoso, de alto valor y con mercado secundario, lo que hace atractivo el desvío y difícil atribuir la responsabilidad."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Conductor de la empresa de logística confirma la recolección inversa sin llevar el producto al almacén",
+          "impacto": "Pérdida del producto y del reembolso, con disputa de responsabilidad entre ecommerce y proveedor. Si hay colusión con el cliente, se desvía mercancía y se reparte el beneficio, y no se puede reclamar la penalización por falta de cadena de custodia.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Liberar el reembolso y la restitución del cupón solo tras el escaneo de recepción en almacén de la unidad con su precinto, y no con el estado 'recogido' enviado por logistic.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir al recolector un código de confirmación del cliente, foto del producto con marca de tiempo y geolocalización validada contra la dirección, y escaneo del precinto, rechazando evidencia reutilizada mediante hash de imagen.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Mantener cadena de custodia con escaneo en cada tramo (recogida, hub, entrega en almacén) y un plazo máximo de tránsito definido contractualmente.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar de forma automática las recolecciones 'recogidas' sin recepción en almacén dentro del plazo máximo y alertar por pares recolector–cliente repetidos o desvíos de ruta.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener el pago de la liquidación al proveedor y aplicar la penalización contractual con la evidencia de custodia, suspender al recolector implicado e iniciar investigación conjunta.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-19: se evalúa el escenario en que el reembolso depende de la confirmación del proveedor",
+            "S-20: se asume que la integración logistic–delivery-api confía en el estado informado por el proveedor"
+          ],
+          "caso_de_uso": "UC-13",
+          "como_ocurre": [
+            "Un cliente legítimo, o un cómplice, solicita la cancelación tras recibir el producto",
+            "El personal de recolección acude al domicilio y recoge el producto voluminoso",
+            "Registra en logistic la recolección como completada, pero desvía el producto en lugar de llevarlo al almacén",
+            "Logistic informa a delivery-api, que dispara el reembolso al cliente al considerar cumplida la recolección",
+            "El almacén nunca recibe el producto; el proveedor atribuye la pérdida a otro tramo o declara incidente en ruta",
+            "El ecommerce ha reembolsado y no puede reclamar la penalización contractual por falta de evidencia de custodia"
+          ],
+          "referencias": [
+            "FE-08",
+            "OWASP Business Logic Abuse"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace",
+            "Pasarela de pago"
+          ],
+          "precondiciones": [
+            "El reembolso se emite al confirmar el proveedor la recolección, sin esperar la llegada al almacén (S-19)",
+            "La recolección inversa no exige foto del producto, código de confirmación del cliente ni escaneo de recepción en el almacén",
+            "El producto devuelto es voluminoso y de alto valor y tiene mercado secundario"
+          ],
+          "patrones_usados": [
+            "FE-08",
+            "AV-0051",
+            "AV-0002"
+          ],
+          "vector_practico": "El empleado de la logística usa la app de recolección para marcar el estado 'recogido' y adjuntar evidencia débil o reutilizada. El dato manipulado es el estado de la recolección inversa que logistic envía a delivery-api, que desencadena el reembolso sin contrastar la recepción en almacén.",
+          "limites_confianza": [
+            "LC-4",
+            "LC-5",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC13-03",
+          "actor": {
+            "rol": "Personal de almacén que inspecciona devoluciones",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 3,
+            "probabilidad": 1,
+            "justificacion": "Requiere un empleado interno en colusión con un cliente, lo que es poco frecuente, pero sin doble control ni evidencia independiente el reembolso de un producto de alto valor queda sin freno y es difícil de atribuir."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Personal de almacén registra una inspección conforme falsa para liberar el reembolso a un cómplice",
+          "impacto": "Reembolsos fraudulentos y pérdida de inventario de alto valor, con responsabilidad difícil de atribuir. Se pierde la inspección como control antifraude y se debilita la evidencia ante disputas.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir doble control (cuatro ojos) con un segundo inspector o supervisor para aprobar el resultado 'conforme' de devoluciones por encima de un umbral de valor, antes de liberar el reembolso.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Hacer obligatorios el escaneo del número de serie, el peso y fotos del desembalaje tomadas en la app de almacén con marca de tiempo, comparados contra el registro del despacho, sin permitir adjuntar fotos preexistentes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Detectar fotos duplicadas por hash, inspecciones 'conformes' sin evidencia y correlaciones entre inspector y clientes con devoluciones repetidas, y auditar una muestra aleatoria con segunda inspección independiente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar periódicamente el inventario de devoluciones y mermas del almacén contra los números de serie reembolsados, para detectar productos originales dados de baja.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reabrir el caso, suspender el acceso del inspector implicado, recuperar el importe del cliente cómplice y escalar a investigación interna con los registros de auditoría de la consola.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "AV-0002 se extiende a UC-13: allí el actor que registra el estado es el repartidor en la entrega; aquí es el inspector de almacén y el estado registrado es el resultado de inspección que libera el reembolso",
+            "Lo que aporta frente a AV-0002 es la inspección sin segundo control, el reembolso ligado al resultado 'conforme' y la posible sustracción del producto original dentro del almacén",
+            "S-19: se evalúa el escenario en que el reembolso se emite tras la inspección y depende solo del resultado registrado",
+            "No se conoce si hay doble control o fotos obligatorias en almacén"
+          ],
+          "caso_de_uso": "UC-13",
+          "como_ocurre": [
+            "El cliente cómplice cancela tras recibir el producto y devuelve un artículo distinto, dañado o incompleto",
+            "El paquete llega al almacén y el empleado cómplice lo recibe en el flujo de inspección",
+            "El empleado registra el resultado como conforme, sin evidencia o con fotos reutilizadas de otra devolución",
+            "El sistema acepta el estado registrado, libera el reembolso en la pasarela y restituye el cupón si aplica",
+            "El empleado retira el producto original o lo da de baja como merma, y comparte con el cliente parte del beneficio",
+            "Ante una auditoría, el empleado alega error de captura o inspección visual válida y no existe prueba independiente de lo que se recibió"
+          ],
+          "referencias": [
+            "FE-02",
+            "AV-0002"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace",
+            "Pasarela de pago"
+          ],
+          "precondiciones": [
+            "El resultado de la inspección lo registra una sola persona, sin segundo control ni fotos obligatorias",
+            "El reembolso se libera al registrar el resultado 'conforme' (escenario de S-19 en que se reembolsa tras la inspección sin verificación independiente)",
+            "El empleado puede identificar devoluciones de clientes cómplices o de alto valor",
+            "El número de serie o el peso del producto no se registró al despachar, o no se contrasta con lo devuelto"
+          ],
+          "patrones_usados": [
+            "AV-0002",
+            "FE-02"
+          ],
+          "vector_practico": "El empleado usa la consola o app de almacén con su usuario legítimo para registrar el resultado de la inspección de una devolución concreta. El dato manipulado es el campo de resultado y su evidencia asociada (fotos reutilizadas, sin número de serie), que delivery-api toma como verdad sin contrastarlo con el despacho original. Ese registro dispara el reembolso sin que otra persona confirme lo recibido.",
+          "limites_confianza": [
+            "LC-4",
+            "LC-5",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC13-06",
+          "actor": {
+            "rol": "Cliente que manipula el flujo de cancelación",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Reenviar peticiones en paralelo es trivial y se asume sin idempotencia (SN-03, SN-04), pero la conciliación acota la pérdida a reembolsos duplicados por orden."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "D"
+            ]
+          },
+          "titulo": "Doble reembolso por reenvío concurrente de la solicitud de cancelación",
+          "impacto": "Pérdidas económicas por reembolsos duplicados, conciliación contable compleja y restituciones repetidas del cupón. También se generan órdenes de recolección duplicadas, con costos logísticos y errores operativos en el almacén.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Implementar una máquina de estados con transición atómica (bloqueo de fila o control de versión) de la orden a 'cancelación en curso', de modo que solo una solicitud supere la validación y las demás reciban un rechazo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Enviar a la pasarela una clave de idempotencia única por reembolso, derivada del identificador de orden, y deduplicar las confirmaciones repetidas de recolección e inspección.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Rechazar solicitudes de reembolso con clave de idempotencia repetida y que el total reembolsado supere el monto capturado de la transacción.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Deduplicar las órdenes de recolección inversa por identificador de orden de origen, de modo que solo exista una activa por orden.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar a diario reembolsos contra pagos y alertar cuando una orden tenga más de un reembolso o una restitución de cupón, o varias recolecciones inversas abiertas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Recuperar los reembolsos duplicados del cliente, revertir las restituciones repetidas del cupón y cancelar las recolecciones inversas redundantes.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "SN-03 (nuevo): no se conoce si el reembolso es idempotente ni si hay bloqueo de estado sobre la orden; se asume que no, sin atribuirlo a RN-4",
+            "SN-04 (nuevo): no se conoce si la pasarela exige clave única por operación de reembolso; se asume que el Marketplace no la envía",
+            "No se cita S-26 porque su contenido no se entregó en el contexto"
+          ],
+          "caso_de_uso": "UC-13",
+          "como_ocurre": [
+            "El cliente recibe el producto y abre la solicitud de cancelación de la orden desde el Marketplace",
+            "Antes de que el estado de la orden cambie, reenvía la misma solicitud varias veces en paralelo desde un cliente HTTP o un script, o la repite desde varias sesiones",
+            "El Marketplace valida cada solicitud contra un estado de orden que aún no se actualizó y crea una orden de recolección inversa para cada una",
+            "Cuando llegan las confirmaciones de recolección e inspección, cada una dispara su propia solicitud de reembolso a la pasarela, que procesa dos o más sobre la misma orden",
+            "Si aplica, el cupón se restituye más de una vez",
+            "La conciliación contable detecta la diferencia días después, cuando el cliente ya dispuso del dinero",
+            "Con muchas solicitudes se generan además múltiples recolecciones inversas y se satura el trabajo del proveedor logístico"
+          ],
+          "referencias": [
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "logistic",
+            "Pasarela de pago"
+          ],
+          "precondiciones": [
+            "SN-03: la operación de reembolso no es idempotente ni está protegida por un bloqueo sobre el estado de la orden",
+            "SN-04: las llamadas del Marketplace a la pasarela no llevan una clave única por reembolso",
+            "El Marketplace emite el reembolso al recibir confirmaciones de recolección o inspección desde delivery-api o logistic, y esas confirmaciones pueden repetirse",
+            "La orden sigue en un estado que permite cancelar mientras se procesan las primeras solicitudes"
+          ],
+          "patrones_usados": [
+            "FE-14"
+          ],
+          "vector_practico": "El cliente usa una herramienta de reenvío concurrente de peticiones contra el endpoint de cancelación de orden del Marketplace, con el identificador de la orden pagada como dato repetido. Lo que explota es la ventana entre la recepción de cada petición y la actualización del estado de la orden, además de la falta de un identificador único de reembolso. Sin control de idempotencia, cada petición supera la validación de estado y puede activar su propio reembolso y su propia orden de recolección.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-4",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC13-02",
+          "actor": {
+            "rol": "Cliente que abusa de la restitución de cupones al cancelar",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "La política de restitución no está definida (S-12) y el ciclo se puede repetir con cuentas nuevas, pero el impacto se limita al valor del descuento y al presupuesto promocional."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": []
+          },
+          "titulo": "Reutilización de cupón de un solo uso al encadenar compra, cancelación y restitución",
+          "impacto": "Descuentos acumulados sin control, pérdida de margen y agotamiento del presupuesto promocional. Cupones diseñados como únicos se usan repetidamente y las métricas de uso por cliente quedan distorsionadas. Si la devolución nunca se completa, el cliente conserva además el producto con descuento.",
+          "revision": {
+            "intento": 3,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Restituir el cupón solo cuando la devolución esté recibida e inspeccionada como conforme en almacén, y no al aceptar la solicitud ni al iniciar el reembolso.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar las restituciones por cliente, dispositivo y medio de pago, y vincular el cupón restituido a la cuenta original con la misma vigencia, para impedir su uso en cuentas nuevas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por ciclos repetidos de compra con cupón, cancelación y restitución, y correlacionar cuentas distintas que compartan dirección, dispositivo o medio de pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Proporcionar al ecommerce una huella o token estable del medio de pago para correlacionar cuentas que reutilizan cupones restituidos.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar el cupón restituido si la devolución no se completa en el plazo definido, cobrar al cliente el descuento y bloquear la cuenta de uso de cupones ante reincidencia.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-12: la política real de restitución no está definida; se evalúan los escenarios de restitución al solicitar la cancelación y de restitución al emitir el reembolso",
+            "SN-01 (nuevo): existe un servicio de cupones (cupons-api) fuera del DFD de UC-13 con el que el Marketplace consume y restituye cupones, según UC-04",
+            "SN-02 (nuevo): la restitución no verifica el estado final de la devolución ni limita las restituciones por cliente",
+            "No se cita el contenido de S-26 porque no se entregó en el contexto"
+          ],
+          "caso_de_uso": "UC-13",
+          "como_ocurre": [
+            "El cliente aplica un cupón de alto valor en una compra (UC-04) y paga; cupons-api registra el cupón como consumido",
+            "Recibe el producto y solicita la cancelación desde el Marketplace indicando un motivo; se genera la orden de recolección inversa",
+            "El Marketplace pide a cupons-api restituir el cupón al aceptar la solicitud o al emitir el reembolso, sin esperar la inspección ni la confirmación de recolección",
+            "El cliente usa el cupón restituido en una nueva compra, con la misma cuenta o con cuentas nuevas, y repite el ciclo; así supera el límite de un uso por cliente que RN-4 pretende imponer",
+            "En el escenario de restitución al aceptar la solicitud, el cliente no entrega el paquete al proveedor logístico y la devolución queda sin completar, pero el cupón ya fue restituido y nada vuelve a bloquearlo",
+            "El cliente conserva el producto con el descuento original y disfruta otra vez del cupón, ejerciendo un beneficio al que no tiene derecho según la regla de negocio"
+          ],
+          "referencias": [
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "logistic",
+            "Pasarela de pago",
+            "Servicio de cupones (cupons-api, fuera del DFD de UC-13; supuesto nuevo SN-01)"
+          ],
+          "precondiciones": [
+            "La restitución del cupón al cancelar se dispara automáticamente y no espera al resultado de la inspección ni al cierre del reembolso (S-12: la política real de restitución no está definida)",
+            "El cupón es de un solo uso o tiene límite de usos por cliente (RN-4)",
+            "La restitución no comprueba si el producto volvió al almacén, ni cuántas restituciones acumuló el mismo cliente",
+            "SN-01: UC-13 no incluye cupons-api entre sus componentes, pero S-12 y UC-04 indican que el Marketplace le pide consumir y restituir cupones; se asume esa integración"
+          ],
+          "patrones_usados": [
+            "S-12",
+            "UC-04",
+            "FE-14"
+          ],
+          "vector_practico": "El cliente usa la interfaz normal del Marketplace (app o web) con su sesión legítima para solicitar la cancelación de una orden pagada con cupón y, una vez restituido el cupón, aplicarlo en una compra nueva. No modifica ningún dato ni el historial de cupones: el abuso consiste en ejercer un privilegio que no le corresponde, un nuevo uso de un cupón de un solo uso, porque el flujo de restitución lo concede sin comprobar el estado final de la devolución. El dato aprovechado es el estado de la orden entre 'cancelación solicitada' y 'devolución recibida e inspeccionada', que desencadena la restitución sin una autorización que dependa de la recuperación del producto.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-4",
+            "LC-6"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-14",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC14-01",
+          "actor": {
+            "rol": "Operador de atención a clientes con acceso de lectura a perfiles en clients-admin-front",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Un operador legítimo ya tiene acceso y hoy no hay enmascaramiento ni límites, y la fuga de direcciones de clientes de alto valor puede derivar en robos físicos y en incumplimiento de protección de datos."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Consulta masiva de datos personales de clientes sin caso de soporte para vender o usar la información",
+          "impacto": "Fuga de datos personales de clientes con riesgo para su seguridad física (robos dirigidos), incumplimiento de protección de datos personales y daño reputacional. Si no hay correlación con tickets, la detección es tardía.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "clients-api solo devuelve el perfil completo si el operador tiene un ticket abierto asignado a ese cliente. La validación se hace en el servidor, no solo en clients-admin-front.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Enmascarar por defecto teléfono, correo y direcciones en búsquedas y perfiles. Revelar cada campo exige indicar el motivo, y la revelación queda registrada. Poner límite de perfiles abiertos por operador y hora, sin función de exportación y con marca de agua con el usuario en pantalla.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertas automáticas por consultas sin ticket asociado, volumen de perfiles abiertos superior a la media del equipo y búsquedas orientadas a nivel o membresía alta. Revisión trimestral de accesos por parte del responsable de atención.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Suspender de inmediato el acceso del operador sospechoso, revisar los perfiles consultados, notificar a los clientes afectados y a la autoridad de protección de datos según el procedimiento de incidentes, y aplicar la medida disciplinaria o legal que corresponda.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se asume que exista hoy enmascaramiento, límite de consultas ni revisión periódica de accesos en clients-admin-front"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "El operador se autentica en clients-admin-front con su usuario habitual",
+            "Busca clientes sin ticket asociado, por zona, nivel o membresía, y abre perfil tras perfil",
+            "Identifica a los clientes de nivel alto o con compras de alto valor, y consulta sus direcciones y teléfonos",
+            "Copia los datos a un archivo externo o los fotografía de la pantalla",
+            "Vende la lista a terceros o la entrega a quien planea robos en domicilios o en entregas"
+          ],
+          "referencias": [
+            "CAPEC-575",
+            "OWASP API1:2023"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "F11",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "El operador tiene una cuenta válida con permiso de búsqueda y consulta de clientes",
+            "La búsqueda no exige un caso o ticket abierto asociado al cliente consultado",
+            "clients-api devuelve datos personales completos (nombre, teléfono, direcciones) sin enmascarar y sin límite de consultas por operador"
+          ],
+          "patrones_usados": [
+            "FE-16"
+          ],
+          "vector_practico": "Acción: consulta repetida y sistemática de perfiles fuera de cualquier caso de soporte. Herramienta: la propia interfaz de búsqueda de clients-admin-front, más copia manual o captura de pantalla. Dato manipulado: nombre, teléfono, correo, direcciones y atributos de nivel o membresía de los clientes.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC14-02",
+          "actor": {
+            "rol": "Operador de atención a clientes sobornado o con intención de fraude",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Cambiar el contacto sin verificar la propiedad del nuevo correo o teléfono permite tomar la cuenta mediante la recuperación estándar y usar medios de pago guardados, con pérdida económica directa para el cliente."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "S",
+              "E"
+            ]
+          },
+          "titulo": "Operador reemplaza correo o teléfono de un cliente para tomar o vender su cuenta",
+          "impacto": "Toma de cuenta habilitada desde dentro, compras fraudulentas con medios de pago del cliente, pérdida del acceso del titular y posible incumplimiento de RN-1 si el contacto se reutiliza.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "El cambio de correo o teléfono desde backoffice exige un código de un solo uso enviado al nuevo contacto, un motivo con ticket y la aprobación de un segundo empleado (cuatro ojos) antes de que clients-api lo persista.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Bloquear la recuperación de acceso y los cambios de dirección durante 72 horas tras un cambio de contacto hecho por backoffice, salvo validación reforzada del titular.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir autenticación reforzada (3-D Secure o equivalente) en pagos con medio guardado tokenizado, para que el control sobre el correo no baste para comprar.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Notificar al contacto anterior cada cambio de correo o teléfono con enlace de reversión. Alertar cuando a un cambio de contacto por backoffice le sigan una recuperación de acceso y una compra en menos de 72 horas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Aplicar puntuación antifraude a los pagos con medio guardado, con reglas de velocidad y de cambio reciente de datos de contacto, y marcar para revisión las transacciones de riesgo.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir el contacto al valor anterior usando el historial de cambios, bloquear la cuenta hasta verificar al titular, anular los pedidos pendientes de despacho y gestionar la devolución o el contracargo de los pagos fraudulentos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reversar o disputar las transacciones identificadas como fraudulentas y bloquear el token del medio de pago afectado.",
+              "responsable": "pasarela_pago"
+            }
+          ],
+          "supuestos": [
+            "S-07 y S-09: se asume que las ediciones internas del perfil no pasan por la verificación de contacto del alta (UC-01)"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "Un tercero que ha pagado al operador, o el propio operador, elige una cuenta con medios de pago guardados o historial de compras",
+            "El operador abre el perfil en clients-admin-front y sustituye el correo y el teléfono por datos controlados por el tercero",
+            "clients-api guarda el cambio por F27 sin verificar la propiedad del nuevo contacto y sin avisar al titular",
+            "El tercero usa la recuperación de acceso del Marketplace, que envía el código al contacto nuevo, y entra en la cuenta",
+            "Compra con medios de pago guardados o desvía entregas con direcciones guardadas, y el titular pierde el acceso"
+          ],
+          "referencias": [
+            "OWASP API2:2023"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "F11",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "El operador puede editar correo y teléfono del perfil desde clients-admin-front",
+            "clients-api acepta el cambio de contacto de un empleado sin repetir la verificación con código de un solo uso al nuevo correo o teléfono",
+            "No se notifica al titular en sus datos de contacto anteriores"
+          ],
+          "patrones_usados": [
+            "AV-0012",
+            "FE-11"
+          ],
+          "vector_practico": "Acción: edición de los campos de correo y teléfono de un perfil ajeno y posterior uso del flujo de recuperación de acceso. Herramienta: formulario de edición de clients-admin-front y el flujo estándar de recuperación del Marketplace. Dato manipulado: correo y teléfono de contacto del cliente, que sirven como factor de recuperación y verificación.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC14-03",
+          "actor": {
+            "rol": "Operador de atención a clientes que comparte credenciales o puede alterar el historial",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Las cuentas compartidas y los historiales editables son una debilidad habitual de los backoffices, y aunque no causan el daño directo, impiden atribuir y probar cualquier otro abuso interno."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Cambios de perfil sin autoría fiable por cuenta compartida o historial modificable",
+          "impacto": "No se puede atribuir a una persona la modificación indebida de datos, se impide la investigación de fraudes internos y se pierde la integridad del historial como evidencia.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Eliminar las cuentas compartidas y usar solo cuentas nominales vinculadas al directorio corporativo (SSO) con baja automática al salir del empleado. Exigir motivo y referencia de ticket en todo cambio de perfil.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "El historial de cambios es de solo adición, con autor, fecha, valor anterior y valor nuevo. Ningún rol de atención puede editarlo ni borrarlo, y se replica a un almacenamiento externo inmutable o a un SIEM.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertas por sesiones simultáneas de una misma cuenta desde distintos dispositivos o ubicaciones, por cambios sin ticket y por cualquier intento de modificar o borrar el historial. Conciliación periódica del historial contra los logs de clients-api.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reconstruir los cambios afectados desde los logs de clients-api y las copias de respaldo, rotar las credenciales compartidas existentes y revisar los cambios del período en que no hubo autoría fiable.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-21: se asume que no está garantizado que existan cuentas nominales ni un registro de auditoría inmutable"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "El operador realiza cambios indebidos en datos personales o atributos de perfil de varios clientes desde la cuenta compartida",
+            "clients-api registra los cambios con un usuario genérico, sin motivo y sin ticket",
+            "Cuando se detecta una anomalía, el operador niega haberlas hecho amparándose en que la cuenta es de uso común",
+            "Si tiene permiso sobre el registro, elimina o edita las entradas del historial de los clientes afectados para borrar el rastro"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "Varios operadores usan una misma cuenta de clients-admin-front, o el historial de cambios se registra sin identificar al empleado de forma inequívoca",
+            "El historial de cambios es editable o eliminable con el mismo rol que edita perfiles",
+            "Los cambios no exigen motivo ni referencia a un caso"
+          ],
+          "patrones_usados": [
+            "FE-15",
+            "AV-0031"
+          ],
+          "vector_practico": "Acción: ediciones de perfil desde una cuenta de uso compartido y, si es posible, edición o borrado de entradas del historial de cambios. Herramienta: interfaz de clients-admin-front con credenciales comunes. Dato manipulado: registro del historial de cambios (autor, fecha, valor anterior y nuevo) y atributos del perfil.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC14-04",
+          "actor": {
+            "rol": "Operador de atención a clientes con conocimientos técnicos",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Si los permisos solo se aplican en el front, cualquier operador con un proxy puede escribir campos reservados, con efecto directo en beneficios y estado de cuentas."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Operador envía directamente a clients-api campos que el front no expone para ampliar sus privilegios o los de terceros",
+          "impacto": "Elevación de privilegios dentro del backoffice y alteración de datos protegidos sin el control de otros roles, con efecto en beneficios, estado de cuentas y reglas como RN-2.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "clients-api aplica autorización por función y por campo según el rol del empleado. Usa una lista permitida de campos editables por rol, rechaza con error cualquier campo desconocido o no autorizado y no hace binding automático del objeto de perfil completo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Los atributos de beneficio (nivel, membresía, estado de la cuenta, marcas internas) solo los modifican procesos del servidor o un flujo con justificación y aprobación de otro rol. El envío se recalcula al confirmar el pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar los intentos de escritura de campos no permitidos por operador y las ediciones de beneficios sobre cuentas propias o relacionadas. Incluir pruebas automáticas de autorización por función y campo en el pipeline antes del despliegue.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir los atributos alterados al valor anterior desde el historial, recalcular los envíos de pedidos afectados, revocar los permisos del operador y revisar todas sus ediciones previas.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que los permisos por rol se aplican solo en clients-admin-front y no campo a campo en clients-api"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "El operador abre las herramientas del navegador y observa la petición de guardado que viaja por F27",
+            "La reenvía con un proxy de interceptación, añadiendo o cambiando campos del objeto de perfil que la interfaz no ofrece",
+            "clients-api acepta el objeto completo y persiste campos reservados a otros roles o a procesos del servidor",
+            "El operador modifica el estado o los beneficios de cuentas propias o de conocidos, y su cambio queda como una edición normal de perfil"
+          ],
+          "referencias": [
+            "OWASP API5:2023",
+            "CAPEC-384"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "El operador tiene una sesión válida y puede observar las peticiones que clients-admin-front envía a clients-api",
+            "clients-api valida que el usuario esté autenticado como empleado, pero no controla por función ni por campo qué rol puede cambiar cada atributo",
+            "El objeto de perfil incluye campos sensibles (estado de la cuenta, atributos de beneficio, marcas internas) que la interfaz no muestra al operador de atención"
+          ],
+          "patrones_usados": [
+            "AV-0014",
+            "FE-06"
+          ],
+          "vector_practico": "Acción: reenvío modificado de la petición de edición de perfil con campos adicionales no ofrecidos por la interfaz. Herramienta: proxy de interceptación y repetición de peticiones sobre el tráfico de clients-admin-front. Dato manipulado: cuerpo de la solicitud de F27, con atributos protegidos del perfil.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC14-06",
+          "actor": {
+            "rol": "Operador de atención a clientes que colabora con un cliente defraudador",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Requiere la colaboración de un operador con un cliente defraudador y afecta sobre todo a la integridad del registro único, a promociones y a bloqueos, sin fuga masiva de datos."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Edición de identificadores del perfil para duplicar o fusionar registros y eludir la unicidad del cliente",
+          "impacto": "Pérdida de integridad del registro único del cliente, evasión de bloqueos o límites por cliente, abuso de promociones y datos inconsistentes en los demás servicios que consultan clients-api.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Restricción de unicidad de correo y teléfono en la base de datos y validación de RN-1 en clients-api para todas las ediciones, incluidas las de backoffice, sin opción de forzar el duplicado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Cambios en identificadores y datos de identidad con motivo, ticket y aprobación de un segundo empleado. Prohibir la edición de identificadores de cuentas bloqueadas o con historial negativo salvo por un rol de riesgo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Reporte periódico de cambios de identificador, de identificadores liberados desde cuentas bloqueadas y de posibles duplicados, con alerta cuando un operador repite este tipo de cambios.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Restaurar los identificadores originales, separar o fusionar los registros mediante un procedimiento auditado, reevaluar las promociones y beneficios otorgados y volver a bloquear la cuenta evadida.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "RN-1 se verifica en el alta (UC-01) y se asume que no se aplica igual en las ediciones internas"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "Un cliente con una cuenta bloqueada o con historial negativo pide al operador que le habilite otra cuenta",
+            "El operador cambia el correo o teléfono de un perfil para que coincida con un identificador usado por otro registro, o altera los de la cuenta bloqueada para liberarlos",
+            "clients-api guarda el cambio por F27 sin rechazar el duplicado",
+            "Se generan dos perfiles con el mismo identificador, o el cliente recupera una cuenta con otro historial, y se aprovechan promociones o beneficios pensados para registros únicos",
+            "Las operaciones posteriores quedan asociadas a un registro ambiguo"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "F11",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "El operador puede editar correo, teléfono y datos de identidad del perfil",
+            "clients-api no repite la validación de unicidad de RN-1 en las ediciones hechas desde backoffice, o permite forzarla",
+            "No existe aprobación para modificar los identificadores del cliente"
+          ],
+          "patrones_usados": [
+            "AV-0031"
+          ],
+          "vector_practico": "Acción: edición manual de los identificadores del perfil para forzar duplicados o reasignarlos entre cuentas. Herramienta: formulario de edición de clients-admin-front. Dato manipulado: correo, teléfono y datos de identidad que sustentan el registro único del cliente (RN-1).",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC14-07",
+          "actor": {
+            "rol": "Operador de atención a clientes (o atacante con su sesión) con intención de interrumpir el servicio",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Basta una sesión de backoffice y una herramienta de automatización para generar carga sin límites de tasa, y clients-api también atiende flujos de compra, aunque el efecto suele ser temporal."
+          },
+          "stride": {
+            "principal": "D"
+          },
+          "titulo": "Degradación de clients-api con búsquedas amplias y repetidas desde una sesión de backoffice",
+          "impacto": "Degradación o indisponibilidad de clients-api, con efecto en el alta, la edición de perfiles y otros servicios que consultan clientes, y pérdida de ventas por fallos durante la compra.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Paginación obligatoria con tope máximo de resultados, longitud mínima de los criterios de búsqueda y rechazo de filtros demasiado amplios en el endpoint de búsqueda de clients-api.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Límite de tasa y cuota de consultas por sesión de operador, con límite de concurrencia. Aislar la capacidad del backoffice de los flujos de cliente mediante un pool separado o una réplica de lectura.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear latencia, consultas lentas y tasa de peticiones por operador, con alertas cuando una sesión supere su umbral o el tiempo de respuesta degrade los flujos de cliente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Aplicar throttling o suspensión automática de la sesión que excede el umbral, cancelar las consultas largas en curso y revisar si la sesión fue comprometida.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que clients-api no aísla la capacidad del backoffice de la de los flujos de cliente"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "El operador, o quien controla su sesión, repite búsquedas muy amplias de clientes con filtros parciales",
+            "Automatiza el envío de esas peticiones a clients-api de forma concurrente",
+            "clients-api y el almacén de clientes y perfiles (F11) consumen recursos por las consultas pesadas",
+            "Las operaciones del Marketplace que dependen de clients-api responden con lentitud o error"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "F11",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "clients-api da servicio tanto al backoffice como a flujos de cara al cliente (registro, edición de perfil, consulta de direcciones)",
+            "Las búsquedas de clientes admiten criterios amplios y devuelven resultados sin paginación o sin límite estricto",
+            "No hay límite de tasa ni cuota de consultas por sesión de operador"
+          ],
+          "patrones_usados": [],
+          "vector_practico": "Acción: envío concurrente y repetido de búsquedas amplias de clientes. Herramienta: herramienta de automatización de peticiones sobre la sesión del operador. Dato manipulado: criterios de búsqueda y volumen de resultados solicitados a clients-api.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC14-05",
+          "actor": {
+            "rol": "Atacante con credenciales filtradas o capacidad de phishing contra empleados",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El relleno de credenciales y el phishing son frecuentes y, sin segundo factor ni restricción de red, una sola cuenta de operador da acceso a datos y edición de clientes con las acciones atribuidas a un inocente."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "I",
+              "T",
+              "E"
+            ]
+          },
+          "titulo": "Toma de una cuenta de operador por relleno de credenciales o phishing para leer y editar clientes",
+          "impacto": "Acceso a todo el padrón de clientes con los privilegios del operador, fuga masiva de datos personales, modificaciones fraudulentas de perfiles (beneficios o toma de cuentas) atribuidas a un empleado inocente y dificultad para investigar el incidente.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "MFA obligatorio y resistente al phishing (FIDO2/WebAuthn) para todos los operadores de clients-admin-front, integrado con el SSO corporativo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Restringir el acceso a clients-admin-front a VPN o red corporativa y a dispositivos gestionados. Aplicar límite de intentos por usuario e IP, bloqueo progresivo y verificación de contraseñas contra listas de credenciales filtradas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertas por inicios de sesión desde dispositivo, país o IP nuevos, por muchos fallos contra muchas cuentas y por acceso masivo a perfiles o ediciones de beneficio justo después de un inicio de sesión inusual.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar las sesiones activas, forzar el cambio de contraseña y el re-registro del segundo factor, revisar y revertir los cambios hechos durante la sesión comprometida y notificar a los clientes cuyos datos se consultaron.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Supuesto nuevo: clients-admin-front está expuesto a internet o a redes alcanzables por el atacante, sin restricción de red corporativa ni VPN; no se vincula a S-21",
+            "Supuesto nuevo: la autenticación del backoffice no tiene hoy segundo factor ni control de origen o dispositivo; no se vincula a S-21, que aquí no se usa para respaldar esta ausencia"
+          ],
+          "caso_de_uso": "UC-14",
+          "como_ocurre": [
+            "El atacante obtiene un listado de credenciales filtradas de otros servicios o prepara un correo de phishing con un portal que imita clients-admin-front",
+            "Prueba las credenciales contra el inicio de sesión de clients-admin-front o recoge las que introduce el empleado en el portal falso, y entra con la identidad del operador",
+            "Con la sesión del operador busca y abre perfiles de clientes, y copia nombres, teléfonos y direcciones de clientes de alto valor",
+            "Edita atributos de perfil (nivel, membresía) o datos de contacto de cuentas elegidas; clients-admin-front envía el cambio a clients-api por F27 y este lo guarda al ser una sesión de operador válida",
+            "Las acciones quedan registradas en el historial de cambios con la identidad del operador legítimo, por lo que la actividad del atacante es indistinguible de la del empleado"
+          ],
+          "referencias": [
+            "OWASP API2:2023 Broken Authentication",
+            "CAPEC-575 Account Footprinting"
+          ],
+          "elementos_dfd": [
+            "clients-admin-front",
+            "clients-api",
+            "F27",
+            "LC-3"
+          ],
+          "precondiciones": [
+            "clients-admin-front es accesible desde fuera de la red corporativa o desde una red que el atacante alcanza (supuesto nuevo, ver supuestos)",
+            "La autenticación del operador depende solo de usuario y contraseña, sin segundo factor ni restricción por dispositivo (supuesto nuevo, ver supuestos)",
+            "El atacante dispone de credenciales reutilizadas de un empleado o puede engañarlo con una página falsa de inicio de sesión"
+          ],
+          "patrones_usados": [
+            "AV-0012",
+            "FE-11"
+          ],
+          "vector_practico": "Acción: inicio de sesión en clients-admin-front con la identidad de un operador usando credenciales reutilizadas o capturadas por un portal falso. Herramienta: herramienta de automatización de intentos de acceso con listas de credenciales filtradas, o kit de phishing que clona la pantalla de acceso. Dato manipulado: credenciales y sesión del operador y, con ellas, datos personales y atributos de los perfiles de clientes.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-15",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC15-01",
+          "actor": {
+            "rol": "Atacante externo que suplanta a un operador de marketing y promociones",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El phishing y la reutilización de credenciales son frecuentes y, con un segundo factor interceptable, una sesión robada permite activar cupones de alto valor atribuidos a otro operador, con pérdida de margen y de presupuesto."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "E",
+              "T"
+            ]
+          },
+          "titulo": "Toma de cuenta de un operador de marketing para crear cupones de alto valor desde cupons-frontend",
+          "impacto": "Pérdida directa de margen por descuentos fraudulentos, agotamiento del presupuesto de campaña y venta de códigos en canales externos. La bitácora atribuye la acción al operador, lo que genera una investigación interna errónea y dificulta el repudio legítimo. Si los controles no distinguen un origen anómalo, el abuso se detecta solo al revisar márgenes.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir MFA resistente a suplantación (FIDO2/WebAuthn) en cupons-frontend para el rol de marketing y bloquear el acceso desde redes anónimas (Tor, VPN públicas) o fuera de la red corporativa o VPN de la empresa.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en cupons-api aprobación doble (un segundo usuario distinto del creador) para activar cupones con descuento alto, sin límite de usos, con vigencia larga o con segmento amplio, y aplicar topes por rol validados en el servidor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Vincular la sesión al dispositivo y al contexto (token ligado al dispositivo, expiración corta, reautenticación con MFA antes de activar o distribuir un cupón).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar en tiempo real por inicios de sesión desde ubicación, ASN o dispositivo nuevos, por creación de cupones fuera de campañas aprobadas y por uso concentrado de un cupón en pocas cuentas relacionadas; enviar la alerta al SOC.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Procedimiento de respuesta: revocar sesiones y credenciales del operador, desactivar de inmediato los cupones creados durante la sesión sospechosa, anular o revisar las órdenes que los canjearon y restablecer el acceso con verificación presencial o por canal alterno.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11",
+            "S-21",
+            "Se asume que el segundo factor no es resistente a suplantación (por ejemplo, códigos por SMS o notificaciones push aprobables por error)"
+          ],
+          "caso_de_uso": "UC-15",
+          "como_ocurre": [
+            "El atacante envía un correo de suplantación al operador con una página falsa de inicio de sesión de cupons-frontend, o prueba credenciales filtradas contra el acceso",
+            "Captura usuario, contraseña y el código de segundo factor, o reutiliza la sesión activa del navegador del operador",
+            "Inicia sesión en cupons-frontend desde una red anónima con la identidad del operador",
+            "Crea un cupón con descuento alto, segmento amplio, vigencia larga y usos totales muy altos, y lo activa; la petición viaja por F28 a cupons-api",
+            "cupons-api lo guarda en el almacén de cupones y usos (F12) como disponible para el checkout",
+            "El atacante reparte o vende el código a terceros y todo queda registrado a nombre del operador legítimo"
+          ],
+          "referencias": [
+            "CAPEC-701",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "cupons-frontend",
+            "cupons-api",
+            "F28",
+            "F12"
+          ],
+          "precondiciones": [
+            "El acceso a cupons-frontend se protege solo con usuario y contraseña, o con un segundo factor que se puede interceptar o fatigar",
+            "El atacante tiene credenciales del operador obtenidas por suplantación de identidad, reutilización de contraseñas filtradas o malware en su estación",
+            "cupons-api acepta como legítima cualquier sesión autenticada del rol de marketing sin comprobar dispositivo, origen ni contexto (S-21)",
+            "No hay aprobación doble ni alertas por creación de cupones fuera de campaña"
+          ],
+          "patrones_usados": [
+            "FE-05",
+            "AV-0029"
+          ],
+          "vector_practico": "El atacante usa una página de captura de credenciales o credenciales filtradas para obtener la sesión del operador. Con el navegador abre el formulario de alta de cupones de cupons-frontend y manipula la definición del cupón (valor, vigencia, usos totales, segmento). Esa definición es el dato que cupons-api acepta como legítimo porque proviene de una cuenta autenticada.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC15-03",
+          "actor": {
+            "rol": "Usuario de agencia de marketing contratada con una cuenta en cupons-frontend",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Cambiar el identificador de campaña o segmento es trivial si cupons-api no comprueba la pertenencia al tercero; el daño combina fuga de códigos, de presupuestos y de listas de clientes, pero queda acotado al alcance de las cuentas de agencia."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Agencia externa con acceso al backoffice exporta segmentos de clientes y cupones personales",
+          "impacto": "Fuga de códigos de descuento y de información comercial confidencial (presupuestos, criterios de segmentación) y exposición de la lista de clientes de segmentos sensibles. Los códigos filtrados se canjean por personas no elegibles, con pérdida económica y posible incumplimiento de obligaciones de protección de datos con el tercero.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Autorizar en cupons-api cada consulta por objeto: validar que el identificador de campaña o segmento pertenezca al tercero (control de acceso a nivel de objeto) y responder 404 o 403 uniformes ante identificadores ajenos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Reducir el rol de la agencia al mínimo: sin acceso al presupuesto de campañas, con códigos personales enmascarados o enviados directamente por el sistema sin descarga, y con segmentos expuestos solo como identificadores seudonimizados.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Ligar los cupones personales a la cuenta destinataria y validarlo en el checkout, de modo que un código filtrado no sea canjeable por otras cuentas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar toda consulta y exportación de segmentos y códigos con usuario, campaña y volumen; alertar por exportaciones masivas, por accesos a campañas no asignadas y por canjes de cupones personales desde cuentas distintas a la destinataria.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Suspender la cuenta de la agencia, regenerar o invalidar los códigos expuestos, notificar a la agencia y activar el procedimiento de incidentes de datos personales conforme al contrato y a la normativa aplicable.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11",
+            "S-21",
+            "Se asume que existen cuentas de terceros en cupons-frontend; si todo el personal es interno, el caso aplica a operadores con acceso excesivo"
+          ],
+          "caso_de_uso": "UC-15",
+          "como_ocurre": [
+            "Un usuario de la agencia inicia sesión en cupons-frontend con su cuenta legítima",
+            "Abre el listado de campañas y segmentos, y consulta también campañas ajenas cambiando el identificador en la consulta que cupons-frontend hace a cupons-api",
+            "Descarga los códigos de cupones personales o de alto valor, la composición de los segmentos de clientes y el presupuesto de cada campaña",
+            "Entrega esos datos a otro cliente de la agencia, los vende o los usa con cuentas propias",
+            "Los códigos obtenidos se canjean en el checkout por cuentas que no son las destinatarias"
+          ],
+          "referencias": [
+            "CAPEC-240",
+            "OWASP API9:2023 Improper Inventory Management"
+          ],
+          "elementos_dfd": [
+            "cupons-frontend",
+            "cupons-api",
+            "F28",
+            "F12"
+          ],
+          "precondiciones": [
+            "La agencia recibió una cuenta con permiso de distribuir cupones a segmentos",
+            "El rol de la agencia permite ver y descargar el segmento asignado, los códigos generados y el presupuesto de las campañas, aunque no sean suyas",
+            "cupons-api no restringe la consulta de segmentos y códigos a las campañas del tercero",
+            "No hay registro ni alerta de exportaciones masivas"
+          ],
+          "patrones_usados": [
+            "FE-04",
+            "FE-05",
+            "API6:2023"
+          ],
+          "vector_practico": "El usuario de la agencia usa la función de listado o exportación de cupons-frontend, y con un proxy de interceptación cambia el identificador de campaña o segmento en las consultas hacia cupons-api. Así obtiene códigos de cupón, la lista de clientes de cada segmento y el presupuesto de campañas que no le fueron asignadas.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC15-04",
+          "actor": {
+            "rol": "Operador de marketing y promociones con permiso de edición de cupones",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Un operador interno con permiso de edición y sin versionado puede hacer un cambio temporal y restaurarlo con poco esfuerzo, y la falta de atribución impide recuperar pérdidas, aunque el abuso es de alcance acotado en el tiempo."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Operador modifica un cupón activo y borra la evidencia de su cambio para negar la autoría",
+          "impacto": "No es posible atribuir el abuso ni reconstruir qué órdenes se beneficiaron de reglas alteradas, lo que impide recuperar pérdidas, sancionar y reconciliar el presupuesto de campaña. Se incumple la trazabilidad esperada para las operaciones de RN-4.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Versionar cada definición de cupón en cupons-api: la edición crea una nueva versión inmutable (quién, cuándo, valores anteriores y nuevos) y el borrado es lógico, sin eliminación física por parte de operadores.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Eliminar cuentas compartidas o genéricas de campaña, exigir cuentas nominales con MFA y requerir aprobación doble para modificar cupones activos (vigencia, valor, monto mínimo).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Enviar la bitácora de cambios a un almacenamiento de solo anexado (WORM) con firma o encadenamiento de hashes, fuera del alcance de quienes administran campañas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar de forma automática cada orden con la versión del cupón vigente al momento del canje; alertar por cambios de definición seguidos de restauración en pocas horas y por canjes bajo reglas distintas de las actuales.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reconstruir con la bitácora inmutable las versiones y las órdenes beneficiadas, recuperar o ajustar el presupuesto afectado y aplicar el proceso disciplinario con evidencia atribuible.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11",
+            "S-21",
+            "Se asume que no existe bitácora inmutable y versionada de cambios de cupones"
+          ],
+          "caso_de_uso": "UC-15",
+          "como_ocurre": [
+            "Un operador edita un cupón activo para ampliar su vigencia, subir el valor o quitar el monto mínimo, y se beneficia o beneficia a terceros durante algunas horas",
+            "Antes de la revisión de márgenes, restaura los valores originales desde cupons-frontend, o elimina el cupón y crea uno equivalente",
+            "cupons-api guarda solo la última definición, de modo que el historial no muestra el cambio intermedio",
+            "Cuando se detectan órdenes con descuentos fuera de política, el cupón figura con reglas correctas y la bitácora no identifica quién hizo la edición",
+            "El operador niega haber hecho el cambio y señala a otros usuarios con acceso a la campaña"
+          ],
+          "referencias": [
+            "CAPEC-39"
+          ],
+          "elementos_dfd": [
+            "cupons-frontend",
+            "cupons-api",
+            "F28",
+            "F12"
+          ],
+          "precondiciones": [
+            "La edición de un cupón activo sobrescribe la definición anterior sin conservar versiones",
+            "La bitácora de cupons-api registra solo el estado final, o puede ser editada o depurada por quien administra la campaña",
+            "Varios operadores comparten una cuenta o una cuenta genérica de campaña",
+            "El operador sabe que los márgenes se revisan con retraso"
+          ],
+          "patrones_usados": [
+            "FE-05",
+            "AV-0029",
+            "AV-0035"
+          ],
+          "vector_practico": "El operador usa el formulario de edición y la función de desactivar o eliminar cupones de cupons-frontend para modificar y luego restaurar la definición del cupón (vigencia, valor, monto mínimo). Así elimina de la fuente de verdad en cupons-api la evidencia del periodo en que las reglas eran más favorables, apoyándose en una bitácora mutable o sin versiones.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC15-05",
+          "actor": {
+            "rol": "Operador de marketing y promociones con permisos de edición y activación masiva",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "bajo",
+            "impacto": 2,
+            "probabilidad": 1,
+            "justificacion": "Requiere un insider motivado, pero con permisos amplios y cambios aplicados al instante la interrupción de una campaña vigente es fácil, con pérdida de ventas y costo de soporte y reversión lenta."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Operador descontento desactiva o altera masivamente cupones de una campaña vigente",
+          "impacto": "Caída de conversión durante una campaña, pérdida de ventas, deterioro de la confianza de clientes que tenían cupones válidos y costos de soporte y de reconstrucción de las reglas originales. Puede incumplirse además la promesa de descuento comunicada al cliente.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Limitar el permiso de editar, desactivar o reasignar cupones a las campañas de las que el operador es responsable, y exigir aprobación de un segundo usuario o confirmación diferida para acciones masivas o para cambios sobre campañas vigentes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Poner topes en cupons-api al número de cupones modificables por operación y por ventana de tiempo, y bloquear cambios como usos totales en cero, segmento vacío o fecha de fin adelantada en campañas vigentes sin aprobación.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear la tasa de rechazo de cupones en el checkout y las ediciones masivas; alertar al equipo de marketing y de operaciones cuando se supere un umbral sobre la línea base o se desactiven varias campañas en poco tiempo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Mantener respaldos versionados de las definiciones de cupón con función de reversión de un clic a la versión previa aprobada, y un procedimiento de comunicación al cliente y de soporte durante la restauración.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11",
+            "S-21",
+            "Se asume que no hay respaldo versionado de las definiciones de cupón ni confirmación para cambios masivos"
+          ],
+          "caso_de_uso": "UC-15",
+          "como_ocurre": [
+            "Durante un periodo de alta demanda, el operador entra a cupons-frontend con su sesión legítima",
+            "Selecciona las campañas vigentes y las desactiva, adelanta su fecha de fin, reduce los usos totales a cero o cambia el segmento a uno vacío",
+            "cupons-api guarda los cambios por F28 y deja las reglas inconsistentes en F12",
+            "En el checkout, cupons-api rechaza los cupones legítimos de los clientes, que ven mensajes de código inválido o vencido",
+            "Aumentan los abandonos de carrito y las solicitudes a soporte mientras el equipo busca la causa, y la reversión manual es lenta"
+          ],
+          "referencias": [
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "cupons-frontend",
+            "cupons-api",
+            "F28",
+            "F12"
+          ],
+          "precondiciones": [
+            "El operador tiene permiso para editar, desactivar o reasignar cupones de campañas que no creó",
+            "Existe una función de acción masiva o la edición es rápida sobre muchas definiciones",
+            "No se exige aprobación ni hay confirmación diferida para cambios en campañas vigentes",
+            "cupons-api aplica de inmediato los cambios a la validación del checkout"
+          ],
+          "patrones_usados": [
+            "FE-05"
+          ],
+          "vector_practico": "El operador usa la función de edición o desactivación masiva de cupons-frontend para cambiar en las definiciones de cupón de campañas vigentes los campos de estado, vigencia, usos totales y segmento. Esos cambios llegan por F28 a cupons-api y hacen que la validación del checkout rechace cupones legítimos.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC15-02",
+          "actor": {
+            "rol": "Operador de marketing y promociones con acceso a cupons-frontend",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Interceptar y modificar la petición F28 es sencillo para un operador con un proxy cuando los topes están solo en la interfaz, y el resultado es un cupón activo fuera de política que afecta márgenes y presupuesto de campaña."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "R"
+            ]
+          },
+          "titulo": "Operador de marketing excede los topes de su rol al enviar por F28 una definición de cupón que cupons-api no autoriza",
+          "impacto": "El operador ejerce en la práctica privilegios que su rol no le otorga: crea cupones con descuentos o alcances fuera de política, imputados a una campaña con presupuesto que no corresponde o que no lo tiene. Se erosiona RN-4 por la pérdida económica en márgenes y en el presupuesto de campaña. La diferencia entre lo que muestra la interfaz y lo activo en el servidor dificulta la auditoría y permite al operador negar responsabilidad.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Validar en cupons-api, del lado del servidor, la autorización por rol y por campo en cada petición de F28: descuento máximo, vigencia máxima, usos por cliente, segmento permitido y campaña asignada, con una lista blanca de campos aceptados y rechazo de valores fuera de tope.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Comprobar en cupons-api que el costo máximo potencial del cupón (valor por usos totales) no exceda el presupuesto restante de la campaña asignada y que el operador tenga permiso sobre esa campaña.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Requerir aprobación de una segunda persona para activar cupones que superen los topes ordinarios o que carezcan de límite de usos, y que cupons-frontend relea siempre el estado guardado en el servidor tras cada guardado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar en una bitácora inmutable la petición recibida en F28 y los valores persistidos; alertar por rechazos repetidos de validación de topes (indicio de manipulación) y por cupones activos con valores que difieren de lo mostrado en la interfaz o de las campañas aprobadas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Desactivar el cupón fuera de política, revisar y revertir los canjes asociados, reasignar el costo a la campaña correcta y abrir una investigación disciplinaria con la evidencia de la bitácora.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11",
+            "S-21",
+            "Se asume que cupons-api no valida en el servidor la autorización por rol ni por campo sobre los datos recibidos en F28"
+          ],
+          "caso_de_uso": "UC-15",
+          "como_ocurre": [
+            "El operador llena el formulario de cupón con valores permitidos por su rol, por ejemplo un descuento moderado y un segmento acotado",
+            "Con un proxy de interceptación detiene la petición de creación o edición que cupons-frontend envía a cupons-api por F28",
+            "Sustituye en la petición campos que la interfaz limita u oculta: porcentaje de descuento, tope de usos por cliente, monto mínimo, vigencia, identificador de campaña o segmento asignado",
+            "Reenvía la petición y cupons-api la acepta sin verificar si el rol del operador permite esos valores, y la deja disponible para validación en el checkout (F12)",
+            "El cupón queda activo con descuento, vigencia o alcance que el operador no estaba autorizado a definir, mientras la interfaz sigue mostrando los valores originales si no relee el estado del servidor",
+            "El operador distribuye el código a cuentas allegadas o lo vende; si se investiga, puede alegar que configuró solo los valores visibles en la interfaz"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "OWASP API5:2023 Broken Function Level Authorization",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "cupons-frontend",
+            "cupons-api",
+            "F28",
+            "F12"
+          ],
+          "precondiciones": [
+            "Los topes por rol (descuento máximo, vigencia máxima, segmento permitido, presupuesto asignado) se aplican solo en la interfaz de cupons-frontend",
+            "cupons-api acepta los campos recibidos en F28 sin comprobar en el servidor la autorización del rol sobre cada campo ni compararlos con el presupuesto de la campaña",
+            "El operador puede usar un proxy de interceptación en su navegador",
+            "No se exige segunda aprobación para activar el cupón"
+          ],
+          "patrones_usados": [
+            "FE-05",
+            "AV-0029"
+          ],
+          "vector_practico": "El operador usa un proxy de interceptación entre cupons-frontend y cupons-api para sustituir, en la petición de F28, los campos de la definición del cupón (porcentaje, usos por cliente, monto mínimo, vigencia, identificador de campaña o segmento). Con esa acción obtiene privilegios de configuración superiores a los de su rol, porque cupons-api no autoriza esos valores en el servidor; la alteración de la petición es solo el medio y el daño central es el exceso de privilegio.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-16",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC16-01",
+          "actor": {
+            "rol": "Operador de entregas con cuenta nominal en delivery-admin-front y permiso de edición de direcciones",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Un operador interno con cambio de dirección sin aprobación ni aviso al cliente puede desviar producto de alto valor con poco esfuerzo, y la pérdida es directa y difícil de atribuir."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E",
+              "R"
+            ]
+          },
+          "titulo": "Operador redirige una orden ya pagada a una dirección controlada por un cómplice mediante el cambio de dirección de excepción",
+          "impacto": "Pérdida de producto de alto valor, reclamos y contracargos del cliente, y dificultad para atribuir el cambio si la bitácora no registra motivo ni aprobador.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "En delivery-api, exigir motivo codificado, ticket de soporte vinculado y aprobación de una segunda persona (cuatro ojos) para cambiar dirección o contacto en órdenes pagadas y no entregadas, con umbral más estricto para productos de alto valor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Notificar al cliente por su correo o teléfono registrado cada cambio de dirección hecho desde el backoffice y retener la propagación al proveedor un tiempo breve (o hasta que el cliente confirme) en órdenes de alto valor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por cambios de dirección a destinos nuevos o repetidos entre órdenes de distintos clientes, por operadores con muchas excepciones de dirección y por cambios sobre órdenes de alto valor; conciliar semanalmente los cambios contra reclamos de no recepción.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante una sospecha, solicitar al proveedor la retención o interceptación del paquete en tránsito, revertir la dirección original en delivery-api y preservar la bitácora inmutable (operador, motivo, aprobador) para la investigación.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-16: delivery-api comunica los cambios al proveedor como indica el flujo de UC-16",
+            "No hay notificación automática al cliente ante cambios de dirección hechos por el backoffice"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "El operador consulta en delivery-admin-front órdenes recientes de producto de alto valor en estado preparado o en tránsito",
+            "Elige una orden y abre la gestión de excepciones, alegando una dirección incorrecta",
+            "Reemplaza la dirección de entrega y el contacto por los de un punto controlado por el cómplice",
+            "delivery-api guarda el cambio sobre la orden de entrega y lo comunica al proveedor logístico",
+            "El repartidor entrega en la nueva dirección y el cómplice recibe el paquete",
+            "El cliente reclama la no recepción y el cambio figura como una excepción operativa legítima, sin motivo ni evidencia asociada"
+          ],
+          "referencias": [
+            "CAPEC-384",
+            "OWASP API5:2023"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29",
+            "F13"
+          ],
+          "precondiciones": [
+            "El operador puede editar la dirección de órdenes pagadas que aún no entregó el proveedor logístico",
+            "El cambio de dirección no exige motivo, ticket ni aprobación de una segunda persona",
+            "delivery-api reenvía al proveedor logístico la dirección modificada sin avisar al cliente",
+            "Hay un cómplice que recibe el paquete"
+          ],
+          "patrones_usados": [
+            "FE-11",
+            "AV-0046"
+          ],
+          "vector_practico": "Edición desde la interfaz de delivery-admin-front del campo de dirección y contacto de órdenes pagadas y no entregadas, aprovechando que delivery-api acepta el cambio sin motivo, aprobación ni notificación al cliente y lo propaga al proveedor.",
+          "limites_confianza": [
+            "LC-3",
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC16-02",
+          "actor": {
+            "rol": "Operador de entregas con permiso de cambiar tienda o dirección de órdenes",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "El favoritismo en costos de envío es plausible para un operador con permiso de edición, pero la pérdida por orden es acotada aunque se acumule con el tiempo."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Operador cambia la tienda o la dirección de una orden para reducir o anular el costo de envío de un conocido",
+          "impacto": "Pérdida de ingresos por envíos subcobrados, distorsión de los costos logísticos por tienda y favoritismo no detectado entre clientes.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Calcular el costo de envío solo en el servidor de delivery-api según RN-2 y bloquear su edición manual; todo ajuste de costo, o cambio de tienda o zona que lo modifique, requiere motivo, ticket y aprobación de un supervisor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar los reembolsos o ajustes a favor del cliente a una orden de reembolso aprobada, referenciada al pago original y con importe máximo igual a la diferencia calculada.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliación diaria entre el costo de envío cobrado y el recalculado tras cada excepción, con alerta por diferencias y por operadores que repiten cambios de tienda o zona que reducen el costo, sobre todo si benefician a los mismos clientes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir los cambios de tienda o zona sospechosos, recuperar la diferencia con el cliente beneficiado y retirar el permiso de edición al operador mientras dure la revisión.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que cambiar tienda o dirección modifica el costo de envío vigente o permite ajustarlo, según RN-2"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "Un conocido del operador paga una orden voluminosa con un costo de envío alto",
+            "El operador abre la orden en delivery-admin-front y la gestiona como excepción",
+            "Cambia la tienda de origen a una cercana al destino, o ajusta la dirección o zona registrada, de modo que el costo calculado sea menor",
+            "delivery-api registra el cambio y la orden se despacha con el costo de envío reducido",
+            "Si la orden ya estaba cobrada, la diferencia queda como una devolución o ajuste a favor del conocido, o la orden sale con el costo de envío bajo",
+            "El operador repite el patrón con otras órdenes sin que queden vinculadas a un caso de soporte"
+          ],
+          "referencias": [
+            "OWASP API5:2023"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29",
+            "F13"
+          ],
+          "precondiciones": [
+            "El costo de envío de la orden se recalcula o se conserva según la tienda o la dirección que figuren en la orden (RN-2)",
+            "El operador puede modificar tienda o dirección sin aprobación",
+            "No hay conciliación entre el costo cobrado al cliente y el costo calculado tras la excepción"
+          ],
+          "patrones_usados": [
+            "AV-0031",
+            "AV-0046"
+          ],
+          "vector_practico": "Modificación desde delivery-admin-front de los campos tienda de origen y dirección o zona de entrega de una orden, para que delivery-api recalcule o acepte un costo de envío menor que el que correspondía al cliente.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC16-03",
+          "actor": {
+            "rol": "Operador de entregas con acceso de consulta amplio a órdenes y direcciones",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 3,
+            "justificacion": "El operador ya tiene acceso legítimo amplio y sin límites ni enmascaramiento, lo que hace la recolección fácil, y la exposición de direcciones y horarios facilita robos físicos y sanciones de protección de datos."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Operador de entregas recolecta direcciones, teléfonos y horarios de entrega de órdenes de alto valor para venderlos o planear robos",
+          "impacto": "Fuga de datos personales de clientes, robos dirigidos en el momento de la entrega, daño reputacional y posible incumplimiento de normas de protección de datos.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Condicionar la consulta del detalle de una orden a un caso o ticket abierto y asignado al operador, y limitar el listado al alcance de su región o tienda.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Enmascarar por defecto teléfono, dirección completa y nombre en delivery-admin-front, con revelado puntual y registrado por orden, y aplicar límites de consultas y de revelados por operador y por hora.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Mostrar marca de agua con el usuario en pantalla y bloquear exportaciones y copia masiva desde el listado de órdenes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por consultas sin ticket asociado, volumen inusual de revelados, filtros sistemáticos por valor alto o estado en reparto, y acceso a órdenes de alto valor sin excepción abierta; revisar mensualmente los accesos por operador.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante un uso indebido, suspender el acceso del operador, evaluar y notificar a los clientes y a la autoridad de protección de datos si corresponde, y reprogramar o reforzar la entrega de las órdenes expuestas.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No existe enmascaramiento de campos ni acceso condicionado a un caso abierto en UC-16"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "El operador filtra en delivery-admin-front las órdenes por estado, por ejemplo en reparto o programadas",
+            "Ordena u observa las órdenes de mayor valor y registra dirección, nombre, teléfono y ventana de entrega",
+            "Repite las consultas durante varios días, copiando los datos mediante capturas de pantalla o copia manual a un medio personal",
+            "Entrega el listado a un tercero o lo usa para interceptar entregas o suplantar al repartidor",
+            "Las consultas se confunden con la actividad operativa normal y no se vinculan a ningún caso"
+          ],
+          "referencias": [
+            "OWASP API3:2023"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29",
+            "F13"
+          ],
+          "precondiciones": [
+            "El operador puede consultar cualquier orden de entrega sin un caso o ticket abierto",
+            "Las direcciones y teléfonos se muestran sin enmascarar",
+            "No hay límites de volumen de consulta ni alertas por consultas atípicas"
+          ],
+          "patrones_usados": [
+            "FE-16"
+          ],
+          "vector_practico": "Consultas repetidas y filtradas en el listado de órdenes de delivery-admin-front, con captura de pantalla o copia manual de los campos dirección, contacto, valor y ventana de entrega.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC16-04",
+          "actor": {
+            "rol": "Operador de entregas con permiso de cambiar estado manualmente y reprogramar",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Sin validación de transiciones, retroceder un estado final es sencillo y produce un segundo envío con pérdida de inventario, aunque exige un cómplice y la contradicción con la logística es detectable."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E",
+              "R"
+            ]
+          },
+          "titulo": "Operador marca como fallido o reprograma una orden ya entregada para provocar un segundo envío a un cómplice",
+          "impacto": "Pérdida de inventario por doble envío, inconsistencias entre el estado interno y el del proveedor, costos logísticos adicionales y disputas con el proveedor.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Implementar en delivery-api una máquina de estados que prohíba el retroceso desde entregado, o lo permita solo con evidencia adjunta y aprobación de un supervisor, y que bloquee reprogramar con cambio de dirección en la misma operación.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "No generar un reenvío ni una nueva orden de despacho si el proveedor tiene registrada prueba de entrega (escaneo o firma) sin una confirmación de la excepción en su sistema.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando un cambio manual de estado contradiga los eventos recibidos del proveedor, y conciliar a diario las órdenes entregadas que pasan a fallido o reprogramado, agrupadas por operador.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Cancelar el segundo despacho antes de su salida, recuperar el paquete si ya salió, restaurar el estado entregado y registrar la incidencia en la bitácora para la investigación y la disputa con el proveedor.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-16: el estado puede cambiarse por el panel interno además de la integración, y ambas vías se analizan",
+            "Se asume que no hay validación de transiciones de estado en delivery-api para cambios manuales"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "El operador identifica órdenes que el proveedor reportó como entregadas hace poco",
+            "En delivery-admin-front cambia el estado manualmente a fallido o reprograma la entrega, alegando que el cliente estuvo ausente",
+            "delivery-api registra el cambio y lo comunica al proveedor, o genera una nueva orden de despacho",
+            "Durante la reprogramación el operador cambia además la dirección hacia el punto del cómplice",
+            "Se despacha un segundo envío del mismo producto a una dirección controlada",
+            "El cambio contradice los eventos de logistic, pero no hay una alerta que lo señale"
+          ],
+          "referencias": [
+            "CAPEC-384"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29",
+            "F13"
+          ],
+          "precondiciones": [
+            "delivery-api permite al operador retroceder un estado final (entregado) hacia fallido o reprogramado",
+            "La transición retrógrada no exige evidencia ni segunda aprobación",
+            "El cambio manual se comunica al proveedor logístico como instrucción de reenvío o reprogramación",
+            "El cliente ya recibió el producto o la orden está en poder del cómplice"
+          ],
+          "patrones_usados": [
+            "FE-15",
+            "AV-0048",
+            "AV-0061"
+          ],
+          "vector_practico": "Cambio manual desde delivery-admin-front del campo estado de órdenes en estado final hacia fallido o reprogramado, combinado con la edición de la dirección, sin que delivery-api valide la transición ni contraste con los eventos de logistic.",
+          "limites_confianza": [
+            "LC-3",
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC16-05",
+          "actor": {
+            "rol": "Atacante con credenciales filtradas o robadas por phishing de un operador de entregas",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El phishing y la reutilización de contraseñas son frecuentes y sin MFA basta una credencial, con acceso a datos y cambios de órdenes atribuidos a otra persona."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T",
+              "I",
+              "E"
+            ]
+          },
+          "titulo": "Atacante externo toma la sesión o credenciales de un operador de entregas y gestiona órdenes desde delivery-admin-front",
+          "impacto": "Desvío de órdenes, fuga de datos personales, atribución errónea al empleado legítimo y pérdida de confianza en la bitácora de cambios.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir MFA resistente a phishing (FIDO2/WebAuthn) en delivery-admin-front, restringir el acceso a la VPN corporativa o a IPs permitidas y ligar la sesión al dispositivo con caducidad corta.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Pedir reautenticación o segundo factor para acciones sensibles (cambio de dirección, de estado final o consulta masiva) y rechazar contraseñas filtradas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por inicios de sesión desde dispositivo, país o IP nuevos, sesiones simultáneas y viaje imposible, sobre todo si van seguidos de cambios de dirección o estado o de consultas de órdenes de alto valor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar todas las sesiones y tokens de la cuenta, forzar el cambio de credenciales y de factor, y revisar y revertir los cambios hechos en la ventana de compromiso, avisando al proveedor para frenar los envíos afectados.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que no hay MFA ni controles contextuales de acceso en el panel, ya que el contexto no los menciona"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "El atacante obtiene la contraseña o la cookie de sesión del operador mediante una página de phishing que imita el acceso al panel o con malware de robo de credenciales",
+            "Inicia sesión en delivery-admin-front desde un dispositivo y ubicación nuevos",
+            "Consulta órdenes de alto valor y sus datos de entrega",
+            "Cambia direcciones o estados de órdenes seleccionadas hacia un punto controlado",
+            "delivery-api registra los cambios con la identidad del operador legítimo y los comunica al proveedor",
+            "El operador legítimo queda como responsable aparente ante una investigación"
+          ],
+          "referencias": [
+            "CAPEC-384",
+            "OWASP API2:2023"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29"
+          ],
+          "precondiciones": [
+            "delivery-admin-front es accesible desde fuera de la red corporativa o desde una VPN con credenciales débiles",
+            "La autenticación se basa solo en usuario y contraseña, sin MFA ni restricción de dispositivo",
+            "El operador reutiliza contraseñas o es víctima de phishing o de malware que roba sesiones"
+          ],
+          "patrones_usados": [
+            "FE-11",
+            "FE-15"
+          ],
+          "vector_practico": "Reutilización de credenciales o de una sesión robada del operador mediante un navegador propio, para ejecutar desde delivery-admin-front consultas y cambios de dirección o estado con la identidad de otra persona.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC16-06",
+          "actor": {
+            "rol": "Operador con rol de consulta o con alcance limitado a una región o tienda",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Reenviar una petición con otro identificador con un proxy es trivial para un empleado y, si delivery-api solo valida identidad, puede modificar órdenes ajenas y saltarse la segregación de funciones."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Operador de solo consulta o de otra región modifica órdenes fuera de su alcance manipulando las peticiones entre delivery-admin-front y delivery-api",
+          "impacto": "Modificación de órdenes fuera del alcance asignado, pérdida de segregación de funciones y posibilidad de fraude o sabotaje por usuarios sin permiso de edición.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar en delivery-api autorización por función (rol y permiso por acción) y por objeto (región o tienda de la orden) en cada endpoint de F29, validada en servidor y no solo ocultando acciones en delivery-admin-front.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Usar identificadores de orden no predecibles (UUID), con comprobación de pertenencia al alcance del operador, y pruebas automatizadas de autorización en el pipeline que cubran roles de consulta y regiones cruzadas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar los rechazos 403/404 repetidos, accesos a órdenes fuera de alcance y acciones no permitidas al rol, con revisión periódica de roles y permisos asignados.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir las modificaciones fuera de alcance, suspender el rol o la cuenta del operador, informar al proveedor de las órdenes alteradas y corregir el endpoint vulnerable con una prueba de regresión.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que los roles del panel se aplican solo en la interfaz, ya que el contexto no describe controles de autorización en delivery-api"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "El operador inicia sesión con su cuenta nominal y observa con un proxy de inspección de tráfico las peticiones que el panel envía a delivery-api",
+            "Identifica la petición que usan los operadores con permiso de edición para cambiar estado o dirección",
+            "Reenvía esa petición con el identificador de una orden de otra región o tienda, o la acción de edición que su rol no tiene",
+            "delivery-api la acepta porque valida solo la identidad y no la autorización por función ni por objeto",
+            "La orden se modifica y el cambio se comunica al proveedor",
+            "El cambio queda registrado como una acción normal de su cuenta, sin señal de que excedió su rol"
+          ],
+          "referencias": [
+            "OWASP API5:2023",
+            "OWASP API1:2023",
+            "CAPEC-384"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29"
+          ],
+          "precondiciones": [
+            "delivery-admin-front oculta las acciones de edición según el rol, pero delivery-api no valida la autorización por función ni por alcance",
+            "El operador puede interceptar y modificar las peticiones de su propio navegador",
+            "Los identificadores de órdenes son predecibles o enumerables"
+          ],
+          "patrones_usados": [
+            "AV-0048",
+            "AV-0046"
+          ],
+          "vector_practico": "Uso de un proxy de inspección de tráfico para reenviar peticiones de F29 con el identificador de orden o el tipo de acción alterados, aprovechando la falta de autorización por función y por objeto en delivery-api.",
+          "limites_confianza": [
+            "LC-3"
+          ]
+        },
+        {
+          "id": "AC-UC16-07",
+          "actor": {
+            "rol": "Operador de entregas descontento, o atacante que controla la cuenta de un operador",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "bajo",
+            "impacto": 2,
+            "probabilidad": 1,
+            "justificacion": "Exige a un operador o a una cuenta comprometida lanzar ráfagas automatizadas poco rentables para el actor, y el daño es una degradación temporal y reversible, aunque la reconciliación es costosa."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Operador con cuenta propia o comprometida dispara cambios masivos de estado y reprogramación que agotan la capacidad de delivery-api y de la vía hacia el proveedor logístico",
+          "impacto": "Degradación o indisponibilidad parcial de delivery-api y de la comunicación con el proveedor en una zona o periodo, retraso de entregas legítimas, notificaciones legítimas perdidas, estados erróneos visibles al cliente como consecuencia secundaria, costos de reconciliación manual, reclamos masivos y deterioro de la relación con el proveedor. Como el cambio queda atribuido a una cuenta, se dificulta distinguir un abuso interno de una cuenta comprometida.",
+          "revision": {
+            "intento": 3,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Limitar en delivery-api la tasa y el volumen de cambios por usuario y por sesión en F29, exigir aprobación para operaciones por lote y deduplicar cambios repetidos sobre la misma orden.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Encolar las notificaciones al proveedor con control de contrapresión, agrupación y reintentos con backoff, aislando su capacidad de la de las consultas de otros operadores y del Marketplace.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar límites de tasa en la API del proveedor, con respuestas 429 e indicación de reintento, e idempotencia en la recepción de cambios por identificador de operación.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por volumen anómalo de excepciones por operador, profundidad de la cola hacia el proveedor, tasa de errores 429 y latencia de delivery-api.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Contar con un interruptor para suspender la cuenta o la sesión, pausar y drenar la cola, y reconciliar con el proveedor los estados y fechas de las órdenes afectadas.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se describen límites de tasa, operaciones por lote con aprobación ni control de volumen por usuario en delivery-api, ni control de tasa en la salida hacia el proveedor",
+            "Se asume que la comunicación con el proveedor tiene capacidad finita y que las notificaciones de cambio se envían una por cada modificación",
+            "AV-0061 se retira como patrón de referencia: trata la repetición de eventos entrantes desde la integración, no el consumo de recursos desde el panel interno",
+            "La categoría se corrige a D como principal y T como secundaria: el objetivo del abuso es agotar la capacidad, y la inconsistencia de estados y fechas es una consecuencia de la saturación"
+          ],
+          "caso_de_uso": "UC-16",
+          "como_ocurre": [
+            "El operador, o quien tiene su sesión, filtra en delivery-admin-front todas las órdenes en curso de una zona o ventana de entrega, del orden de miles",
+            "Con una herramienta de automatización de acciones sobre el navegador, o con un cliente HTTP que reutiliza el token de sesión contra los endpoints de F29, envía de forma continua y en paralelo reprogramaciones, cambios de dirección o cambios manuales de estado, uno por orden y varias veces sobre las mismas órdenes",
+            "delivery-api escribe cada cambio en las órdenes de entrega (F13) y genera una notificación al proveedor por cada uno, de modo que la cola de salida hacia logistic crece más rápido de lo que el proveedor acepta",
+            "Los hilos y las conexiones de delivery-api quedan ocupados con escrituras y reintentos hacia el proveedor, y las consultas legítimas de otros operadores y del Marketplace sufren tiempos de espera o errores",
+            "El proveedor limita o rechaza las peticiones por exceso de tasa y las notificaciones legítimas, como nuevas órdenes y excepciones reales, se retrasan o se pierden",
+            "Las órdenes afectadas quedan con estados y fechas contradictorios entre delivery-api y el proveedor, y restaurarlas exige revertir y reconciliar orden por orden"
+          ],
+          "referencias": [
+            "OWASP API4:2023 Unrestricted Resource Consumption",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "delivery-admin-front",
+            "delivery-api",
+            "F29",
+            "F13"
+          ],
+          "precondiciones": [
+            "El panel o la API que consume permiten aplicar cambios de estado, reprogramación o dirección a muchas órdenes en poco tiempo, sin aprobación para operaciones masivas",
+            "delivery-api no limita el volumen ni la frecuencia de cambios por usuario ni por sesión en F29",
+            "Cada cambio se reenvía de forma síncrona o mediante una cola al proveedor logístico (LC-4), y esa vía no tiene control de tasa, agrupación ni deduplicación propios",
+            "La cuenta del operador puede escribir sobre cualquier zona o ventana de entrega y no hay alerta por volumen anómalo de excepciones"
+          ],
+          "patrones_usados": [
+            "FE-15"
+          ],
+          "vector_practico": "Acción: ráfagas automatizadas de reprogramaciones y cambios manuales de estado sobre un conjunto amplio de órdenes, con repetición sobre las mismas órdenes, para saturar la capacidad de delivery-api y la vía hacia el proveedor. Herramienta: la propia interfaz de delivery-admin-front, una herramienta de automatización del navegador o un cliente HTTP con el token de sesión del operador. Dato manipulado: estado, fecha de entrega y dirección de cada orden de entrega en F29, usando el volumen y la frecuencia como mecanismo para agotar los hilos y conexiones de delivery-api y la cola o el límite de peticiones hacia el proveedor logístico.",
+          "limites_confianza": [
+            "LC-3",
+            "LC-4"
+          ]
+        }
+      ]
+    }
+  ]
+}

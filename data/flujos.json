@@ -1,0 +1,412 @@
+{
+  "fuente": "docs/02-diagrama.md",
+  "flujos": [
+    {
+      "id": "F1",
+      "origen": "Cliente",
+      "destino": "Marketplace",
+      "bidireccional": false,
+      "datos": "Credenciales, perfil, dirección y contacto, productos, cupón, modalidad de entrega, datos de pago, solicitud de cancelación",
+      "casos_de_uso": [
+        "UC-01",
+        "UC-02",
+        "UC-03",
+        "UC-04",
+        "UC-05",
+        "UC-06",
+        "UC-07",
+        "UC-12",
+        "UC-13"
+      ],
+      "limite_confianza": "LC-1",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F2",
+      "origen": "Marketplace",
+      "destino": "Cliente",
+      "bidireccional": false,
+      "datos": "Totales, costo de envío, estado de la orden, código de retiro",
+      "casos_de_uso": [
+        "UC-02",
+        "UC-05",
+        "UC-07",
+        "UC-10",
+        "UC-12"
+      ],
+      "limite_confianza": "LC-1",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F3",
+      "origen": "Marketplace",
+      "destino": "clients-api",
+      "bidireccional": false,
+      "datos": "Alta, consulta y actualización de cliente y dirección",
+      "casos_de_uso": [
+        "UC-01",
+        "UC-03"
+      ],
+      "limite_confianza": "LC-2",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F4",
+      "origen": "Marketplace",
+      "destino": "cupons-api",
+      "bidireccional": false,
+      "datos": "Código de cupón, cliente, carrito",
+      "casos_de_uso": [
+        "UC-04"
+      ],
+      "limite_confianza": "LC-2",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F5",
+      "origen": "Marketplace",
+      "destino": "delivery-api",
+      "bidireccional": false,
+      "datos": "Dirección, modalidad, cotización, creación y cancelación de la orden de entrega",
+      "casos_de_uso": [
+        "UC-05",
+        "UC-06",
+        "UC-07",
+        "UC-13"
+      ],
+      "limite_confianza": "LC-2",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F6",
+      "origen": "Marketplace",
+      "destino": "Pasarela de pago",
+      "bidireccional": false,
+      "datos": "Token del medio de pago, monto, solicitud de reembolso",
+      "casos_de_uso": [
+        "UC-07",
+        "UC-13"
+      ],
+      "limite_confianza": "LC-6",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F7",
+      "origen": "Pasarela de pago",
+      "destino": "Marketplace",
+      "bidireccional": false,
+      "datos": "Confirmación de pago o de reembolso (notificación)",
+      "casos_de_uso": [
+        "UC-07",
+        "UC-13"
+      ],
+      "limite_confianza": "LC-6",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F8",
+      "origen": "Marketplace",
+      "destino": "Órdenes de compra",
+      "bidireccional": true,
+      "datos": "Productos, precios, cupón aplicado, total cobrado, referencia de pago",
+      "casos_de_uso": [
+        "UC-02",
+        "UC-04",
+        "UC-07",
+        "UC-13"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F9",
+      "origen": "delivery-api",
+      "destino": "clients-api",
+      "bidireccional": false,
+      "datos": "Atributos del perfil que determinan el costo de envío (RN-2)",
+      "casos_de_uso": [
+        "UC-05"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": [
+        "RN-2"
+      ]
+    },
+    {
+      "id": "F10",
+      "origen": "delivery-api",
+      "destino": "cupons-api",
+      "bidireccional": false,
+      "datos": "Cupones de envío del cliente",
+      "casos_de_uso": [
+        "UC-05"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F11",
+      "origen": "clients-api",
+      "destino": "Clientes y perfiles",
+      "bidireccional": true,
+      "datos": "Registro único del cliente (RN-1), perfil, direcciones",
+      "casos_de_uso": [
+        "UC-01",
+        "UC-03",
+        "UC-14"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": [
+        "RN-1"
+      ]
+    },
+    {
+      "id": "F12",
+      "origen": "cupons-api",
+      "destino": "Cupones y usos",
+      "bidireccional": true,
+      "datos": "Reglas del cupón, usos por cliente (RN-4)",
+      "casos_de_uso": [
+        "UC-04",
+        "UC-15"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": [
+        "RN-4"
+      ]
+    },
+    {
+      "id": "F13",
+      "origen": "delivery-api",
+      "destino": "Órdenes de entrega",
+      "bidireccional": true,
+      "datos": "Orden de entrega, estados, evidencia y ubicación de entrega",
+      "casos_de_uso": [
+        "UC-05",
+        "UC-06",
+        "UC-07",
+        "UC-08",
+        "UC-09",
+        "UC-10",
+        "UC-11",
+        "UC-12",
+        "UC-13",
+        "UC-16"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F14",
+      "origen": "delivery-api",
+      "destino": "Almacén",
+      "bidireccional": true,
+      "datos": "Orden a preparar; confirmación de empaquetado y despacho",
+      "casos_de_uso": [
+        "UC-08"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F15",
+      "origen": "Almacén",
+      "destino": "Red de logística",
+      "bidireccional": false,
+      "datos": "Paquete físico entregado al proveedor",
+      "casos_de_uso": [
+        "UC-08",
+        "UC-09"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F16",
+      "origen": "Red de logística",
+      "destino": "logistic",
+      "bidireccional": false,
+      "datos": "Escaneos en cada traspaso de custodia",
+      "casos_de_uso": [
+        "UC-09"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F17",
+      "origen": "Repartidor",
+      "destino": "App del repartidor",
+      "bidireccional": false,
+      "datos": "Registro de entrega, ubicación GPS, foto o firma",
+      "casos_de_uso": [
+        "UC-11"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F18",
+      "origen": "App del repartidor",
+      "destino": "logistic",
+      "bidireccional": false,
+      "datos": "Registro de entrega con ubicación y evidencia",
+      "casos_de_uso": [
+        "UC-11"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F19",
+      "origen": "logistic",
+      "destino": "delivery-api",
+      "bidireccional": false,
+      "datos": "Eventos de estado, registro de entrega y ubicación (RN-3)",
+      "casos_de_uso": [
+        "UC-09",
+        "UC-10",
+        "UC-11",
+        "UC-13"
+      ],
+      "limite_confianza": "LC-4",
+      "reglas_negocio": [
+        "RN-3"
+      ]
+    },
+    {
+      "id": "F20",
+      "origen": "Red de logística",
+      "destino": "Repartidor",
+      "bidireccional": false,
+      "datos": "Paquete físico asignado a ruta",
+      "casos_de_uso": [
+        "UC-09",
+        "UC-11"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F21",
+      "origen": "Repartidor",
+      "destino": "Cliente",
+      "bidireccional": false,
+      "datos": "Entrega física a domicilio",
+      "casos_de_uso": [
+        "UC-11"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F22",
+      "origen": "Punto de recolección",
+      "destino": "Cliente o autorizado",
+      "bidireccional": false,
+      "datos": "Entrega física contra código e identificación",
+      "casos_de_uso": [
+        "UC-12"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F23",
+      "origen": "delivery-api",
+      "destino": "Punto de recolección",
+      "bidireccional": true,
+      "datos": "Orden lista para retiro; confirmación del retiro",
+      "casos_de_uso": [
+        "UC-12"
+      ],
+      "limite_confianza": "LC-5",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F24",
+      "origen": "Operador de atención",
+      "destino": "clients-admin-front",
+      "bidireccional": false,
+      "datos": "Sesión SSO",
+      "casos_de_uso": [
+        "UC-14"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F25",
+      "origen": "Operador de marketing",
+      "destino": "cupons-frontend",
+      "bidireccional": false,
+      "datos": "Sesión SSO",
+      "casos_de_uso": [
+        "UC-15"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F26",
+      "origen": "Operador de entregas",
+      "destino": "delivery-admin-front",
+      "bidireccional": false,
+      "datos": "Sesión SSO",
+      "casos_de_uso": [
+        "UC-16"
+      ],
+      "limite_confianza": null,
+      "reglas_negocio": []
+    },
+    {
+      "id": "F27",
+      "origen": "clients-admin-front",
+      "destino": "clients-api",
+      "bidireccional": false,
+      "datos": "Edición de clientes y atributos del perfil",
+      "casos_de_uso": [
+        "UC-14"
+      ],
+      "limite_confianza": "LC-3",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F28",
+      "origen": "cupons-frontend",
+      "destino": "cupons-api",
+      "bidireccional": false,
+      "datos": "Creación y edición de cupones",
+      "casos_de_uso": [
+        "UC-15"
+      ],
+      "limite_confianza": "LC-3",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F29",
+      "origen": "delivery-admin-front",
+      "destino": "delivery-api",
+      "bidireccional": true,
+      "datos": "Consulta de órdenes, excepciones y cambios de estado manuales",
+      "casos_de_uso": [
+        "UC-16"
+      ],
+      "limite_confianza": "LC-3",
+      "reglas_negocio": []
+    },
+    {
+      "id": "F30",
+      "origen": "delivery-api",
+      "destino": "logistic",
+      "bidireccional": false,
+      "datos": "Cambios de orden y solicitudes de recolección inversa",
+      "casos_de_uso": [
+        "UC-13",
+        "UC-16"
+      ],
+      "limite_confianza": "LC-4",
+      "reglas_negocio": []
+    }
+  ]
+}

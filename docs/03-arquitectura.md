@@ -42,15 +42,15 @@ Las capas del diagrama corresponden a los componentes que pide el reto:
 | Fuente | Segmento | Formato | Origen | Confianza |
 |---|---|---|---|---|
 | Casos de uso (UC-01 a UC-16), reglas RN-1 a RN-4, límites LC-1 a LC-6 | negocio | JSON | `data/casos_de_uso.json` (Fase 1) | Propia |
-| Catálogo de flujos F1–F30 del DFD | negocio | JSON | `data/flujos.json`, generado del documento de la Fase 2 en la Fase 5 | Propia |
-| Supuestos S-01 en adelante | negocio | JSON | `data/supuestos.json`, generado del documento de la Fase 1 en la Fase 5 | Propia |
+| Catálogo de flujos F1–F30 del DFD | negocio | JSON | `data/flujos.json`, generado del documento de la Fase 2 con `scripts/generar_fuentes_negocio.py` | Propia |
+| Supuestos S-01 en adelante | negocio | JSON | `data/supuestos.json`, generado de los documentos de las Fases 1 y 3 con el mismo script | Propia |
 | STRIDE por tipo de elemento del DFD | amenazas | Markdown | `data/conocimiento/stride.md`, redactado por nosotros | Propia |
-| MITRE CAPEC, vista 1000 (*Mechanisms of Attack*) | amenazas | CSV | Descarga oficial de capec.mitre.org; se ingieren los patrones de abstracción *Meta* y *Standard* relacionados con lógica de negocio, autenticación, autorización y manipulación de datos | Pública |
+| MITRE CAPEC | amenazas | JSON (STIX 2.1) | Repositorio oficial `mitre/cti` en GitHub; se ingieren los patrones vigentes de abstracción *Meta* y *Standard* de los dominios *Software* e *Ingeniería social* (218) | Pública |
 | OWASP API Security Top 10 (2023) | amenazas | Markdown | Repositorio oficial de OWASP en GitHub | Pública |
 | OWASP Automated Threats to Web Applications (OAT) | amenazas | Markdown | Repositorio oficial de OWASP en GitHub; relevantes: creación de cuentas, cracking de tokens (cupones), relleno de credenciales, *cashing out*, denegación de inventario | Pública |
 | Patrones de fraude en ecommerce y logística | amenazas | Markdown | `data/conocimiento/fraude-ecommerce.md`, redactado por nosotros: fraude de reembolso, "no recibido", devolución de otro artículo, fraude interno con cupones, colusión con repartidores | Propia |
 
-Las fuentes públicas no se copian al repositorio: `data/fuentes.json` guarda la URL fija de cada una y su hash SHA-256. WF-1 descarga, compara el hash y rechaza la fuente si cambió, para que nadie pueda alterar la memoria cambiando el contenido de una fuente.
+Las fuentes públicas se descargan de GitHub **en un commit fijo** con `scripts/preparar_memoria.py`, que las normaliza en fragmentos (`data/memoria/*.json`). `data/fuentes.json` registra el repositorio, el commit, la licencia y el SHA-256 de cada archivo generado. Un commit fijo no puede cambiar, así que nadie puede alterar la memoria cambiando el contenido de una fuente; y si los archivos generados se modifican, su hash deja de coincidir con el registro. El detalle está en [`05-memoria.md`](05-memoria.md).
 
 ### 3.2 Comunicación con la memoria
 
@@ -59,7 +59,7 @@ Las fuentes llegan a la memoria por un solo camino de escritura para cada segmen
 | Segmento | Quién escribe | Cómo |
 |---|---|---|
 | `ltm_negocio` | WF-1 | Cada caso de uso, flujo, supuesto, regla y límite es **un fragmento**. Así se recupera el elemento completo y sus metadatos (IDs relacionados) se pueden filtrar |
-| `ltm_amenazas` | WF-1 | Cada patrón CAPEC, riesgo OWASP o patrón de fraude es un fragmento. Si pasa de unas 800 palabras se divide por sección y se repite el título en cada parte |
+| `ltm_amenazas` | WF-1 | Cada patrón CAPEC, riesgo OWASP o patrón de fraude es un fragmento. Si pasa de 4 000 caracteres se divide por sección y se repite el título en cada parte |
 | `ltm_abusos` | WF-3 solamente | Un fragmento por caso de abuso aprobado por una persona, junto con su patrón abstracto |
 | Corto plazo | Orquestador de WF-2 | Una fila por ejecución y una por paso de agente |
 
@@ -145,10 +145,10 @@ Para cada caso de uso, el recuperador arma una consulta con el nombre, la descri
 | Segmento | Resultados (k) | Filtro |
 |---|---|---|
 | `ltm_negocio` | 6 | Ninguno. Además, el caso de uso pedido se lee completo por su ID, sin búsqueda |
-| `ltm_amenazas` | 8 | Ninguno |
+| `ltm_amenazas` | 10 | **Cuotas por fuente** (Fase 6): 4 de patrones propios (fraude y STRIDE), 3 de CAPEC y 3 de OWASP. Sin cuotas, los fragmentos en español desplazan a CAPEC y OWASP (hallazgo de la Fase 5) |
 | `ltm_abusos` | 5 | Ninguno. Así se recuperan también casos de **otros** casos de uso con el mismo patrón |
 
-Los valores de k son iniciales y se ajustan en la Fase 7 según lo que devuelva cada búsqueda.
+Toda la recuperación es una sola llamada a la función `ltm_contexto` ([`sql/005_capa_agentica.sql`](../sql/005_capa_agentica.sql)). Los valores de k se pueden ajustar en esa función.
 
 ### 4.5 Por qué la memoria de largo plazo sirve para abstraer casos de abuso
 
@@ -277,7 +277,7 @@ Ejemplo con la entrada `["UC-11", "UC-12"]`:
 El reto pide prompts de máximo 100 palabras, utilizables en cualquier LLM público, que acepten uno o más casos de uso y generen al menos un caso de abuso por cada uno (B1 a B4). En esta arquitectura:
 
 - El **prompt del generador es el mismo** que se entrega como prompt público. En un LLM público, el usuario pega el prompt y después los casos de uso.
-- En el sistema de agentes, n8n agrega después del prompt **datos**, no instrucciones: el caso de uso y el contexto recuperado, entre delimitadores (`<caso_de_uso>`, `<contexto>`), y el formato JSON de salida que exige el parser estructurado de n8n.
+- En el sistema de agentes, n8n agrega después del prompt **datos**, no instrucciones: el caso de uso y el contexto recuperado, entre delimitadores (`<caso_de_uso>`, `<contexto>`), y el esquema JSON de salida en `output_config.format` (*structured outputs*), que restringe la respuesta de Claude a ese esquema.
 - Los prompts del revisor, de la mitigación y de la abstracción son internos del sistema y también se documentan en la Fase 6.
 
 ## 8. Seguridad del propio sistema de agentes
@@ -317,7 +317,7 @@ Unos **0.10 a 0.15 USD por caso de uso**, es decir, entre 2 y 3 USD para analiza
 | S-32 | Supabase se usa en un proyecto dedicado del plan gratuito, sin datos reales de clientes | Los límites del plan gratuito se verifican en la Fase 4 |
 | S-33 | n8n y Ollama corren en la VM Kali con Podman y solo son accesibles desde la propia VM | Sin exposición a internet; las evidencias se capturan localmente |
 | S-34 | Los modelos de Claude se eligen por ID fijo (`claude-sonnet-5-5`, `claude-haiku-5-5`) | Los resultados no cambian por una actualización silenciosa del modelo; si el nodo de n8n no lista el modelo, se escribe el ID |
-| S-35 | El formato JSON de salida lo agrega el parser estructurado de n8n y no forma parte del prompt de ≤100 palabras | El prompt público sigue funcionando en cualquier LLM, que responderá en texto con las mismas secciones |
+| S-35 | El formato JSON de salida lo impone la API de Claude con *structured outputs* (`output_config.format` con el esquema del agente), y no forma parte del prompt de ≤100 palabras | El prompt público sigue funcionando en cualquier LLM, que responderá en texto con las mismas secciones |
 
 ## 11. Trazabilidad con los requisitos
 

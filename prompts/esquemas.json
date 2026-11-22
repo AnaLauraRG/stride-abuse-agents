@@ -1,0 +1,359 @@
+{
+  "generador": {
+    "name": "registrar_casos_de_abuso",
+    "description": "Registra los casos de abuso STRIDE generados para el caso de uso.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "casos": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "AC-<caso de uso sin guion>-NN, por ejemplo AC-UC11-01"
+              },
+              "caso_de_uso": {
+                "type": "string",
+                "description": "ID del caso de uso vinculado, por ejemplo UC-11"
+              },
+              "titulo": {
+                "type": "string"
+              },
+              "stride": {
+                "type": "object",
+                "properties": {
+                  "principal": {
+                    "type": "string",
+                    "enum": [
+                      "S",
+                      "T",
+                      "R",
+                      "I",
+                      "D",
+                      "E"
+                    ]
+                  },
+                  "secundarias": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "S",
+                        "T",
+                        "R",
+                        "I",
+                        "D",
+                        "E"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "principal"
+                ],
+                "additionalProperties": false
+              },
+              "actor": {
+                "type": "object",
+                "properties": {
+                  "tipo": {
+                    "type": "string",
+                    "enum": [
+                      "externo",
+                      "interno",
+                      "interno_tercero"
+                    ]
+                  },
+                  "rol": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "tipo",
+                  "rol"
+                ],
+                "additionalProperties": false
+              },
+              "elementos_dfd": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Flujos o componentes del DFD, por ejemplo F17, delivery-api"
+              },
+              "limites_confianza": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "precondiciones": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "como_ocurre": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Pasos concretos, en orden"
+              },
+              "vector_practico": {
+                "type": "string"
+              },
+              "impacto": {
+                "type": "string"
+              },
+              "referencias": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "CAPEC, OWASP u otros, opcional"
+              },
+              "patrones_usados": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "IDs de casos validados (AV-xxxx) o patrones FE-xx en los que se basa"
+              },
+              "supuestos": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "caso_de_uso",
+              "titulo",
+              "stride",
+              "actor",
+              "precondiciones",
+              "como_ocurre",
+              "vector_practico",
+              "impacto"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "casos"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "revisor": {
+    "name": "registrar_revision",
+    "description": "Registra el veredicto de cada caso de abuso revisado.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "revisiones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "veredicto": {
+                "type": "string",
+                "enum": [
+                  "aprobado",
+                  "rechazado"
+                ]
+              },
+              "criterios": {
+                "type": "object",
+                "properties": {
+                  "R3": {
+                    "type": "boolean"
+                  },
+                  "R4": {
+                    "type": "boolean"
+                  },
+                  "R5": {
+                    "type": "boolean"
+                  },
+                  "R6": {
+                    "type": "boolean"
+                  },
+                  "R7": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "R3",
+                  "R4",
+                  "R5",
+                  "R6",
+                  "R7"
+                ],
+                "additionalProperties": false
+              },
+              "observaciones": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "veredicto",
+              "criterios",
+              "observaciones"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "revisiones"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "mitigacion": {
+    "name": "registrar_mitigaciones",
+    "description": "Registra el riesgo y los controles de cada caso de abuso aprobado.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "mitigaciones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "riesgo": {
+                "type": "object",
+                "properties": {
+                  "probabilidad": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      3
+                    ],
+                    "description": "1 baja, 2 media, 3 alta"
+                  },
+                  "impacto": {
+                    "type": "integer",
+                    "enum": [
+                      1,
+                      2,
+                      3
+                    ],
+                    "description": "1 bajo, 2 medio, 3 alto"
+                  },
+                  "justificacion": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "probabilidad",
+                  "impacto",
+                  "justificacion"
+                ],
+                "additionalProperties": false
+              },
+              "controles": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "tipo": {
+                      "type": "string",
+                      "enum": [
+                        "preventivo",
+                        "detectivo",
+                        "correctivo"
+                      ]
+                    },
+                    "control": {
+                      "type": "string"
+                    },
+                    "responsable": {
+                      "type": "string",
+                      "enum": [
+                        "ecommerce",
+                        "proveedor_logistico",
+                        "pasarela_pago"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "tipo",
+                    "control",
+                    "responsable"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Al menos 2 elementos."
+              }
+            },
+            "required": [
+              "id",
+              "riesgo",
+              "controles"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "mitigaciones"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "abstraccion": {
+    "name": "registrar_patrones",
+    "description": "Registra el patrón abstracto de cada caso de abuso aprobado por el analista.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "patrones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "patron": {
+                "type": "string"
+              },
+              "palabras_clave": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "patron",
+              "palabras_clave"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "patrones"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

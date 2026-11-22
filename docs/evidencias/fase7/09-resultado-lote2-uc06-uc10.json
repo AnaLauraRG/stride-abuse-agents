@@ -1,0 +1,2604 @@
+{
+  "modelo": "claude-sonnet-5-5",
+  "run_id": "985f00fa-c9d9-4ba4-80e1-ff358149c379",
+  "resumen": {
+    "tokens": {
+      "salida": 82708,
+      "entrada": 250064
+    },
+    "descartados": 0,
+    "casos_de_uso": 5,
+    "casos_de_abuso_aprobados": 27,
+    "casos_de_uso_sin_caso_de_abuso": []
+  },
+  "generado": "2026-11-22T01:58:15.744Z",
+  "casos_de_uso": [
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-06",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC06-01",
+          "actor": {
+            "rol": "Cliente que controla su navegador y las peticiones de selección de modalidad",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "Alterar un campo de costo con un proxy es trivial si el Marketplace reenvía el valor del cliente (S-10), y la pérdida por envío subcobrado es moderada pero repetible en muchas órdenes de producto voluminoso."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Alteración del costo de la modalidad de entrega elegida en la petición de selección",
+          "impacto": "Pérdida económica por envíos cobrados por debajo de su tarifa real, que la empresa o el proveedor logístico absorben; incumplimiento de RN-2 y descuadre entre el total cobrado y el costo logístico; el abuso es escalable a muchas órdenes de producto voluminoso.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "El Marketplace ignora cualquier costo o ventana recibidos del cliente: la petición de selección solo lleva el identificador de la opción, y el costo se toma de la cotización que delivery-api guardó en servidor para esa orden (RN-2).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Antes de iniciar el pago, el Marketplace recalcula el costo de la opción elegida contra delivery-api y fija el monto total en servidor; la pasarela solo autoriza el monto de la sesión de pago creada por el servidor del ecommerce y rechaza importes que no coincidan.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar como evento de seguridad toda petición de selección cuyo campo de costo recibido difiera del calculado por delivery-api, con alerta por cuenta o IP reincidente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliación diaria entre el costo de envío cobrado en cada orden y la tarifa que delivery-api y el proveedor logístico calcularon para esa orden, con alerta ante diferencias.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener el despacho de las órdenes con diferencia detectada, cobrar la diferencia al cliente o cancelar la orden, y suspender cuentas que manipulen el costo de forma reiterada.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-10: el costo de cada opción lo calcula delivery-api, pero el Marketplace puede reenviarlo desde el cliente"
+          ],
+          "caso_de_uso": "UC-06",
+          "como_ocurre": [
+            "El cliente abre el paso de elección de modalidad y delivery-api devuelve las opciones con costo y fecha estimada (envío a domicilio caro, recolección gratis o barata)",
+            "Con un proxy de interceptación en su navegador, el cliente localiza la petición de selección y los campos de modalidad, costo y ventana",
+            "Selecciona entrega a domicilio, que es la que necesita, pero reemplaza el campo de costo por el valor de la opción de recolección, o por cero",
+            "El Marketplace acepta el costo recibido, lo asocia a la modalidad de entrega a domicilio y lo suma al total mostrado",
+            "El cliente paga el total reducido; la orden de entrega se crea en delivery-api con modalidad domicilio y costo manipulado, y la logística la despacha con normalidad"
+          ],
+          "referencias": [
+            "OWASP API3:2023 Broken Object Property Level Authorization",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "F5",
+            "Costo de cada opción",
+            "Modalidad de entrega"
+          ],
+          "precondiciones": [
+            "El cliente tiene un carrito con un producto voluminoso y llega al paso de elección de modalidad",
+            "La petición de selección enviada al Marketplace incluye, además del identificador de modalidad, el costo y la ventana que mostró la interfaz",
+            "El Marketplace no vuelve a consultar a delivery-api el costo de la opción elegida antes de registrarla ni antes de cobrar (supuesto)"
+          ],
+          "patrones_usados": [
+            "AV-0032",
+            "AV-0020"
+          ],
+          "vector_practico": "Con un proxy de interceptación (por ejemplo Burp Suite), el cliente modifica en la petición Marketplace → delivery-api el campo de costo de la opción elegida, dejando intacto el identificador de la modalidad de entrega a domicilio, para pagar el costo de otra opción o cero.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC06-02",
+          "actor": {
+            "rol": "Cliente que conserva una cotización favorable y cambia la modalidad en pasos posteriores",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "Cambiar la modalidad en la petición de confirmación es fácil con un proxy cuando el costo no se recalcula (S-10), y el impacto es una pérdida directa por envíos a domicilio cobrados como recolección."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Cambio de modalidad o tienda después de calculado el costo para conservar el beneficio de la opción más barata",
+          "impacto": "Envío a domicilio de un producto voluminoso cobrado como recolección gratuita o barata; pérdida directa por costo logístico no cobrado; órdenes inconsistentes entre modalidad, costo y ventana que generan reprocesos operativos.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Atar la cotización a la orden con un identificador de cotización firmado en servidor que incluya modalidad, tienda, costo y ventana, con vigencia corta. La confirmación solo acepta ese identificador y no un campo de modalidad o tienda suelto.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Invalidar la cotización y recalcular el costo en delivery-api cada vez que cambie la modalidad o la tienda (S-18), y volver a recalcular al confirmar, justo antes del pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Al crear la orden de entrega, delivery-api valida la coherencia entre modalidad, costo y ventana, y rechaza la orden si la tarifa es inferior a la que corresponde al peso, volumen y distancia.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar los cambios de modalidad o tienda ocurridos entre la cotización y la confirmación, en especial recolección a domicilio, y los patrones repetidos por cuenta.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "El proveedor logístico concilia la tarifa de las órdenes a domicilio despachadas contra su tarifario y reporta las órdenes con tarifa inferior a la esperada.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Detener el despacho de órdenes inconsistentes antes de la recolección por el proveedor, y cobrar la diferencia, reprocesar la orden con la modalidad correcta o cancelarla y reembolsar.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-10: el costo se calcula en la cotización y no se vuelve a validar al confirmar",
+            "S-18: la tienda de recolección se asigna a la orden sin validar de nuevo disponibilidad ni cobertura"
+          ],
+          "caso_de_uso": "UC-06",
+          "como_ocurre": [
+            "El cliente selecciona recolección en una tienda cercana a su perfil y el sistema registra un costo bajo o nulo",
+            "Con un proxy de interceptación, el cliente identifica la petición que asigna modalidad y tienda a la orden, y también la petición final de confirmación del pedido",
+            "Antes de pagar, cambia en la petición de confirmación el identificador de modalidad a entrega a domicilio, manteniendo el costo ya cotizado para recolección",
+            "El Marketplace registra la orden con modalidad domicilio y el costo de recolección, sin recalcular en delivery-api",
+            "delivery-api crea la orden de entrega a domicilio con una tarifa que no corresponde al peso, volumen, distancia y perfil"
+          ],
+          "referencias": [
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "Modalidad de entrega",
+            "Tienda de recolección",
+            "Costo de cada opción",
+            "Orden de entrega"
+          ],
+          "precondiciones": [
+            "La modalidad y la tienda de recolección se guardan en la orden mediante peticiones separadas del cálculo del costo",
+            "El costo no se recalcula cuando se modifica la modalidad o la tienda después de la cotización (supuesto)"
+          ],
+          "patrones_usados": [
+            "AV-0032"
+          ],
+          "vector_practico": "Con un proxy de interceptación, el cliente modifica el campo de modalidad (o el identificador de tienda) en la petición de confirmación de la orden, tras haber obtenido la cotización de la otra opción, de modo que la orden se registra con una modalidad distinta de la que originó el costo cobrado.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC06-04",
+          "actor": {
+            "rol": "Atacante externo o cliente que automatiza la selección de modalidad con varias cuentas",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Exige automatización y varias cuentas, pero es sencillo de ejecutar si la reserva se hace sin pago y sin límites, y bloquea ventas y capacidad logística de forma visible."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": []
+          },
+          "titulo": "Reserva masiva de ventanas de entrega y tiendas por consulta y selección repetida sin completar la compra",
+          "impacto": "Indisponibilidad de ventanas de entrega y recolección para clientes legítimos, pérdida de ventas de producto voluminoso, mayor consumo de delivery-api y del proveedor logístico, y posible sabotaje dirigido por un competidor.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "La reserva de ventana o de capacidad de tienda es temporal, con vencimiento corto ligado al checkout (por ejemplo 10 a 15 minutos) y liberación automática si no hay pago; solo se confirma tras el pago aprobado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar la frecuencia de consultas de opciones y de selecciones por cuenta, dispositivo e IP, con tope de reservas activas por cuenta y desafío anti-automatización (CAPTCHA) al superar umbrales o en cuentas nuevas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Almacenar en caché las cotizaciones de delivery-api por zona y producto durante un tiempo corto, y aplicar cuotas por cliente de API en las consultas al proveedor logístico, para que las repeticiones no generen cálculo ni consultas ilimitadas.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear la relación entre reservas y pagos completados por cuenta, IP y dispositivo, y la ocupación anómala de ventanas y tiendas, con alertas ante picos de reservas sin pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Liberar en bloque las reservas de las cuentas o IP marcadas, bloquear o limitar esas cuentas y ajustar de inmediato los límites y el tiempo de vencimiento.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-10: la ventana de entrega o la capacidad de tienda se reserva al seleccionar, antes del pago"
+          ],
+          "caso_de_uso": "UC-06",
+          "como_ocurre": [
+            "El atacante crea varias cuentas de cliente y agrega un producto voluminoso al carrito en cada una",
+            "Con un script de peticiones repetidas hacia el Marketplace, consulta las opciones de delivery-api y selecciona las ventanas más próximas y las tiendas con mayor demanda",
+            "Repite la selección en múltiples órdenes y nunca llega al pago, de modo que las reservas siguen retenidas",
+            "Las ventanas y la capacidad de recolección de las tiendas objetivo se agotan, y otros clientes solo ven opciones tardías o ninguna",
+            "delivery-api acumula carga de cálculo de costos y consultas al proveedor logístico"
+          ],
+          "referencias": [
+            "OWASP API4:2023 Unrestricted Resource Consumption",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "Ventana de entrega",
+            "Tienda de recolección",
+            "F5"
+          ],
+          "precondiciones": [
+            "La selección de modalidad y tienda reserva capacidad de entrega o recolección sin pago previo (supuesto)",
+            "No hay límites de frecuencia ni expiración corta de la reserva por cuenta, dispositivo o IP",
+            "delivery-api calcula costo y ventana en cada consulta contra su proveedor logístico"
+          ],
+          "patrones_usados": [],
+          "vector_practico": "Con un script de peticiones automatizadas, el atacante invoca en volumen la selección de modalidad y tienda desde varias cuentas, con el identificador de la ventana de entrega como dato que bloquea la capacidad, sin completar el pago.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC06-03",
+          "actor": {
+            "rol": "Cliente que accede a una tienda de recolección no autorizada para su orden, sustituyendo el identificador de tienda en la petición de asignación",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Sustituir el identificador de tienda es fácil si delivery-api no lo contrasta con las tiendas ofrecidas (S-18), pero depende del supuesto SN-01 aún sin confirmar y el beneficio es una fecha anticipada con efecto operativo moderado."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Asignación de una tienda de recolección fuera de las ofrecidas para obtener una ventana de entrega más corta (acceso fuera de lo autorizado)",
+          "impacto": "El cliente accede a una tienda y a una fecha de recolección que no le corresponden por su zona u orden, y la asignación salta la regla de qué tiendas se ofrecen a cada cliente. La tienda fuera de zona recibe órdenes que no le corresponden y puede incumplir la ventana prometida, lo que genera reclamos, y la información de ventanas por tienda queda disponible para quien pruebe valores.",
+          "revision": {
+            "intento": 3,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "delivery-api guarda el conjunto de tiendas ofrecidas a cada orden y, al asignar, valida que el identificador recibido pertenezca a ese conjunto (autorización a nivel de objeto y de propiedad); si no pertenece, rechaza la asignación.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "La ventana de entrega se calcula en servidor a partir de la tienda ya validada, sin aceptar ventana ni identificadores secuenciales del cliente. Los identificadores de tienda no deben ser predecibles.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar sobre intentos de asignar tiendas no ofrecidas o fuera de zona y sobre cuentas que prueban identificadores de tienda cercanos, correlacionando por cuenta e IP.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "El punto de recolección reporta las órdenes de recolección asignadas que no corresponden a su zona o cobertura, para detectar asignaciones indebidas que no se vieron en línea.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reasignar la orden a una tienda válida para el cliente, recalcular la ventana, notificar el cambio y ofrecer cancelación con reembolso. Limitar la cuenta si el intento fue deliberado.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-18: la tienda se asigna a la orden con el identificador que envía el cliente",
+            "SN-01 (nuevo): delivery-api calcula una ventana de entrega distinta por tienda y limita las tiendas ofrecidas según zona u orden; este dato no está declarado en UC-06 y debe confirmarse",
+            "Se atiende un solo objetivo, la ventana más corta; la selección de tiendas cerradas, sin stock o sin capacidad queda fuera de este caso porque esos datos no están en UC-06"
+          ],
+          "caso_de_uso": "UC-06",
+          "como_ocurre": [
+            "El cliente agrega un producto voluminoso, elige recolección y recibe de delivery-api la lista de tiendas ofrecidas, cada una con su ventana de entrega",
+            "El cliente compara las ventanas y ve que todas las tiendas ofrecidas tienen una fecha estimada más lejana de la que necesita",
+            "Con un proxy de interceptación captura la petición que asigna la tienda a la orden y sustituye el identificador de tienda por el de una tienda que no estaba en la lista y que conoce por otra cuenta, otra zona o por prueba de valores cercanos",
+            "delivery-api acepta el identificador porque no lo contrasta con el conjunto de tiendas autorizado para esa orden, asigna esa tienda y le atribuye la ventana de entrega propia de esa tienda, más corta que las ofrecidas",
+            "El cliente completa el pago con la tienda sustituida y recibe una fecha de recolección anticipada a la que la política le asignaría; la orden de entrega queda registrada en delivery-api con esa tienda y esa ventana"
+          ],
+          "referencias": [
+            "OWASP API3:2023 Broken Object Property Level Authorization",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "Tienda de recolección",
+            "Ventana de entrega",
+            "Orden de entrega"
+          ],
+          "precondiciones": [
+            "El cliente elige recolección y selecciona la tienda desde la lista de opciones que delivery-api devuelve con su ventana de entrega",
+            "delivery-api devuelve ventanas de entrega distintas por tienda y solo ofrece al cliente las tiendas que corresponden a su zona o a su orden (supuesto nuevo SN-01, no documentado en UC-06)",
+            "delivery-api asigna a la orden el identificador de tienda recibido sin verificar que pertenezca al conjunto de tiendas ofrecidas para esa orden (supuesto, relacionado con S-18)",
+            "Existe al menos una tienda fuera de la lista ofrecida al cliente cuya ventana de entrega es más corta que la de las tiendas ofrecidas"
+          ],
+          "patrones_usados": [
+            "AV-0020"
+          ],
+          "vector_practico": "Con un proxy de interceptación en su navegador, el cliente reemplaza en la petición de asignación de tienda el campo del identificador de tienda de recolección por el de una tienda no incluida en la respuesta de opciones, para acceder a una asignación que no le fue autorizada y quedarse con la ventana de entrega más corta de esa tienda; el dato manipulado es el identificador de tienda.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-07",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC07-01",
+          "actor": {
+            "rol": "Atacante o cliente que se hace pasar por la pasarela de pago",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El punto de recepción es público y se asume que no se verifica la firma, por lo que forjar la notificación es sencillo y despacha mercancía sin cobro."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Confirmación de pago falsificada enviada al Marketplace para registrar una orden como pagada sin pagar",
+          "impacto": "Pérdida directa del valor del producto y del envío, porque se prepara y despacha mercancía no pagada. Además se consumen cupones y se genera un registro de orden con estado de pago falso, lo que contamina conciliaciones y reportes financieros.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Verificar en el Marketplace la firma HMAC de cada notificación con el secreto compartido de la pasarela, validar la marca de tiempo y rechazar notificaciones repetidas o fuera de ventana, sin aceptar nunca el estado de pago llegado por la redirección del navegador.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Firmar todas las notificaciones de pago, permitir la rotación del secreto y publicar un endpoint de consulta del estado de la transacción por referencia.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Antes de registrar la orden como pagada, consultar de servidor a servidor a la pasarela el estado, el monto y la referencia de la transacción, y solo entonces crear la orden de entrega en delivery-api.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar sobre notificaciones con firma inválida o desde orígenes no esperados, y conciliar a diario las órdenes pagadas contra las liquidaciones de la pasarela para encontrar órdenes sin cobro.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante una orden pagada sin cobro confirmado, detener la preparación y cancelar la orden de entrega en delivery-api, revertir el cupón consumido y bloquear la cuenta implicada.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se conoce el mecanismo exacto de autenticación de la notificación de la pasarela; se asume que no está documentado ni verificado en el Marketplace"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El atacante arma un carrito de alto valor y avanza hasta el paso de pago, con lo que se genera una orden pendiente con su referencia",
+            "Observa con un proxy de interceptación el formato de una confirmación legítima, por ejemplo en una compra barata propia o en la redirección de retorno",
+            "Construye una notificación con el mismo formato, la referencia de la orden pendiente y el estado de pago aprobado",
+            "Envía la notificación al punto de recepción del Marketplace con un cliente HTTP, sin pasar por la pasarela",
+            "El Marketplace la acepta como auténtica, registra la orden como pagada y consume el cupón",
+            "Se crea la orden de entrega en delivery-api y se inicia la preparación del pedido sin que exista ningún cobro"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CAPEC-277",
+            "OWASP Top 10 A04:2021 Insecure Design"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "Pasarela de pago",
+            "Confirmación de pago",
+            "delivery-api",
+            "Almacén de órdenes del Marketplace"
+          ],
+          "precondiciones": [
+            "El Marketplace registra la orden al recibir una confirmación de pago por redirección o notificación asíncrona (S-05)",
+            "El punto de recepción de la confirmación es accesible desde internet",
+            "El Marketplace no verifica la firma ni el origen de la notificación, o la firma es débil o predecible",
+            "El atacante puede obtener la referencia de su propia orden en curso"
+          ],
+          "patrones_usados": [
+            "S-05",
+            "S-26",
+            "CAPEC-277"
+          ],
+          "vector_practico": "Con un cliente HTTP y un proxy de interceptación, el atacante fabrica y envía directamente al Marketplace una notificación de pago aprobado que imita el formato de la pasarela. Manipula los campos de estado de pago y referencia de orden, y aprovecha la ausencia de verificación de firma y de consulta de confirmación a la pasarela.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC07-02",
+          "actor": {
+            "rol": "Cliente con un proxy de interceptación en su navegador",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Alterar el monto con un proxy es una técnica básica, depende de que el monto viaje por el cliente, y el fraude es repetible y escalable."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "S"
+            ]
+          },
+          "titulo": "Pago de un monto menor al total de la orden aprovechando que el Marketplace no compara el monto confirmado",
+          "impacto": "Venta con cobro parcial: el comercio entrega el producto completo y recibe solo una fracción del precio. El fraude es repetible y escala en volumen, y genera discrepancias entre el total de la orden y el cobro real que dificultan la detección.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Crear la sesión de pago desde el servidor con el total calculado y almacenado de la orden, sin aceptar nunca el monto desde parámetros del navegador.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Ofrecer sesiones de pago creadas por API de servidor con monto, moneda y referencia inmutables, y rechazar parámetros de monto alterados en la redirección.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Al recibir la confirmación, comparar monto y moneda cobrados con el total almacenado de la orden y registrar como pagada solo si coinciden exactamente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar y reportar toda discrepancia entre el monto cobrado y el total de la orden, y vigilar clientes con varias órdenes de cobro parcial.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Dejar la orden en estado de pago parcial, retener la entrega y reclamar la diferencia al cliente o reembolsar y cancelar la orden.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "El monto puede viajar o alterarse en el cliente según la integración con la pasarela; si el monto se fija solo en servidor, este caso se limita a la falta de validación en la confirmación"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El cliente arma un carrito con un producto caro y llega al paso de pago, donde el Marketplace muestra el total final",
+            "Con el proxy intercepta la petición de redirección a la pasarela e identifica el campo del monto a cobrar",
+            "Reemplaza ese monto por un valor muy inferior, manteniendo la referencia de la orden original",
+            "Paga en la pasarela el monto reducido, que la pasarela confirma como aprobado",
+            "La pasarela confirma al Marketplace con la misma referencia de orden y el monto cobrado",
+            "El Marketplace registra la orden por el total original como pagada, sin validar el monto, y crea la orden de entrega"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "OWASP Top 10 A04:2021 Insecure Design"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "Pasarela de pago",
+            "Total de la orden",
+            "Confirmación de pago",
+            "Almacén de órdenes del Marketplace"
+          ],
+          "precondiciones": [
+            "El monto a cobrar viaja por el navegador del cliente en la redirección hacia la pasarela, o puede alterarse en el flujo de inicio de pago",
+            "El Marketplace considera pagada la orden con solo recibir un estado aprobado y no contrasta el monto confirmado con el total almacenado de la orden",
+            "La pasarela cobra el monto que recibe, aunque no coincida con el de la orden"
+          ],
+          "patrones_usados": [
+            "AV-0032",
+            "AV-0017",
+            "S-05",
+            "S-26"
+          ],
+          "vector_practico": "Con un proxy de interceptación, el cliente modifica el campo de monto en la petición que inicia el pago en la pasarela y conserva intacta la referencia de la orden. Aprovecha que la confirmación se acepta por el estado aprobado, sin comparar el monto cobrado con el total de la orden registrada.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC07-03",
+          "actor": {
+            "rol": "Cliente con dos órdenes abiertas y un proxy de interceptación",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Reutilizar una confirmación legítima es fácil si no se liga a orden y monto, y permite despachar un producto caro pagando uno barato."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "S",
+              "R"
+            ]
+          },
+          "titulo": "Reutilización de una confirmación de pago legítima de una orden barata para marcar como pagada una orden de alto valor",
+          "impacto": "Entrega de mercancía de alto valor con el pago de una orden menor. Una misma referencia de pago respalda dos órdenes, lo que descuadra la conciliación con la pasarela y dificulta probar el fraude después.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Asociar cada referencia de pago a una única orden mediante una restricción de unicidad en el almacén de órdenes, con procesamiento idempotente de las confirmaciones.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Incluir la referencia de la orden y el monto dentro de la transacción y de la notificación firmada, de modo que la confirmación sea verificable contra una orden concreta.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Validar que la referencia de pago confirmada corresponde a la orden, al monto y al cliente de la sesión antes de cambiar el estado a pagada.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Generar un reporte y una alerta cuando una referencia de pago aparezca ligada a más de una orden o se reciba más de una confirmación para la misma referencia.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir la orden de alto valor sin pago propio, detener su preparación en delivery-api y recuperar el paquete si ya fue despachado.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el retorno por redirección es una de las vías con las que el Marketplace registra la orden, según S-05"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El cliente crea dos órdenes pendientes: una de bajo valor y otra de un producto de alto valor",
+            "Paga legítimamente la orden barata y, con un proxy, captura la redirección de retorno con la confirmación de esa transacción",
+            "Intercepta el retorno de la orden cara y sustituye el identificador de la orden o la referencia de pago por los de la transacción ya pagada",
+            "El Marketplace valida solo que la referencia de pago existe y está aprobada, sin cruzarla con la orden ni con el monto",
+            "Registra la orden cara como pagada y consume el cupón",
+            "Se crea la orden de entrega y se despacha el producto caro",
+            "La referencia de pago original queda asociada a dos órdenes"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CAPEC-277"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "Pasarela de pago",
+            "Confirmación de pago",
+            "Almacén de órdenes del Marketplace",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "La confirmación de pago, en redirección o notificación, no está ligada de forma verificable a una única orden, un monto y un uso",
+            "El Marketplace no controla idempotencia ni que cada referencia de pago se use una sola vez",
+            "El cliente puede tener varias órdenes pendientes al mismo tiempo"
+          ],
+          "patrones_usados": [
+            "AV-0032",
+            "S-05",
+            "S-26"
+          ],
+          "vector_practico": "Con un proxy de interceptación, el cliente captura la confirmación de una compra barata pagada y la reutiliza o ajusta en el retorno de otra orden de mayor valor. Manipula el identificador de orden y la referencia de pago, aprovechando que no se valida su correspondencia ni que la referencia sea de un solo uso.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC07-04",
+          "actor": {
+            "rol": "Cliente que opera dos sesiones simultáneas del Marketplace",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Requiere dos sesiones y una condición de carrera, y se asume que el carrito no se bloquea, aunque cada abuso entrega mercancía de más valor que lo pagado."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Cambio del contenido del carrito entre el total mostrado y el registro de la orden",
+          "impacto": "Entrega de productos de mayor valor que lo pagado, con orden de compra y orden de entrega incoherentes con el cobro. La discrepancia entre el total cobrado y la orden de entrega (S-26) hace difícil el reclamo posterior.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Al iniciar el pago, congelar el carrito en una instantánea inmutable con su hash y total, bloquear su edición y crear la orden solo desde esa instantánea.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Al recibir la confirmación, verificar que el hash y el total de la instantánea coinciden con lo cobrado y usar esa instantánea, no el carrito actual, para crear la orden de entrega.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar sobre modificaciones de carrito o sesiones simultáneas de la misma cuenta mientras hay un pago pendiente, y comparar el total cobrado contra los ítems de la orden y de la orden de entrega.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reconstruir la orden y la orden de entrega desde la instantánea pagada, o retener el despacho y cobrar la diferencia antes de enviar.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se sabe si el Marketplace bloquea el carrito al iniciar el pago; se asume que no lo hace"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El cliente agrega un producto barato al carrito y llega al paso de pago, donde se muestra el total bajo",
+            "Abre una segunda sesión en el mismo navegador o en otro dispositivo con la misma cuenta",
+            "Inicia el pago en la primera sesión y paga el total bajo en la pasarela",
+            "Mientras la pasarela procesa el pago, en la segunda sesión cambia el carrito por un producto caro, o aumenta la cantidad",
+            "Llega la confirmación de pago, que cubre solo el total bajo",
+            "El Marketplace arma la orden con el contenido actual del carrito, la registra como pagada y crea la orden de entrega con el producto caro"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CWE-367"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "Pasarela de pago",
+            "Total de la orden",
+            "Almacén de órdenes del Marketplace",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "El carrito sigue siendo editable mientras el cliente está en la pasarela de pago",
+            "El total cobrado no queda bloqueado ni firmado al iniciar el pago",
+            "Al recibir la confirmación, el Marketplace registra la orden con el estado actual del carrito y no con el que se mostró y cobró"
+          ],
+          "patrones_usados": [
+            "AV-0017",
+            "S-26",
+            "S-05"
+          ],
+          "vector_practico": "Con dos sesiones abiertas de su cuenta, el cliente edita el contenido y las cantidades del carrito en una de ellas durante el pago de la otra. Aprovecha que el Marketplace no congela el carrito ni compara el total cobrado con el valor de la orden que registra.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC07-05",
+          "actor": {
+            "rol": "Cliente que usa un medio de pago propio o robado",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "El contracargo con tarjeta propia o robada es un fraude frecuente y, sin evidencia ligada, se pierde el producto y se arriesgan penalizaciones de la pasarela."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "S"
+            ]
+          },
+          "titulo": "Cliente que desconoce el pago ante la pasarela tras recibir el producto y el comercio no puede probar la vinculación orden-pago-entrega",
+          "impacto": "Pérdida del valor del producto más las comisiones del contracargo. Aumenta el índice de disputas del comercio con la pasarela, lo que puede traer penalizaciones o la suspensión del servicio de cobro.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar autenticación reforzada del titular (3-D Secure) y reglas de riesgo en pagos de alto valor, cuentas nuevas o direcciones de envío inusuales.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Guardar en un registro inmutable de solo anexado el vínculo entre orden, referencia de pago, medio de pago tokenizado, datos del dispositivo y orden de entrega.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en la entrega el código de confirmación del cliente, con foto con marca de tiempo y ubicación, y entregar esta evidencia al ecommerce.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Vigilar la tasa de disputas por cliente, medio de pago y dirección, y alertar sobre señales como cuentas nuevas con productos de alto valor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Presentar la representación de la disputa con el registro vinculado y la evidencia de entrega, y bloquear el cliente y el medio de pago implicados.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que la pasarela soporta contracargos y que no se aplica autenticación reforzada del titular en todos los pagos"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El cliente compra un producto de alto valor con una tarjeta propia o con una tarjeta ajena obtenida de forma ilícita",
+            "La pasarela confirma el pago y el Marketplace registra la orden y la entrega",
+            "Una vez recibido el producto, el cliente o el titular real de la tarjeta abre una disputa ante el banco, y afirma que no autorizó el cargo o que no recibió la compra",
+            "El comercio intenta reunir la evidencia, pero no puede ligar la confirmación de pago con la orden y la entrega con una prueba confiable",
+            "La disputa se resuelve a favor del titular y el comercio asume el contracargo",
+            "El cliente conserva el producto"
+          ],
+          "referencias": [
+            "CAPEC-151"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "Pasarela de pago",
+            "Medio de pago tokenizado",
+            "Confirmación de pago",
+            "Almacén de órdenes del Marketplace",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "El Marketplace no conserva de forma inmutable la relación entre la orden, la confirmación de pago, el medio de pago tokenizado y la orden de entrega",
+            "La evidencia de entrega es débil, por ejemplo sin código de confirmación del cliente",
+            "La pasarela permite contracargos o disputas del titular del medio de pago"
+          ],
+          "patrones_usados": [
+            "AV-0022",
+            "FE-01",
+            "S-26"
+          ],
+          "vector_practico": "Con una tarjeta propia o una tarjeta ajena de origen ilícito, el cliente completa el pago en la pasarela y luego presenta una disputa o contracargo ante el banco emisor. Se apoya en que el comercio no tiene la referencia de pago, la orden y la evidencia de entrega ligadas en un registro inmutable.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-6"
+          ]
+        },
+        {
+          "id": "AC-UC07-06",
+          "actor": {
+            "rol": "Cliente autenticado con una orden propia",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Cambiar el identificador es trivial y automatizable si la autorización por objeto falta, y expone datos personales de muchos clientes con sanciones por protección de datos."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": []
+          },
+          "titulo": "Consulta de órdenes ajenas modificando el identificador de la orden en la confirmación o el seguimiento posterior al pago",
+          "impacto": "Fuga de datos personales de clientes (dirección, teléfono, historial de compras) que sirve para suplantación, fraude de entrega y acoso, y que expone al comercio a sanciones por protección de datos y a daño reputacional.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Verificar en el servidor, en cada consulta de orden o seguimiento, que la orden pertenece al cliente autenticado, y usar identificadores aleatorios no secuenciales.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar las propiedades devueltas por la consulta de orden y de entrega a las necesarias para el cliente, sin exponer datos de terceros, y exigir en delivery-api una identidad de servicio con alcance por orden.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Aplicar límites de tasa y alertar sobre enumeración de identificadores, es decir, muchas consultas de objetos distintos o respuestas 403 y 404 de una misma sesión.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar las sesiones y bloquear la cuenta que enumeró, corregir la autorización y notificar a los clientes afectados y a la autoridad según la normativa de protección de datos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que existe una pantalla o endpoint de consulta de la orden posterior al pago, aunque no esté descrito en el flujo de UC-07"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El cliente paga una orden y abre la confirmación o el seguimiento de su compra",
+            "Con un proxy de interceptación identifica la petición que consulta la orden y el identificador de la orden o de la entrega",
+            "Reemplaza el identificador por valores cercanos al suyo, de manera iterativa",
+            "El servicio responde con el detalle de órdenes de otros clientes: productos, total, descuento, dirección, nombre y teléfono de contacto y modalidad de entrega",
+            "El atacante recopila esos datos de forma masiva con una herramienta de repetición de peticiones"
+          ],
+          "referencias": [
+            "OWASP API1:2023 Broken Object Level Authorization",
+            "OWASP API3:2023 Broken Object Property Level Authorization"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "Orden de entrega",
+            "Almacén de órdenes del Marketplace"
+          ],
+          "precondiciones": [
+            "El cliente tiene al menos una orden pagada y accede a la pantalla de confirmación o seguimiento",
+            "El identificador de la orden o de la orden de entrega es secuencial o predecible",
+            "El Marketplace o delivery-api no verifican que la orden consultada pertenezca al cliente autenticado"
+          ],
+          "patrones_usados": [
+            "API1:2023",
+            "API3:2023",
+            "S-26"
+          ],
+          "vector_practico": "Con un proxy de interceptación y una herramienta de repetición de peticiones, el cliente modifica el identificador de orden en la consulta de confirmación o de seguimiento. Obtiene así el detalle de órdenes de terceros, porque no se valida la pertenencia del objeto al usuario autenticado.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC07-07",
+          "actor": {
+            "rol": "Empleado de operaciones o soporte con acceso de escritura al almacén de órdenes o a delivery-api",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Un empleado con escritura sin doble aprobación ni conciliación puede repetir el fraude durante meses con registros que parecen legítimos."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "R"
+            ]
+          },
+          "titulo": "Empleado con acceso al registro de órdenes que marca una orden como pagada o altera su total para sustraer producto",
+          "impacto": "Pérdida de mercancía sin cobro, con registros que parecen legítimos. El fraude es difícil de atribuir y puede repetirse durante meses antes de que se detecte en la conciliación.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Impedir la edición manual del estado de pago, el total y el descuento: solo la confirmación verificada de la pasarela puede marcar pagada una orden, y los ajustes excepcionales requieren doble aprobación.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar mínimo privilegio a perfiles de soporte y operaciones, con bitácora de auditoría inmutable de solo anexado, almacenada fuera del control de quienes editan órdenes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aceptar para despacho solo órdenes de entrega originadas por delivery-api y firmadas, y permitir que el ecommerce pida la retención de un paquete.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar a diario las órdenes pagadas con las liquidaciones de la pasarela y alertar sobre cambios manuales de estado o total y sobre direcciones de entrega repetidas por empleado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Suspender el acceso del empleado, congelar las órdenes involucradas, solicitar al proveedor la retención o devolución de los paquetes en tránsito y abrir una investigación.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que existen herramientas internas de edición de órdenes, aunque no aparezcan en el diagrama original",
+            "Se asume que no hay doble aprobación para cambiar el estado de pago"
+          ],
+          "caso_de_uso": "UC-07",
+          "como_ocurre": [
+            "El empleado crea una orden con una cuenta cómplice, o localiza una orden pendiente o cancelada",
+            "Desde la consola interna cambia el estado de la orden a pagada, o reduce el total o aplica un descuento manual sin respaldo en la pasarela",
+            "El cambio dispara la creación de la orden de entrega en delivery-api y el inicio de la preparación",
+            "El producto sale hacia una dirección controlada por el empleado o su cómplice",
+            "Si hay revisión, el empleado atribuye la diferencia a un error de la pasarela o a una falla de sincronización entre los dos registros"
+          ],
+          "referencias": [
+            "CAPEC-122",
+            "OWASP Top 10 A01:2021 Broken Access Control"
+          ],
+          "elementos_dfd": [
+            "Almacén de órdenes del Marketplace",
+            "delivery-api",
+            "Orden de entrega",
+            "Confirmación de pago"
+          ],
+          "precondiciones": [
+            "Los perfiles de soporte u operaciones pueden editar el estado de pago, el total o el descuento de una orden, o crear órdenes de entrega, sin doble aprobación",
+            "No hay conciliación automática entre las órdenes marcadas como pagadas y los cobros de la pasarela",
+            "Existen dos registros de la misma compra que pueden quedar inconsistentes (S-26)",
+            "La bitácora de cambios es parcial o editable"
+          ],
+          "patrones_usados": [
+            "FE-09",
+            "S-26",
+            "S-05"
+          ],
+          "vector_practico": "Desde la consola administrativa o el acceso a la base de datos de órdenes, el empleado edita el campo de estado de pago o el total de una orden que no tiene un cobro asociado. Su permiso de escritura le sirve para disparar la orden de entrega en delivery-api y la bitácora insuficiente impide rastrear su acción.",
+          "limites_confianza": [
+            "LC-2"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-08",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC08-02",
+          "actor": {
+            "rol": "Personal de almacén que registra peso y dimensiones reales del paquete",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "El empleado digita peso y dimensiones sin báscula ni contraste con el valor teórico, lo que hace la manipulación fácil, pero el daño se limita a recargos, rechazos de carga y pérdida de trazabilidad."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Registro de peso y dimensiones falsos en el empaquetado para desviar costos de transporte y ocultar sustituciones",
+          "impacto": "Costos de transporte y recargos no previstos, asignación errónea de vehículos, retrasos o rechazos de carga y pérdida de la trazabilidad para detectar sustituciones de contenido.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Integrar báscula y dimensionador con lectura automática hacia el formulario de empaquetado, con los campos de peso y dimensiones no editables a mano; cualquier excepción manual exige motivo y aprobación del supervisor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Validar en delivery-api el peso y las dimensiones recibidos por F14 contra el peso y volumen teóricos del producto con una tolerancia definida, y bloquear el paso a listo para recolección cuando la desviación la supere hasta que haya revisión de una segunda persona.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Pesar y medir el bulto en la recolección y enviar a delivery-api un evento de discrepancia cuando difiera de lo declarado por el almacén más allá de la tolerancia.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Reporte periódico de desviaciones entre lo registrado y el peso teórico, agrupado por empleado y turno, con alerta ante patrones repetidos o sesgo sistemático a la baja.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Reabrir la orden con discrepancia, volver a pesar y medir con evidencia fotográfica, corregir los datos en delivery-api, y atribuir y reasignar al almacén los recargos generados por el dato falso.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-13",
+            "S-14"
+          ],
+          "caso_de_uso": "UC-08",
+          "como_ocurre": [
+            "El empleado prepara un producto voluminoso y ve que el peso o volumen real difiere del cotizado, o decide sustituir parte del contenido",
+            "Digita en el sistema del almacén un peso y unas dimensiones distintos de los reales, por ejemplo los teóricos del catálogo o menores",
+            "Escanea la etiqueta y la orden pasa a listo para recolección con esos datos",
+            "delivery-api almacena los datos sin alertar por desviación y los transmite a la red de logística",
+            "El proveedor planifica transporte con datos erróneos y aplica recargos o rechaza la carga, o la diferencia de peso queda sin explicación y se atribuye a otro actor"
+          ],
+          "referencias": [
+            "CAPEC-39 Manipulating Opaque Client-based Data Tokens",
+            "OWASP API Security Top 10 API6:2023"
+          ],
+          "elementos_dfd": [
+            "F14",
+            "delivery-api",
+            "Peso y dimensiones reales",
+            "Etiqueta y código del paquete",
+            "Red de logística"
+          ],
+          "precondiciones": [
+            "El peso y las dimensiones reales los digita el empleado, sin lectura automática de báscula ni contraste con los valores teóricos del producto",
+            "delivery-api acepta los datos de empaquetado sin validar desviaciones frente a lo cotizado",
+            "El proveedor logístico usa esos datos para asignar vehículo y tarifa"
+          ],
+          "patrones_usados": [
+            "AV-0033",
+            "FE-09"
+          ],
+          "vector_practico": "Edición manual de los campos de peso y dimensiones en el formulario de empaquetado del almacén. El dato manipulado son esos valores registrados en la orden de entrega, que se envían a delivery-api y al proveedor sin contraste con una báscula, el peso teórico o una foto.",
+          "limites_confianza": [
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC08-03",
+          "actor": {
+            "rol": "Personal de almacén con cuenta nominal de preparación en el sistema del almacén o en el delivery-admin-front",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "delivery-api no restringe las transiciones por rol y los estados finales no exigen motivo ni aprobación, así que un empleado puede cerrar o encubrir órdenes con faltante y generar reclamos sin evidencia y estados que contradicen al proveedor."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Transición de estado fuera del rol de preparación ejecutada por personal de almacén para cerrar o encubrir órdenes",
+          "impacto": "Órdenes cerradas como entregadas o devueltas sin que el evento físico ocurriera, encubrimiento de sustracciones, reclamos de clientes sin evidencia a favor de la empresa y estados que contradicen los eventos del proveedor logístico.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar en delivery-api una matriz de transiciones permitidas por rol, de modo que el rol de preparación solo pueda pasar de en preparación a empaquetada y a listo para recolección, y rechazar en servidor cualquier otro estado (entregada, devuelta, cancelada, despachada).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir motivo, evidencia adjunta y aprobación de una segunda persona con rol distinto para estados finales, mantener cuentas nominales con MFA en el delivery-admin-front y prohibir usuarios compartidos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alerta automática cuando el estado de una orden contradiga los eventos de la integración logística (UC-10), por ejemplo entregada sin evento de entrega del proveedor o cancelada tras la recolección.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registro de auditoría inmutable de cada cambio de estado, con cuenta, origen (F14 o admin-front), motivo y hora, y revisión periódica de cambios fuera de horario o concentrados en un mismo empleado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir el estado de las órdenes cambiadas sin autorización con base en los eventos del proveedor, reabrir la incidencia, revocar o reducir permisos de la cuenta implicada y conciliar la orden con la evidencia de escaneo del proveedor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Entregar a solicitud el histórico de eventos de escaneo y recolección de las órdenes afectadas para reconstruir el estado real y resolver el reclamo del cliente.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-27",
+            "SN-UC08-01: delivery-api no diferencia por rol del almacén qué transiciones de estado se pueden ejecutar sobre una orden"
+          ],
+          "caso_de_uso": "UC-08",
+          "como_ocurre": [
+            "El empleado inicia sesión con su propia cuenta de preparación en el sistema del almacén o en el delivery-admin-front",
+            "Localiza una orden con faltante de producto, por ejemplo una que ya recolectó el proveedor o una cuyo producto sustrajo",
+            "Selecciona manualmente un estado que corresponde a otros roles, como entregada, devuelta o cancelada, en lugar del estado de listo para recolección",
+            "delivery-api acepta la transición porque valida solo la identidad de la cuenta y no la autorización por tipo de transición, y no pide motivo ni aprobación",
+            "La orden queda cerrada en un estado final que contradice los eventos de logística, y la excepción deja de aparecer en la cola de incidencias",
+            "El faltante queda oculto hasta que el cliente reclama, y la contradicción con los eventos del proveedor solo se detecta en una conciliación posterior"
+          ],
+          "referencias": [
+            "CAPEC-122 Privilege Abuse",
+            "OWASP API Security Top 10 API5:2023 Broken Function Level Authorization"
+          ],
+          "elementos_dfd": [
+            "F14",
+            "delivery-api",
+            "delivery-admin-front",
+            "Estado de la orden"
+          ],
+          "precondiciones": [
+            "El rol de preparación del almacén opera sobre delivery-api por F14 o desde el delivery-admin-front (S-27)",
+            "delivery-api valida la autenticación de la cuenta pero no restringe qué transiciones de estado puede ejecutar el rol de preparación, de modo que permite estados posteriores como despachada, entregada, cancelada o devuelta",
+            "Los estados finales no requieren motivo, evidencia ni aprobación de una segunda persona",
+            "No existe alerta cuando el estado contradice los eventos de la integración logística (UC-10)",
+            "Existen órdenes con producto sustraído o faltante que el empleado quiere cerrar"
+          ],
+          "patrones_usados": [
+            "FE-15",
+            "AV-0006"
+          ],
+          "vector_practico": "Con su cuenta de preparación en el sistema del almacén o en el delivery-admin-front, el empleado usa la función de cambio manual de estado para fijar un estado final que su rol no debería poder asignar. El dato manipulado es el estado de la orden en delivery-api, con una transición que excede el rol de preparación, sin motivo ni evidencia obligatorios.",
+          "limites_confianza": [
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC08-01",
+          "actor": {
+            "rol": "Personal de almacén con acceso a la cola de preparación y a la confirmación de empaquetado",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El empleado puede registrar peso falso y escanear una etiqueta sobre un bulto de relleno sin contraste físico ni escaneo conjunto en el traspaso, y la pérdida de producto voluminoso de alto valor resulta imposible de atribuir al almacén."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Sustracción del producto en almacén encubierta con registro falso de empaquetado, peso y estado",
+          "impacto": "Pérdida del inventario de alto valor, imposibilidad de atribuir el faltante al almacén frente al proveedor logístico, disputas de responsabilidad en tránsito y reembolsos al cliente que asume la empresa.",
+          "revision": {
+            "intento": 3,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en la confirmación de empaquetado el peso leído automáticamente de una báscula integrada y una foto del bulto cerrado con la etiqueta visible, y contrastar ambos con el peso teórico del producto en delivery-api antes de pasar a listo para recolección.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Para productos voluminosos de alto valor, exigir verificación de contenido por una segunda persona (doble control) y restringir la impresión de etiquetas a la orden activa para impedir reimpresiones sin autorización.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Realizar un escaneo conjunto en el traspaso de custodia, con verificación del peso del bulto por el proveedor y confirmación firmada por ambas partes, y registrar en delivery-api cualquier diferencia respecto al peso declarado.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliación diaria entre órdenes marcadas como listas o despachadas y paquetes escaneados y recibidos por el proveedor, con análisis de faltantes y diferencias de peso concentrados por turno o empleado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Reportar a delivery-api las diferencias de peso o de estado del bulto detectadas al recibirlo, y compartir con el ecommerce la conciliación de recepciones frente a despachos.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Abrir una investigación con la foto, el peso, el registro de escaneos y la grabación del puesto de empaque para atribuir la sustracción, bloquear el acceso del empleado implicado, y reponer el producto o reembolsar al cliente con recuperación posterior de la pérdida.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-27",
+            "S-14",
+            "SN-UC08-01: delivery-api no valida el peso y las dimensiones registrados por el almacén contra el peso teórico del producto ni exige foto del paquete como evidencia de empaquetado",
+            "SN-UC08-02: el traspaso de custodia almacén → proveedor logístico no requiere escaneo conjunto ni verificación de peso por ambas partes"
+          ],
+          "caso_de_uso": "UC-08",
+          "como_ocurre": [
+            "El empleado identifica en la cola de preparación una orden de un producto voluminoso de alto valor y la toma para prepararla",
+            "Retira el producto del inventario del almacén y arma un bulto de relleno con dimensiones aproximadas a las del original",
+            "Registra en el sistema de preparación el peso y las dimensiones teóricas del producto, no los del bulto real, y confirma el empaquetado",
+            "Imprime una etiqueta con el código del paquete, la pega en el bulto de relleno y la escanea, de modo que el escaneo queda asociado a la orden",
+            "delivery-api cambia la orden a listo para recolección y lo comunica al almacén y al proveedor por F14",
+            "El proveedor recoge el bulto; cuando el cliente reclama, la pérdida aparece como faltante en tránsito o producto equivocado, sin evidencia que permita ubicar dónde se sustrajo"
+          ],
+          "referencias": [
+            "CAPEC-148 Content Spoofing",
+            "OWASP Logging and Monitoring Failures"
+          ],
+          "elementos_dfd": [
+            "F14",
+            "delivery-api",
+            "Almacén",
+            "Estado de la orden",
+            "Peso y dimensiones reales",
+            "Etiqueta y código del paquete"
+          ],
+          "precondiciones": [
+            "El empleado puede registrar peso y dimensiones, escanear la etiqueta y cambiar la orden a listo para recolección desde el sistema del almacén o el delivery-admin-front (S-27)",
+            "Existen órdenes de productos voluminosos de alto valor en la cola de preparación",
+            "SN-UC08-01: delivery-api acepta la confirmación de empaquetado recibida por F14 sin contrastar el peso y las dimensiones registrados con el peso teórico del producto y sin exigir foto del paquete",
+            "SN-UC08-02: el traspaso del paquete al proveedor logístico no exige un escaneo conjunto de ambas partes que verifique el contenido o el peso del bulto"
+          ],
+          "patrones_usados": [
+            "FE-09",
+            "AV-0006"
+          ],
+          "vector_practico": "Con su cuenta de empleado en el sistema del almacén, el empleado registra en la confirmación de empaquetado un peso y unas dimensiones que no corresponden al bulto real, escanea una etiqueta pegada a un bulto de relleno y mueve la orden a listo para recolección. Los datos manipulados son el peso y las dimensiones registrados, el código de etiqueta escaneado y el estado de la orden, que delivery-api acepta sin contraste con el contenido físico (SN-UC08-01 y SN-UC08-02).",
+          "limites_confianza": [
+            "LC-5"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-09",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC09-01",
+          "actor": {
+            "rol": "Personal de centro de distribución",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "El empleado ya tiene un escáner autenticado y no hay peso, foto ni conciliación entre puntos, así que sustraer un paquete es fácil, pero afecta a un paquete por vez."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Paquete sustraído en un centro de distribución encubierto con escaneos de tránsito falsos",
+          "impacto": "Pérdida del producto y reembolso o reenvío a cargo del ecommerce. Trazabilidad falsa que impide ubicar dónde ocurrió el faltante y disputa contractual con el proveedor logístico.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en cada escaneo de salida del centro de distribución el peso y una foto del paquete, y rechazar en logistic eventos sin esa evidencia o con peso fuera de tolerancia respecto al registrado en el despacho.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Confirmar el traspaso entre centros con escaneo de recepción en el punto siguiente, de modo que un evento de salida sin recepción correlacionada genere un estado 'custodia no confirmada' y no 'en tránsito'.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar automáticamente cada hora los eventos de salida contra los de recepción por tramo, y alertar cuando un paquete supere el tiempo de tránsito esperado entre centros o haya salidas sin recepción concentradas en un operario o turno.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Recibir en delivery-api (F18) el peso, la foto y el identificador del operario de cada evento, y comparar la trayectoria de los eventos con los tiempos esperados de la ruta para marcar órdenes con tránsito anómalo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Congelar el reembolso o reenvío hasta que el proveedor entregue la evidencia de custodia del último escaneo verificado, y activar la cláusula contractual de responsabilidad por pérdida en el tramo donde se perdió la evidencia.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el escaneo lo registra un solo operario sin contrafirma ni verificación de peso en cada punto"
+          ],
+          "caso_de_uso": "UC-09",
+          "como_ocurre": [
+            "El empleado identifica en el centro un paquete voluminoso de alto valor por su etiqueta y su peso",
+            "Retira el paquete físico del flujo y lo saca del centro",
+            "Con su usuario del escáner registra el evento de salida hacia el siguiente centro, como si el paquete hubiera continuado",
+            "logistic guarda el evento y lo reenvía a delivery-api (F18), por lo que la orden aparece en tránsito",
+            "El paquete nunca llega al siguiente punto y la orden se marca como fallida o perdida días después",
+            "La pérdida se atribuye al tramo siguiente o al proveedor en general, y el reembolso lo asume el ecommerce"
+          ],
+          "referencias": [
+            "CAPEC-220",
+            "OWASP API6:2023"
+          ],
+          "elementos_dfd": [
+            "Red de logística",
+            "logistic",
+            "F18",
+            "Eventos de escaneo"
+          ],
+          "precondiciones": [
+            "El empleado tiene un escáner o usuario con permiso para registrar eventos en el centro de distribución",
+            "El siguiente punto de control no concilia lo que se despacha contra lo que se recibe",
+            "No hay peso ni foto del paquete en cada escaneo (S-27)"
+          ],
+          "patrones_usados": [
+            "FE-09",
+            "FE-07",
+            "AV-0001"
+          ],
+          "vector_practico": "Desde su escáner autenticado, el empleado registra un evento de salida sobre el código del paquete sin que exista movimiento físico, y el dato manipulado es el evento de escaneo y la ubicación asociada al paquete.",
+          "limites_confianza": [
+            "LC-4",
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC09-02",
+          "actor": {
+            "rol": "Empresa de logística (personal de recolección)",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Sin escaneo conjunto ni conciliación diaria, omitir el escaneo en la recolección es sencillo y deja la pérdida sin responsable, con impacto limitado a los paquetes de cada recolección."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Negación de recepción del paquete en el traspaso almacén-proveedor",
+          "impacto": "Pérdida de producto sin responsable demostrable, reembolsos al cliente y litigio con el proveedor sin evidencia de custodia.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Implantar escaneo conjunto en el traspaso F15: el almacén solo cierra la orden como despachada cuando el operario del proveedor escanea cada paquete en logistic y el sistema devuelve una confirmación firmada con operario, hora y manifiesto.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Emitir un manifiesto de recolección por visita con el listado de paquetes y exigir que el operario del proveedor lo contrafirme digitalmente, con peso y foto del lote al salir del almacén.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Ejecutar una conciliación diaria automática entre órdenes despachadas por el almacén y paquetes recibidos en logistic, con alerta por cada diferencia no resuelta en 24 horas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Revisar cámaras del muelle de carga y comparar el recuento físico de bultos cargados contra los escaneos de cada visita.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Aplicar la penalización contractual con base en la contrafirma del manifiesto o en su ausencia, e investigar con el proveedor al operario de la visita para recuperar el paquete.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el escaneo del proveedor y el del almacén son sistemas separados sin conciliación automática (S-14, S-27)"
+          ],
+          "caso_de_uso": "UC-09",
+          "como_ocurre": [
+            "El repartidor o el personal de recolección llega al almacén para recoger varios paquetes",
+            "Se lleva uno o más paquetes pero escanea solo una parte, o no escanea la entrega en logistic",
+            "El almacén ya marcó la orden como lista para recolección y la da por despachada",
+            "Después el proveedor afirma que nunca recibió ese paquete, y el almacén no tiene prueba independiente de la entrega",
+            "El paquete se desvía y la responsabilidad de la pérdida queda sin atribuir",
+            "El ecommerce no puede reclamar la penalización contractual ni demostrar en qué tramo se perdió"
+          ],
+          "referencias": [
+            "CAPEC-220"
+          ],
+          "elementos_dfd": [
+            "F15",
+            "Red de logística",
+            "logistic"
+          ],
+          "precondiciones": [
+            "El traspaso de custodia en el almacén no se confirma con un escaneo de ambas partes",
+            "No hay conciliación diaria entre despachos del almacén y recepciones del proveedor",
+            "El almacén solo conserva su propio registro de despacho"
+          ],
+          "patrones_usados": [
+            "FE-09",
+            "AV-0002"
+          ],
+          "vector_practico": "El operario de recolección omite el escaneo en la entrega y sustrae el paquete, y el dato manipulado es la ausencia del registro de recolección en logistic frente al registro de despacho del almacén.",
+          "limites_confianza": [
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC09-04",
+          "actor": {
+            "rol": "Atacante externo con uniforme e identificación falsos del proveedor",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Un impostor con identificación falsa y datos reales de órdenes puede llevarse varios paquetes de una vez si el almacén no valida al recolector, lo que genera pérdidas y reembolsos masivos."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Retiro del paquete en el almacén por alguien que se hace pasar por el proveedor logístico",
+          "impacto": "Pérdida de varios paquetes de una sola vez, disputa entre almacén y proveedor y reembolsos masivos a clientes.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Enviar al almacén antes de cada visita la identidad esperada del recolector (nombre, documento, placa del vehículo y código de recolección de un solo uso), y entregar paquetes solo si coincide con la asignación.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir al recolector el escaneo de su credencial en el dispositivo del proveedor y un código de recolección de un solo uso vinculado al manifiesto, con registro de la identificación y foto del vehículo en el muelle.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "No entregar paquetes ante visitas fuera del horario asignado o sin asignación en logistic, y escalar a un supervisor antes de cualquier excepción.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando se registre un traspaso F15 con un operario no asignado a la ruta, o cuando el proveedor no reconozca la recepción de un manifiesto en pocas horas.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Activar un protocolo de incidente que bloquee las órdenes afectadas, notifique al proveedor y a las autoridades con las grabaciones del muelle, y reenvíe los pedidos a los clientes sin cargo mientras se reclama el valor.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el almacén no recibe del proveedor la identidad esperada del recolector antes de cada visita (S-27)"
+          ],
+          "caso_de_uso": "UC-09",
+          "como_ocurre": [
+            "El atacante observa o averigua el horario de recolección del proveedor en el almacén",
+            "Llega antes que el proveedor real con un vehículo y una identificación que imita la del proveedor",
+            "Afirma que viene a recoger paquetes de órdenes concretas y presenta datos reales de las órdenes obtenidos de una etiqueta o de un contacto interno",
+            "El personal del almacén entrega los paquetes y registra que fueron entregados al proveedor",
+            "Cuando llega el repartidor real, el almacén ya no tiene los paquetes y las órdenes aparecen como entregadas al proveedor",
+            "El atacante revende los productos y el ecommerce reclama a un proveedor que nunca los recibió"
+          ],
+          "referencias": [
+            "CAPEC-220"
+          ],
+          "elementos_dfd": [
+            "F15",
+            "Red de logística"
+          ],
+          "precondiciones": [
+            "El almacén entrega paquetes a quien se presenta como transportista sin validar su identidad contra la asignación de recolección",
+            "El atacante conoce los horarios de recolección, o tiene un dato de una orden real",
+            "El escaneo de entrega lo hace un dispositivo que acepta cualquier operario"
+          ],
+          "patrones_usados": [
+            "FE-09"
+          ],
+          "vector_practico": "El atacante se presenta en el almacén con identificación falsa y datos reales de órdenes y obtiene el paquete físico, y el dato falsificado es la identidad del recolector en el traspaso F15.",
+          "limites_confianza": [
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC09-05",
+          "actor": {
+            "rol": "Personal de centro de distribución o repartidor",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "El personal ve los datos completos del cliente en etiquetas y escáneres sin control de volumen, y la fuga puede causar robos a domicilio y sanciones por protección de datos."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": []
+          },
+          "titulo": "Venta de datos personales del cliente leídos en etiquetas y escaneos durante el transporte",
+          "impacto": "Fuga de datos personales de clientes, riesgo físico para quienes recibieron productos de alto valor, sanciones por protección de datos y pérdida de confianza en el ecommerce.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Reemplazar los datos personales de la etiqueta por un código opaco y mostrar al operario solo lo necesario para su tramo, de modo que nombre, teléfono y dirección completa solo se vean en la entrega final por el repartidor asignado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar en logistic la consulta de detalle de paquetes al centro y turno del operario, con tope de consultas por hora, y prohibir teléfonos personales en la zona de clasificación.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar cada consulta de detalle por operario y alertar sobre consultas masivas, sobre productos de alto valor o sobre paquetes que no están en el flujo asignado al operario.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Sembrar datos de control (clientes señuelo) en envíos de prueba para detectar el origen de una fuga cuando se usen en contactos fraudulentos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante una sospecha de fuga, suspender al operario, notificar a los clientes expuestos y a la autoridad de protección de datos en los plazos legales, y exigir al proveedor el informe de las consultas del turno.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que la etiqueta incluye datos personales completos, sin identificadores opacos (S-06, S-15)"
+          ],
+          "caso_de_uso": "UC-09",
+          "como_ocurre": [
+            "El empleado trabaja en un turno con acceso a los escáneres y a las etiquetas de decenas de paquetes",
+            "Fotografía las etiquetas o consulta con el escáner el detalle de los paquetes de productos voluminosos y de alto valor",
+            "Reúne nombre, dirección, teléfono y qué producto compró cada cliente",
+            "Vende la lista a un tercero, o la usa para ir a robar a domicilio",
+            "Los clientes sufren llamadas fraudulentas o robos, y el origen de la fuga no se identifica en los registros"
+          ],
+          "referencias": [
+            "CAPEC-569",
+            "OWASP API9:2023"
+          ],
+          "elementos_dfd": [
+            "Red de logística",
+            "logistic",
+            "Etiqueta y código del paquete",
+            "Eventos de escaneo"
+          ],
+          "precondiciones": [
+            "La etiqueta impresa o la pantalla del escáner muestran nombre, dirección y teléfono del cliente",
+            "No hay control de volumen ni registro de consultas por operario",
+            "El operario tiene acceso de lectura a muchos paquetes del centro"
+          ],
+          "patrones_usados": [
+            "FE-09"
+          ],
+          "vector_practico": "El empleado usa su cuenta de escáner y la cámara de su teléfono para leer y copiar el detalle de paquetes ajenos, y el dato obtenido es la información de destinatario y dirección de las etiquetas.",
+          "limites_confianza": [
+            "LC-4",
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC09-06",
+          "actor": {
+            "rol": "Personal de centro de distribución inconforme o sobornado por un competidor",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "bajo",
+            "impacto": 2,
+            "probabilidad": 1,
+            "justificacion": "Requiere un empleado inconforme o sobornado y es detectable por tiempos, pero un lote retenido provoca retrasos, reembolsos y daño reputacional."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Retención deliberada de paquetes en un centro de distribución para frenar entregas",
+          "impacto": "Incumplimiento de plazos de entrega, cancelaciones y reembolsos masivos, daño reputacional y costos de reenvío para el ecommerce.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir evidencia (foto y motivo codificado) para registrar excepciones como dirección incorrecta o paquete dañado, y limitar cuántas excepciones por turno puede registrar cada operario sin aprobación de un supervisor.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Definir un tiempo máximo de permanencia por punto de control y alertar sobre paquetes sin movimiento que lo superen, con un tablero que agrupe los retenidos por comercio y por centro.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear en delivery-api (F18) la proporción de excepciones y de órdenes estancadas por centro de distribución y comercio, y alertar ante picos respecto al histórico.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Escalar el lote retenido al proveedor con un plazo de liberación, notificar proactivamente a los clientes afectados, y reencaminar las órdenes por otro centro o por otro proveedor.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que logistic no valida las excepciones contra evidencia ni limita cuántas puede registrar un operario"
+          ],
+          "caso_de_uso": "UC-09",
+          "como_ocurre": [
+            "El empleado selecciona un lote de paquetes de un mismo comercio o de un tipo de producto",
+            "Los deja sin escaneo de salida o registra una excepción, como dirección incorrecta o paquete dañado, que detiene su avance",
+            "logistic reenvía el estado a delivery-api (F18) y el Marketplace muestra el estado al cliente",
+            "Los paquetes se acumulan en el centro y las entregas se retrasan o se cancelan",
+            "Los clientes reclaman y piden reembolsos, y la reputación del ecommerce cae mientras se investiga la causa"
+          ],
+          "referencias": [
+            "OWASP API6:2023"
+          ],
+          "elementos_dfd": [
+            "Red de logística",
+            "logistic",
+            "F18",
+            "Estado de la orden de entrega"
+          ],
+          "precondiciones": [
+            "El empleado puede registrar eventos de escaneo y excepciones en el centro",
+            "No hay alerta por paquetes sin movimiento que superen el tiempo máximo en un punto de control",
+            "delivery-api muestra al cliente el último estado enviado por logistic"
+          ],
+          "patrones_usados": [
+            "AV-0008"
+          ],
+          "vector_practico": "Desde su usuario de escáner, el empleado registra excepciones falsas o no registra la salida de un lote de paquetes, y el dato manipulado es el estado y los eventos de escaneo de esas órdenes.",
+          "limites_confianza": [
+            "LC-4",
+            "LC-5"
+          ]
+        },
+        {
+          "id": "AC-UC09-03",
+          "actor": {
+            "rol": "Personal de centro de distribución con permiso legítimo para modificar la asignación de ruta y repartidor",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 3,
+            "probabilidad": 1,
+            "justificacion": "Requiere la colusión de un empleado con permiso legítimo y un repartidor, pero el valor del paquete es alto y la acción parece operación normal, lo que dificulta la atribución."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "R"
+            ]
+          },
+          "titulo": "Reasignación de ruta y repartidor para desviar un paquete de alto valor a un cómplice, ocultada como cambio operativo normal",
+          "impacto": "Pérdida del producto de alto valor, reembolso o reenvío y daño reputacional para el ecommerce. La atribución es difícil porque la acción parece una operación legítima del centro de distribución, y el abuso de un permiso legítimo queda sin trazabilidad útil del motivo.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en logistic la aprobación de un segundo rol y un motivo obligatorio codificado para reasignar ruta o repartidor de paquetes por encima de un valor o volumen umbral, y bloquear reasignaciones a rutas que no cubran la dirección de entrega.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Compartir con el proveedor, al despachar, el indicador de alto valor del paquete para que se apliquen las reglas de doble aprobación y se exija el código de confirmación del cliente en la entrega.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por reasignaciones de paquetes de alto valor, reasignaciones repetidas del mismo paquete, y pares recurrentes empleado–repartidor con entregas fallidas o reclamadas.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar periódicamente el historial de reasignaciones de logistic contra los reclamos de no recibido y los estados fallidos en delivery-api, y analizar relaciones entre repartidores, centros y clientes que reclaman.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener el reembolso hasta recibir del proveedor el historial de custodia con el motivo de cada reasignación, aplicar la responsabilidad contractual por pérdida y suspender a los operarios implicados durante la investigación.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "El empleado tiene el permiso de reasignación como parte de su función; el caso es abuso de un permiso legítimo para alterar un dato (T) y negar la acción (R), no una elevación de privilegios",
+            "Se asume que logistic no exige aprobación de un segundo rol ni registra el motivo del cambio",
+            "Se asume que el historial de logistic no es revisado ni conciliado por el ecommerce contra los reclamos de entrega"
+          ],
+          "caso_de_uso": "UC-09",
+          "como_ocurre": [
+            "El empleado consulta en logistic los paquetes que están en su centro de distribución y elige uno voluminoso de alto valor",
+            "Con su usuario y permiso legítimos modifica la asignación de ruta y repartidor del paquete, dejando al repartidor cómplice o una ruta que no cubre la dirección de entrega",
+            "El cómplice recibe el paquete en el centro, se escanea la salida y lo retira del circuito sin intentar la entrega",
+            "logistic envía a delivery-api por la integración un estado de fallido o una entrega con evidencia débil, y el Marketplace lo muestra al cliente",
+            "La reasignación queda en el historial como un cambio operativo rutinario, sin motivo ni segunda aprobación, y el empleado puede negar la intención",
+            "El cliente reclama que no recibió el producto y el ecommerce paga reembolso o reenvío, mientras empleado y cómplice se reparten el valor"
+          ],
+          "referencias": [
+            "OWASP API6:2023",
+            "STRIDE T y R sobre almacén de datos de asignaciones"
+          ],
+          "elementos_dfd": [
+            "Red de logística",
+            "logistic",
+            "Asignación de ruta y repartidor",
+            "Eventos de escaneo"
+          ],
+          "precondiciones": [
+            "El rol del empleado incluye de forma legítima el permiso de reasignar ruta y repartidor; no se asume escalada de privilegios ni acceso fuera de su rol",
+            "logistic no exige aprobación de un segundo rol ni motivo obligatorio para reasignar paquetes de alto valor",
+            "No hay alerta por reasignaciones de paquetes voluminosos de alto valor ni por reasignaciones repetidas del mismo paquete",
+            "El repartidor cómplice pertenece a la misma red logística y tiene acceso a la ruta asignada"
+          ],
+          "patrones_usados": [
+            "FE-08",
+            "FE-09",
+            "AV-0002"
+          ],
+          "vector_practico": "Desde la consola de logistic, con su usuario legítimo, el empleado edita el campo de repartidor y ruta asignados al paquete elegido. El dato manipulado es la asignación de ruta y repartidor, que determina quién tiene la custodia del paquete. La acción es válida para su rol y no genera alerta.",
+          "limites_confianza": [
+            "LC-4",
+            "LC-5"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-10",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC10-01",
+          "actor": {
+            "rol": "Atacante externo que obtiene la credencial de servicio compartida de la integración logística",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "La credencial compartida y sin firma por evento (S-06) hace plausible su fuga, y un 'entregado' falso cierra la orden y deja al ecommerce sin evidencia para la disputa."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T",
+              "E"
+            ]
+          },
+          "titulo": "Evento de estado \"entregado\" falsificado con la credencial de integración filtrada",
+          "impacto": "Cierre falso de órdenes y pérdida del seguimiento real. Se generan reclamos, reembolsos o reenvíos a cargo del ecommerce y se facilita el robo o el desvío de paquetes. Se pierde la confianza en el estado mostrado al cliente.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Reemplazar la credencial compartida por credenciales por sistema con mTLS o firma HMAC por evento (con marca de tiempo) que delivery-api verifique en LC-4, y restringir el endpoint de eventos a la lista de IPs del proveedor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Validar en delivery-api la máquina de estados: solo aceptar 'entregado' si existen antes los eventos 'recolectado' y 'en reparto' de la misma orden, con marcas de tiempo coherentes y ubicación dentro de un radio razonable del destino.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Firmar cada evento en el origen y exponer una API de verificación contra los escaneos reales de la red logística, y rotar la credencial cada cierto tiempo.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar sobre eventos 'entregado' sin escaneos previos, desde IPs fuera de la lista habitual o con secuencias imposibles, y conciliar a diario los estados de delivery-api con el registro de escaneos del proveedor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar y rotar de inmediato la credencial comprometida, revertir los estados de las órdenes afectadas a partir de la conciliación y retener el reembolso o reenvío hasta confirmar la entrega con el proveedor.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "S-15",
+            "S-16",
+            "El mecanismo exacto de autenticación de la integración no se conoce; se asume que es una credencial compartida sin firma por evento."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "El atacante identifica una orden de alto valor que está en preparación o en tránsito.",
+            "Con la credencial obtenida y una herramienta cliente HTTP, envía a delivery-api un evento de estado \"entregado\" para esa orden. Incluye una marca de tiempo plausible y una ubicación cercana a la dirección de destino.",
+            "delivery-api autentica la credencial como la integración legítima y actualiza el estado sin contrastarlo con los escaneos de la red de logística.",
+            "El Marketplace muestra \"entregado\" al cliente y se cierra la ventana de seguimiento.",
+            "El paquete sigue en la red logística, o el atacante lo intercepta o lo redirige por otra vía. El cliente reclama que no recibió nada y no hay una cadena de eventos que respalde la disputa."
+          ],
+          "referencias": [
+            "CAPEC-277",
+            "OWASP API2:2023 Broken Authentication",
+            "OWASP API5:2023 Broken Function Level Authorization"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "La credencial de servicio de la integración es compartida entre sistemas y no está ligada a un origen de red ni a una firma por evento (S-06).",
+            "El atacante obtiene la credencial por una fuga en un repositorio, en un log, en un correo o en un equipo del proveedor.",
+            "El atacante conoce o enumera identificadores de órdenes de entrega, por ejemplo por una orden propia o por un número predecible.",
+            "delivery-api acepta el estado \"entregado\" sin comprobar que haya escaneos previos de recolección o tránsito (S-16)."
+          ],
+          "patrones_usados": [
+            "FE-17"
+          ],
+          "vector_practico": "Cliente HTTP con la credencial de integración filtrada, usado desde una IP no habitual. Manipula el campo estado de entrega (valor \"entregado\"), junto con el identificador de la orden, la marca de tiempo y la ubicación reportada en el evento enviado a delivery-api.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC10-04",
+          "actor": {
+            "rol": "Atacante con la credencial de la integración logística",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Si la credencial tiene alcance amplio (S-06), una sola filtración permite leer datos personales y cambiar direcciones de entrega en toda la operación."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "I"
+            ]
+          },
+          "titulo": "Credencial de integración con permisos amplios usada para modificar datos más allá de informar estados",
+          "impacto": "Exposición de datos personales (nombres, direcciones, órdenes) y desvío de paquetes mediante cambio de dirección. Una sola credencial filtrada compromete toda la operación de entregas.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Limitar el scope de la credencial de integración a un único endpoint (POST de eventos de estado) con autorización por función en delivery-api, de modo que consulta de órdenes y cambio de dirección o tienda devuelvan 403 para esa identidad.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Restringir la credencial a órdenes asignadas a ese proveedor y exponer delivery-api a la integración solo mediante un gateway con allowlist de rutas e IPs. Mantener un inventario actualizado de endpoints y retirar los obsoletos o no documentados (API9).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar toda llamada de la identidad de integración a rutas distintas de la de eventos, así como consultas de datos de clientes o cambios de dirección originados por esa identidad.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante uso fuera de alcance, revocar la credencial, revisar el historial de cambios de dirección para restaurar los valores originales, detener los envíos redirigidos y notificar la exposición de datos personales según corresponda.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "Se asume que la credencial no tiene restricciones por endpoint ni por origen; el alcance real debe confirmarse."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "El atacante obtiene la credencial de integración.",
+            "Con un cliente HTTP prueba, desde fuera, otros endpoints de delivery-api además del de eventos de estado: consulta de órdenes, cambios de dirección o de tienda.",
+            "delivery-api acepta la credencial en esas funciones porque no restringe su alcance.",
+            "El atacante lee direcciones y datos de clientes, o modifica la dirección de entrega de órdenes específicas. Con ello redirige paquetes o extrae datos personales."
+          ],
+          "referencias": [
+            "OWASP API5:2023 Broken Function Level Authorization",
+            "OWASP API9:2023 Improper Inventory Management"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "La credencial de servicio tiene un alcance mayor que el de informar estados (S-06).",
+            "delivery-api no separa permisos por función ni por orden de entrega.",
+            "El atacante conoce o descubre otros endpoints de delivery-api, por ejemplo en documentación expuesta o en un inventario de APIs desactualizado."
+          ],
+          "patrones_usados": [
+            "FE-17"
+          ],
+          "vector_practico": "Cliente HTTP con la credencial de integración para invocar funciones de delivery-api distintas de la de estados. Manipula el campo dirección de entrega y consulta datos de clientes asociados a identificadores de órdenes.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC10-05",
+          "actor": {
+            "rol": "Proveedor logístico (empresa de logística) en una disputa por una entrega",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "La disputa es probable cuando hay pérdidas y no se guarda el mensaje original ni su origen; la pérdida económica es acotada a cada envío pero no recuperable."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Proveedor logístico niega haber reportado una entrega porque los eventos no son atribuibles",
+          "impacto": "Pérdida económica no recuperable y disputas contractuales sin evidencia. Se debilita la capacidad de auditoría de la integración.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir firma digital por evento con clave propia del proveedor (no repudio) y un identificador único de evento, y cláusula contractual que haga válido y atribuible a esa clave todo evento firmado.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Guardar en delivery-api un registro inmutable (append-only) de cada evento recibido con el mensaje original, la firma, la IP de origen, el identificador de credencial y la hora de recepción, en lugar de conservar solo el último estado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar periódicamente el registro de eventos recibidos con el log de escaneos y eventos emitidos del proveedor, e investigar las diferencias de volumen o de contenido.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "En una disputa, el proveedor entrega las evidencias de emisión (logs firmados, usuario y escaneo que originó el evento) en un plazo contractual, y el ecommerce usa el registro inmutable para reclamar la pérdida o aplicar penalidades.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "Se asume que delivery-api no conserva el mensaje original de cada evento ni su metadato de origen."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "Un paquete se pierde o es reclamado como no recibido, y delivery-api tiene la orden como \"entregado\" por un evento de la integración.",
+            "El ecommerce reclama al proveedor el costo de la pérdida con base en ese evento.",
+            "El proveedor afirma que el evento no salió de sus sistemas y atribuye el hecho a un tercero con la credencial filtrada.",
+            "Sin firma por evento ni registro del mensaje original, el ecommerce no puede demostrar quién emitió el evento, y asume la pérdida."
+          ],
+          "referencias": [
+            "OWASP API2:2023 Broken Authentication"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "Todos los eventos llegan bajo la misma credencial compartida y no llevan firma por mensaje (S-06).",
+            "delivery-api guarda solo el último estado y no conserva el mensaje original ni su origen.",
+            "El estado \"entregado\" es la evidencia principal para cerrar el caso (S-16)."
+          ],
+          "patrones_usados": [
+            "FE-17"
+          ],
+          "vector_practico": "Negación de origen de un evento aprovechando la credencial compartida. El dato en disputa es el estado \"entregado\" con su marca de tiempo y su ubicación, almacenado en delivery-api sin firma ni registro del mensaje original.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC10-06",
+          "actor": {
+            "rol": "Atacante con la credencial de la integración o con acceso al punto de entrada de eventos",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Sin límite de tasa y con el endpoint expuesto a internet, una ráfaga es fácil de lanzar; el efecto es degradación temporal del seguimiento y carga de soporte, no pérdida directa."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Ráfaga de eventos falsos o masivos que degrada delivery-api y oculta los eventos legítimos",
+          "impacto": "Degradación o indisponibilidad del seguimiento de entregas, reprogramaciones y costos operativos innecesarios, y carga en el soporte al cliente. Los eventos legítimos se pierden o se retrasan.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar rate limiting y cuotas por credencial, por IP y por orden de entrega en el gateway de delivery-api, con un tope de tamaño de payload y una cola con backpressure para el procesamiento de eventos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Rechazar eventos de transición inválida o repetida antes de encolarlos, y restringir el endpoint a IPs del proveedor o a mTLS para reducir la exposición a internet.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear en tiempo real el volumen de eventos por credencial y el porcentaje de eventos rechazados o con estado 'fallido', y alertar ante picos anómalos o ante muchas órdenes distintas en poco tiempo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Activar un mecanismo de contención (bloqueo temporal de la credencial o IP, cuarentena de eventos sospechosos) y reprocesar desde el registro de eventos del proveedor los eventos legítimos perdidos o retrasados, restaurando los estados afectados en el Marketplace.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "Se asume que no existe limitación de tasa ni validación de transiciones de estado en el punto de entrada de eventos."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "El atacante prepara un conjunto de identificadores de órdenes de entrega obtenidos o enumerados.",
+            "Con una herramienta de carga envía un volumen alto de eventos de cambio de estado, por ejemplo \"fallido\", sobre muchas órdenes a la vez.",
+            "delivery-api procesa o encola todos los eventos, se satura, y retrasa o descarta los eventos legítimos del proveedor.",
+            "El Marketplace muestra estados erróneos o desactualizados a muchos clientes, y se disparan reprogramaciones y reclamos masivos."
+          ],
+          "referencias": [
+            "OWASP API4:2023 Unrestricted Resource Consumption"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "El endpoint de eventos es accesible desde internet (S-06).",
+            "No hay límite de tasa por credencial ni por orden de entrega.",
+            "El atacante dispone de la credencial o de un endpoint de eventos sin autenticación suficiente."
+          ],
+          "patrones_usados": [
+            "FE-17"
+          ],
+          "vector_practico": "Herramienta de generación de carga HTTP contra el punto de recepción de eventos de delivery-api. Manipula el estado de entrega (por ejemplo \"fallido\") y el identificador de la orden en un volumen masivo, con la credencial de la integración.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC10-07",
+          "actor": {
+            "rol": "Atacante con la credencial de integración o empleado del proveedor que controla el contenido de los eventos",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Si no se valida ni se codifica el texto libre (supuesto por confirmar), un evento malicioso puede lanzar XSS o phishing hacia clientes desde un canal de confianza."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "I",
+              "E"
+            ]
+          },
+          "titulo": "Contenido malicioso en la ubicación reportada que se muestra al cliente en el Marketplace",
+          "impacto": "Compromiso de sesiones o phishing hacia los clientes desde un canal de confianza (el seguimiento de la orden). Posible robo de datos personales o de credenciales, con daño reputacional.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Validar en delivery-api el esquema del evento: la ubicación debe ser latitud y longitud numéricas en rango, o un texto de catálogo con longitud máxima y lista de caracteres permitidos. Rechazar marcado, URLs y cualquier campo no definido.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Codificar por contexto (output encoding) toda la información del evento que renderiza el Marketplace, sin usar innerHTML ni permitir enlaces generados desde esos campos, y aplicar una Content-Security-Policy restrictiva.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar los eventos rechazados por validación de ubicación y detectar patrones de marcado (<script>, URLs, javascript:) en los datos almacenados, además de monitorear violaciones de CSP en el Marketplace.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Sanear o eliminar los valores maliciosos ya almacenados, invalidar las sesiones de clientes que consultaron esas órdenes, avisarles del posible enlace fraudulento y revocar la credencial usada.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "Se asume que ni delivery-api ni el Marketplace validan ni codifican los campos de texto libre del evento; debe confirmarse."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "El atacante envía un evento a delivery-api para una orden concreta. En lugar de coordenadas o de una ubicación válida, el campo de ubicación contiene texto con marcado, o un enlace externo con un mensaje engañoso.",
+            "delivery-api guarda el valor sin validarlo y lo expone al Marketplace.",
+            "Cuando el cliente consulta el seguimiento de su orden, el Marketplace presenta el contenido. Puede ejecutarse código en el navegador del cliente, o se muestra un enlace de supuesto pago o confirmación.",
+            "El cliente sigue el enlace o su sesión queda expuesta, con riesgo de robo de datos o de suplantación en el Marketplace."
+          ],
+          "referencias": [
+            "OWASP API8:2023 Security Misconfiguration",
+            "CAPEC-277"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "El campo de ubicación reportada (u otros campos de texto del evento) acepta texto libre sin validar formato ni longitud.",
+            "El Marketplace muestra esos valores al cliente sin codificarlos de forma segura.",
+            "El atacante puede enviar eventos a delivery-api, con la credencial o desde el sistema del proveedor."
+          ],
+          "patrones_usados": [
+            "FE-17"
+          ],
+          "vector_practico": "Cliente HTTP con la credencial de integración, o el propio sistema del proveedor, para enviar un evento cuyo campo de ubicación reportada contiene marcado o un enlace externo en vez de coordenadas. El dato manipulado es ese campo, que delivery-api guarda y el Marketplace muestra al cliente.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC10-02",
+          "actor": {
+            "rol": "Empleado del proveedor logístico con acceso al sistema que alimenta la integración logistic",
+            "tipo": "interno_tercero"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "El empleado tiene acceso legítimo y delivery-api no exige respaldo de escaneo (S-15), pero el hurto se limita a órdenes concretas y es recuperable en parte vía responsabilidad contractual."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "S",
+              "R"
+            ]
+          },
+          "titulo": "Empleado del proveedor logístico registra estados de entrega desde su propio sistema sin escaneo físico, a través de la integración logistic",
+          "impacto": "Pérdida de mercadería voluminosa, reembolsos o reenvíos a cargo del ecommerce y disputa contractual difícil de resolver con el proveedor. Se pierde la capacidad de atribuir el evento a una persona concreta porque todos los eventos usan la misma credencial.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en delivery-api que cada transición de estado referencie un identificador de escaneo físico verificable en la red logística, y rechazar eventos 'en reparto' o 'entregado' sin respaldo de un escaneo previo del paquete.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Restringir en el sistema del proveedor la creación o edición manual de eventos de estado a un rol aprobado, con doble aprobación para estados finales, cuentas nominales y propagación del identificador del usuario origen en cada evento.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar los eventos 'entregado' con los escaneos de la red y con el código de confirmación del cliente, y alertar cuando haya eventos sin escaneo o ediciones manuales concentradas en un mismo usuario o centro de distribución.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Abrir una investigación conjunta ante reclamos de no recepción, con los logs de usuario del proveedor, y aplicar la penalidad contractual, la restitución de la mercadería y la desactivación del acceso del empleado involucrado.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "S-15",
+            "Se asume que el proveedor permite a algunos empleados generar o editar eventos fuera del flujo de escaneo."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "El empleado retiene o desvía un paquete de valor de la orden X, por ejemplo en un centro de distribución.",
+            "Desde el sistema del proveedor, o invocando directamente la integración, crea los eventos \"en reparto\" y luego \"entregado\" para la orden X, sin que exista un escaneo en la red logística.",
+            "logistic reenvía los eventos a delivery-api con la credencial compartida y delivery-api actualiza el estado de la orden de entrega.",
+            "El Marketplace muestra al cliente que la orden fue entregada. Cuando el cliente reclama, el evento figura como originado por la integración y no identifica a la persona que lo generó."
+          ],
+          "referencias": [
+            "CAPEC-277"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "El empleado puede crear o editar eventos de estado en el sistema del proveedor, o conoce cómo se invoca la integración.",
+            "delivery-api no verifica que cada transición esté respaldada por un escaneo físico registrado en la red logística (S-15).",
+            "Los eventos viajan con la credencial de servicio compartida de la integración (S-06), sin identificar al empleado que los originó."
+          ],
+          "patrones_usados": [
+            "AV-0006",
+            "AV-0001",
+            "FE-17"
+          ],
+          "vector_practico": "Con su acceso legítimo al sistema del proveedor (o con una invocación directa de logistic), el empleado crea o edita manualmente eventos de entrega. El dato manipulado es el estado de entrega (y su marca de tiempo) de la orden X, que llega a delivery-api bajo la credencial compartida de la integración. Se diferencia de AV-0006 en que el actor es un empleado del proveedor logístico y el canal es la integración logistic con credencial compartida, no el sistema de la tienda. Se diferencia de AV-0001 en que no se falsifica la ubicación desde la app del repartidor, sino que se fabrica el evento en el sistema del proveedor.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        },
+        {
+          "id": "AC-UC10-03",
+          "actor": {
+            "rol": "Atacante que dispone de la credencial compartida de la integración y de copias de eventos legítimos previos",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "bajo",
+            "impacto": 2,
+            "probabilidad": 1,
+            "justificacion": "Requiere tener la credencial y copias de eventos previos de una misma filtración, lo cual es poco probable, y el efecto es estados inconsistentes y reclamos, no robo directo."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "D"
+            ]
+          },
+          "titulo": "Repetición de eventos legítimos de la integración con credencial filtrada para revertir el estado \"entregado\" de una orden",
+          "impacto": "Órdenes ya entregadas que reaparecen como fallidas o en tránsito, con reentregas o reembolsos indebidos. El soporte, el seguimiento al cliente y los reportes operativos quedan contaminados con estados inconsistentes.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Incluir en cada evento un ID único y un número de secuencia por orden dentro de la firma con marca de tiempo, y hacer que delivery-api descarte duplicados, eventos fuera de ventana de tiempo (por ejemplo 5 minutos) y secuencias menores o iguales a la última aceptada.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Impedir en delivery-api transiciones retrógradas desde estados finales ('entregado') hacia 'en tránsito' o 'fallido', salvo mediante un flujo manual aprobado y auditado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar los eventos rechazados por duplicado o por retroceso de estado y alertar cuando una misma orden reciba reenvíos de eventos antiguos o cuando reaparezcan como activas órdenes ya entregadas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Restaurar el último estado válido a partir del registro inmutable de eventos, cancelar los reenvíos o reembolsos disparados por el estado falso y rotar la credencial, además de proteger los logs de la integración del lado del proveedor.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-06",
+            "Se asume que la credencial compartida y los registros de eventos se obtuvieron en una misma filtración, por ejemplo por exposición de registros del lado del proveedor.",
+            "Se asume que el mecanismo de la integración no garantiza unicidad ni orden de eventos."
+          ],
+          "caso_de_uso": "UC-10",
+          "como_ocurre": [
+            "El atacante selecciona una orden ya entregada y un evento legítimo anterior de esa misma orden, por ejemplo \"fallido\" o \"en tránsito\".",
+            "Reenvía ese evento a delivery-api con una herramienta de envío de peticiones HTTP, usando la credencial de la integración, después de que la orden figure como \"entregado\".",
+            "delivery-api procesa el evento repetido como válido, porque no detecta que es un duplicado ni que la transición es retrógrada, y sobrescribe el estado actual.",
+            "El Marketplace muestra al cliente un estado incorrecto, lo que puede disparar reclamos, reprogramaciones o flujos de devolución para una orden que ya se entregó."
+          ],
+          "referencias": [
+            "CAPEC-277"
+          ],
+          "elementos_dfd": [
+            "logistic",
+            "delivery-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "El atacante posee la credencial de servicio compartida de la integración, filtrada por un descuido del proveedor o de un tercero (S-06).",
+            "El atacante dispone de copias de eventos legítimos ya enviados por la integración para una orden concreta, por ejemplo un evento \"fallido\" o \"en tránsito\". Se asume que las obtuvo del mismo incidente de filtración, que expuso registros de la integración junto con la credencial.",
+            "Los eventos no llevan nonce, firma con marca de tiempo ni número de secuencia verificado por delivery-api.",
+            "delivery-api no valida el orden de las transiciones: acepta retroceder de \"entregado\" a \"en tránsito\" o a \"fallido\"."
+          ],
+          "patrones_usados": [
+            "FE-17"
+          ],
+          "vector_practico": "Con una herramienta de envío de peticiones HTTP y la credencial de la integración, el atacante reutiliza un evento legítimo capturado. Los datos manipulados son el estado de entrega y la marca de tiempo del mensaje, que se reenvían sin cambios para la misma orden hacia delivery-api. Se diferencia de FE-17 en que no se fabrica un evento nuevo, sino que se repite uno auténtico, y el ataque depende de la ausencia de unicidad y de control de secuencia.",
+          "limites_confianza": [
+            "LC-4"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,553 @@
+{
+    "modelo": "claude-sonnet-5-5",
+    "run_id": "a084c505-32cc-43f4-a6ba-2881d9a1ca88",
+    "resumen": {
+        "tokens": {
+            "salida": 16921,
+            "entrada": 45048
+        },
+        "descartados": 0,
+        "casos_de_uso": 1,
+        "casos_de_abuso_aprobados": 6,
+        "casos_de_uso_sin_caso_de_abuso": [
+        ]
+    },
+    "generado": "2026-11-21T08:19:48.275Z",
+    "casos_de_uso": [
+        {
+            "origen": "memoria",
+            "caso_de_uso": "UC-12",
+            "descartados": [
+            ],
+            "casos_de_abuso": [
+                {
+                    "id": "AC-UC12-01",
+                    "actor": {
+                        "rol": "Atacante que obtiene el código de retiro del comprador",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "El código se envía en claro y la identificación se revisa a simple vista, así que basta una cuenta con credenciales reutilizadas y una credencial impresa para retirar un producto de alto valor."
+                    },
+                    "stride": {
+                        "principal": "S",
+                        "secundarias": [
+                            "E"
+                        ]
+                    },
+                    "titulo": "Retiro del producto con el código de otro cliente e identificación falsificada",
+                    "impacto": "Pérdida de un producto de alto valor, reclamo y reembolso al titular legítimo, y exposición de datos de la cuenta tomada.",
+                    "revision": {
+                        "intento": 1,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Reemplazar el código estático enviado por SMS o correo por un código de un solo uso que rota y solo se muestra dentro de la app o cuenta autenticada del titular. La notificación de 'listo para recolección' no incluye el código.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Exigir en el retiro una identificación registrada en la orden: el personal escanea el documento (QR o zona legible por máquina) y delivery-api compara el número con el registrado antes de validar el código. En productos de alto valor se añade una segunda verificación con OTP al teléfono registrado del titular.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Regla en delivery-api que marca los retiros de órdenes cuya cuenta tuvo cambio de contraseña, correo o teléfono, o inicio de sesión desde dispositivo nuevo en las 72 horas previas. Esos retiros se retienen hasta una verificación adicional por un supervisor.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Ante un reporte de acceso indebido, invalidar el código vigente y emitir otro, cerrar todas las sesiones y forzar el cambio de credenciales. Conservar la foto y el escaneo de identificación del retiro para la denuncia y la disputa.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "El código de retiro es estático y se envía por la notificación",
+                        "No existe verificación de identificación registrada ni doble verificación en productos de alto valor"
+                    ],
+                    "caso_de_uso": "UC-12",
+                    "como_ocurre": [
+                        "El atacante entra a la cuenta del Marketplace con credenciales reutilizadas, o lee el mensaje de 'producto listo' en un chat o correo comprometido, y copia el código de retiro y el nombre del titular",
+                        "Imprime en una impresora de PVC una credencial con el nombre del titular y su propia foto",
+                        "Se presenta en la tienda elegida y entrega el código al personal",
+                        "El personal valida el código contra la orden en delivery-api, que responde 'válido', y revisa la credencial solo visualmente",
+                        "Se entrega el producto voluminoso y la orden pasa a entregada; el titular reclama después que no lo recibió"
+                    ],
+                    "referencias": [
+                        "CAPEC-569",
+                        "OWASP OAT-012"
+                    ],
+                    "elementos_dfd": [
+                        "Marketplace",
+                        "delivery-api",
+                        "Punto de recolección"
+                    ],
+                    "precondiciones": [
+                        "La orden está en estado listo para recolección y la notificación incluye el código de retiro en claro",
+                        "El atacante obtuvo ese código por una cuenta de cliente tomada con credenciales filtradas o por un SMS o correo reenviado",
+                        "El personal de tienda compara la identificación solo a simple vista y no contra una identificación registrada en la orden"
+                    ],
+                    "patrones_usados": [
+                        "FE-10"
+                    ],
+                    "vector_practico": "Credencial falsa impresa con el nombre del titular más el código de retiro copiado de la cuenta o de la notificación; el dato manipulado es la identidad presentada frente a un código que delivery-api valida sin segundo factor ni identificación registrada.",
+                    "limites_confianza": [
+                        "LC-1",
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC12-02",
+                    "actor": {
+                        "rol": "Personal de tienda con acceso al sistema de validación de retiros",
+                        "tipo": "interno"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "Un empleado con acceso legítimo puede cambiar el estado sin escanear el código y no existe conciliación física, por lo que el fraude es fácil de ejecutar y difícil de atribuir en productos de alto valor."
+                    },
+                    "stride": {
+                        "principal": "T",
+                        "secundarias": [
+                            "R"
+                        ]
+                    },
+                    "titulo": "Personal de tienda marca la orden como entregada sin entregar el producto",
+                    "impacto": "Pérdida del producto, disputa sin evidencia con el cliente, reembolso a cargo de la empresa y dificultad para atribuir al empleado.",
+                    "revision": {
+                        "intento": 1,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "delivery-api solo permite pasar la orden a 'entregada' si recibe un escaneo válido del código de retiro y el identificador de la identificación verificada. Cualquier excepción manual requiere aprobación de un segundo usuario (supervisor) con motivo obligatorio.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Registrar cada cambio de estado en un log append-only e inmutable con empleado, terminal, método de validación y hora, de modo que el empleado no pueda repudiar ni borrar su acción.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Conciliación diaria entre órdenes entregadas, escaneos de código registrados y el inventario físico del Punto de recolección. Alertas por empleado y por tienda sobre entregas sin escaneo o con excepciones manuales frecuentes.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Al detectar una entrega sin evidencia, revertir el estado de la orden, suspender el acceso del empleado, abrir investigación con el log inmutable y gestionar con el cliente la reposición o la entrega del producto.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "delivery-api permite el cambio de estado a entregada sin exigir el escaneo del código de retiro",
+                        "Los eventos de cambio de estado no registran de forma inmutable el empleado ni el método de validación"
+                    ],
+                    "caso_de_uso": "UC-12",
+                    "como_ocurre": [
+                        "El empleado identifica una orden de alto valor que lleva varios días sin retirarse",
+                        "Desde su sesión en el sistema de la tienda cambia manualmente el estado a entregada, sin escanear el código ni registrar la identificación",
+                        "Saca el producto del punto de recolección como 'entregado' o lo guarda para sí o para reventa",
+                        "Cuando el cliente llega, la orden ya figura como entregada y no hay evidencia del retiro para disputar"
+                    ],
+                    "referencias": [
+                        "CAPEC-545"
+                    ],
+                    "elementos_dfd": [
+                        "delivery-api",
+                        "Punto de recolección"
+                    ],
+                    "precondiciones": [
+                        "El producto voluminoso ya está físicamente en el Punto de recolección y la orden está lista para recolección",
+                        "El empleado puede cambiar el estado de la orden a entregada desde su terminal sin escanear el código de retiro",
+                        "No hay inventario físico ni conciliación entre órdenes entregadas y retiros reales"
+                    ],
+                    "patrones_usados": [
+                        "FE-10"
+                    ],
+                    "vector_practico": "Edición directa del estado de la orden con la cuenta de empleado en la terminal de la tienda, sin escanear el código de retiro; el dato manipulado es el estado de la orden en delivery-api.",
+                    "limites_confianza": [
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC12-05",
+                    "actor": {
+                        "rol": "Atacante que obtiene acceso a la interfaz de validación de retiros",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "Requiere credenciales o una terminal de tienda, pero la enumeración de IDs predecibles es trivial con Burp Intruder y expone códigos y datos personales de muchos clientes."
+                    },
+                    "stride": {
+                        "principal": "I",
+                        "secundarias": [
+                            "S"
+                        ]
+                    },
+                    "titulo": "Consulta de órdenes ajenas en la validación de retiro para obtener códigos y datos personales",
+                    "impacto": "Exposición de datos personales y de los códigos de retiro de muchos clientes, habilita retiros fraudulentos masivos e implica incumplimiento de protección de datos.",
+                    "revision": {
+                        "intento": 1,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Autorización a nivel de objeto en delivery-api: el endpoint de consulta solo devuelve órdenes asignadas al punto de recolección del solicitante, verificado contra el token de la terminal. Los identificadores de orden pasan a UUID no predecibles.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Minimizar la respuesta: la terminal envía el código presentado y recibe solo 'válido' o 'inválido', más el nombre y el documento enmascarados. Nunca se devuelve el código de retiro ni el número de identificación completo. Las terminales usan MFA y bloqueo de sesión por inactividad.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Rate limiting por terminal y cuenta de empleado, con alertas ante consultas secuenciales, ráfagas de respuestas 403/404 o accesos a órdenes de otras tiendas. Los eventos se envían al SIEM.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Revocar de inmediato las credenciales y el token de la terminal comprometida. Rotar los códigos de retiro de las órdenes expuestas, avisar a los clientes afectados y notificar la brecha según la normativa de protección de datos.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "El endpoint de consulta no valida que la orden pertenezca al punto de recolección del solicitante",
+                        "Los identificadores de orden son predecibles"
+                    ],
+                    "caso_de_uso": "UC-12",
+                    "como_ocurre": [
+                        "El atacante obtiene credenciales de una terminal o de un empleado de la tienda por phishing, o usa una terminal desatendida",
+                        "Captura la petición de consulta de orden con Burp Suite y la envía a Intruder, que recorre los identificadores cercanos a la orden propia",
+                        "delivery-api responde con el código de retiro, el nombre del titular y el dato de identificación de órdenes de otros clientes y de otras tiendas",
+                        "El atacante elige las órdenes de alto valor listas para recolección y arma identificaciones falsas con los nombres obtenidos",
+                        "Se presenta en la tienda para retirar o vende la lista de datos"
+                    ],
+                    "referencias": [
+                        "OWASP API1:2023",
+                        "CAPEC-545"
+                    ],
+                    "elementos_dfd": [
+                        "delivery-api",
+                        "Punto de recolección"
+                    ],
+                    "precondiciones": [
+                        "Existe un endpoint de consulta de orden por identificador, usado por la terminal de la tienda, que no limita el alcance a las órdenes de esa tienda",
+                        "Los identificadores de orden son secuenciales o predecibles",
+                        "La respuesta incluye el código de retiro, el nombre del cliente y datos de su identificación"
+                    ],
+                    "patrones_usados": [
+                        "FE-10"
+                    ],
+                    "vector_practico": "Enumeración con Burp Intruder del identificador de orden en la consulta de validación (BOLA), con el campo orderId como dato manipulado, para leer códigos de retiro y datos personales ajenos.",
+                    "limites_confianza": [
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC12-06",
+                    "actor": {
+                        "rol": "Atacante o competidor con cuentas de cliente creadas en masa",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "medio",
+                        "impacto": 2,
+                        "probabilidad": 2,
+                        "justificacion": "Automatizar la creación de cuentas y pagos es sencillo y la falta de límites lo facilita, pero el atacante inmoviliza capital y el daño es temporal: indisponibilidad de espacio e inventario y costos logísticos."
+                    },
+                    "stride": {
+                        "principal": "D"
+                    },
+                    "titulo": "Saturación del Punto de recolección con órdenes que nunca se retiran",
+                    "impacto": "Indisponibilidad del Punto de recolección y del inventario de productos voluminosos, ventas perdidas, costos logísticos de ida y vuelta y degradación del servicio.",
+                    "revision": {
+                        "intento": 1,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Límites de órdenes de recolección pendientes por cuenta, por medio de pago y por tienda, y tope de capacidad por Punto de recolección. El Marketplace no confirma ni despacha productos voluminosos a una tienda sin capacidad disponible.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Plazo máximo de retiro (por ejemplo 5 días) con recordatorios y cancelación automática que libera el producto y el stock.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Controles de velocidad por tarjeta y BIN, con detección de tarjetas prepago y de una misma tarjeta usada en varias cuentas. La pasarela puede exigir 3-D Secure o rechazar esos pagos.",
+                            "responsable": "pasarela_pago"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Monitoreo de la tasa de órdenes no retiradas por tienda, cuenta y medio de pago, y de la ocupación del Punto de recolección, con alerta cuando se superen umbrales. Correlación de cuentas nuevas que eligen la misma tienda.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Cancelar las órdenes sospechosas, reponer el stock y bloquear cuentas y tarjetas implicadas. En las cancelaciones por no retiro se retiene o cobra el costo logístico según los términos del servicio.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "No hay un plazo de retiro ni un límite de órdenes de recolección pendientes por cliente o por tienda"
+                    ],
+                    "caso_de_uso": "UC-12",
+                    "como_ocurre": [
+                        "El atacante crea decenas de cuentas y paga órdenes de productos voluminosos con tarjetas propias o prepago, eligiendo siempre la misma tienda de recolección",
+                        "delivery-api asigna la tienda a cada orden y el almacén prepara y envía los productos",
+                        "El atacante no retira ninguno de los productos",
+                        "El Punto de recolección agota su espacio y el stock de esos productos queda inmovilizado, por lo que otros clientes no pueden comprarlos o no hay lugar para sus productos",
+                        "Después solicita la cancelación y recupera el pago, mientras la empresa asume costos de transporte y almacenaje"
+                    ],
+                    "referencias": [
+                        "OWASP OAT-012"
+                    ],
+                    "elementos_dfd": [
+                        "Marketplace",
+                        "delivery-api",
+                        "Punto de recolección"
+                    ],
+                    "precondiciones": [
+                        "El Marketplace permite elegir recolección en tienda sin límite de órdenes pendientes por cuenta, medio de pago o tienda",
+                        "No hay plazo máximo de retiro con cancelación automática y liberación del producto",
+                        "El almacén prepara y envía el producto voluminoso a la tienda en cuanto la orden está pagada"
+                    ],
+                    "patrones_usados": [
+                    ],
+                    "vector_practico": "Script con Playwright que repite el flujo de compra con cuentas distintas, eligiendo la misma tienda en la modalidad de recolección (campo tienda de recolección de la orden) y sin retirar los productos, hasta saturar el punto y el inventario.",
+                    "limites_confianza": [
+                        "LC-1",
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC12-03",
+                    "actor": {
+                        "rol": "Atacante con acceso a la cuenta del cliente",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "Con una sesión robada el atacante registra un autorizado sin fricción y el retiro parece legítimo, lo que complica la disputa y la recuperación del producto de alto valor."
+                    },
+                    "stride": {
+                        "principal": "S",
+                        "secundarias": [
+                            "E"
+                        ]
+                    },
+                    "titulo": "Suplantación del titular con sesión robada para registrar una persona autorizada inventada y retirar el producto",
+                    "impacto": "Retiro fraudulento con apariencia legítima, porque el autorizado figura en la orden. Pérdida del producto, reclamo de reembolso del titular y disputa sin forma de distinguir la acción del titular real de la del atacante.",
+                    "revision": {
+                        "intento": 2,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Exigir reautenticación con MFA para agregar o modificar la persona autorizada. La autorización de terceros solo puede iniciarse desde la cuenta del titular y tiene un periodo de espera (por ejemplo 24 horas) antes de ser efectiva en productos de alto valor.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Enviar aviso fuera de banda al correo y teléfono registrados antes del cambio de sesión, con enlace de confirmación o rechazo. El retiro del autorizado exige su identificación escaneada y el código de un solo uso, y delivery-api la compara con los datos del autorizado.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Reglas de correlación que alertan cuando coinciden sesión desde dispositivo o IP nuevos, alta de un autorizado y retiro próximo. También se alerta por cuentas con autorizaciones de terceros frecuentes o con el mismo autorizado en varias cuentas.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Permitir al titular revocar al autorizado desde el aviso y bloquear la orden hasta verificar su identidad por soporte. Si el retiro ya ocurrió, cerrar las sesiones, restablecer credenciales y entregar la evidencia (identificación escaneada, foto) para la denuncia.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "La autorización de terceros se puede modificar sin segundo factor ni confirmación fuera de banda al titular",
+                        "La categoría principal es S porque la acción (registrar un autorizado) está dentro de los permisos de la cuenta; se vulnera la autenticidad del titular y del autorizado. E queda como secundaria solo porque el cómplice obtiene un privilegio de retiro que el atacante no tenía legítimamente"
+                    ],
+                    "caso_de_uso": "UC-12",
+                    "como_ocurre": [
+                        "El atacante entra a la cuenta del comprador con la sesión robada y abre la orden con recolección en tienda; se hace pasar por el titular (suplantación de identidad)",
+                        "Agrega como autorizado el nombre y el número de identificación de un cómplice, que porta una identificación falsa o ajena con esos datos",
+                        "El Marketplace envía el dato a delivery-api, que lo asocia a la orden sin segundo factor ni aviso al titular por correo, SMS o notificación push",
+                        "El atacante lee el código de retiro en la orden de la cuenta y se lo pasa al cómplice",
+                        "El cómplice se presenta en la tienda con el código y la identificación; el personal verifica que coinciden con la orden y entrega el producto, y la orden pasa a entregada",
+                        "El titular descubre la entrega a un tercero cuando consulta la orden o recibe el aviso de entregada"
+                    ],
+                    "referencias": [
+                        "CAPEC-569",
+                        "OWASP OAT-012"
+                    ],
+                    "elementos_dfd": [
+                        "Marketplace",
+                        "delivery-api",
+                        "Punto de recolección"
+                    ],
+                    "precondiciones": [
+                        "El atacante tiene la sesión de la cuenta del comprador (infostealer o credenciales filtradas)",
+                        "El Marketplace permite registrar un 'autorizado' para el retiro sin reautenticar ni notificar por un canal independiente",
+                        "Existe una orden con recolección en tienda en estado pendiente o listo para recolección",
+                        "El Punto de recolección solo compara nombre e identificación presentados contra los datos de la orden"
+                    ],
+                    "patrones_usados": [
+                        "FE-10"
+                    ],
+                    "vector_practico": "Con la sesión robada, el atacante edita el campo 'persona autorizada' de la orden en la interfaz web del Marketplace, o reenvía la petición modificada con Burp Suite cambiando nombre e identificación del autorizado; el cómplice usa esa identificación junto con el código de retiro visible en la cuenta.",
+                    "limites_confianza": [
+                        "LC-1",
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC12-04",
+                    "actor": {
+                        "rol": "Cliente comprador",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "Sin firma, foto ni escaneo el reclamo de no recibido no se puede refutar, y el reembolso de un producto voluminoso de alto valor se resuelve a favor del cliente."
+                    },
+                    "stride": {
+                        "principal": "R",
+                        "secundarias": [
+                            "S"
+                        ]
+                    },
+                    "titulo": "Cliente retira el producto en tienda y luego repudia el retiro porque el punto de recolección no deja evidencia independiente",
+                    "impacto": "Pérdida del producto y del importe reembolsado, y carga operativa de disputas sin evidencia para contestarlas.",
+                    "revision": {
+                        "intento": 2,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Exigir al personal, antes de marcar 'entregada', el escaneo del código de un solo uso, el escaneo o la foto de la identificación del retirante, la firma digital y una foto del producto entregado, con marca de tiempo y terminal. Delivery-api bloquea el cambio de estado si falta alguna de esas evidencias.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Historial de reclamos de 'no recibido' o 'retirado por otra persona' por cliente, medio de pago y tienda, con alerta ante clientes con varios reclamos en poco tiempo o con reclamos en órdenes que tenían evidencia completa.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Soporte contrasta el reclamo con la evidencia del retiro y rechaza el reembolso cuando coincide. Si hay contracargo, se adjunta esa evidencia a la disputa y se marca la cuenta o el medio de pago para revisión.",
+                            "responsable": "pasarela_pago"
+                        }
+                    ],
+                    "supuestos": [
+                        "El Punto de recolección no captura firma, foto ni copia de la identificación al entregar",
+                        "Aporte frente a AV-0004: en la entrega a domicilio la app del repartidor al menos adjunta GPS y marca de tiempo; en la recolección en tienda no hay ni geolocalización ni foto, así que el repudio se apoya en la ausencia total de evidencia y no en una prueba parcial",
+                        "Frente a AV-0002 no hay colusión: el cliente actúa solo y el personal de tienda es honesto"
+                    ],
+                    "caso_de_uso": "UC-12",
+                    "como_ocurre": [
+                        "El cliente recibe la notificación de listo para recolección y retira el producto presentando el código y su identificación",
+                        "El personal valida a mano contra la orden, entrega el producto y marca la orden como entregada, sin que se capture firma, foto del retiro ni escaneo del código",
+                        "Días después el cliente abre un reclamo en el soporte del Marketplace diciendo que nunca retiró el producto o que lo retiró otra persona sin su permiso",
+                        "Soporte consulta delivery-api y solo encuentra el estado entregada, sin dato que identifique a quien retiró, por lo que no puede refutar al cliente",
+                        "La disputa se resuelve a favor del cliente y se emite el reembolso, o se aprueba la cancelación",
+                        "El cliente se queda con el producto y con el dinero"
+                    ],
+                    "referencias": [
+                        "OWASP OAT-012"
+                    ],
+                    "elementos_dfd": [
+                        "Marketplace",
+                        "delivery-api",
+                        "Punto de recolección"
+                    ],
+                    "precondiciones": [
+                        "La evidencia del retiro se limita a un cambio de estado a entregada en delivery-api, sin firma, foto de la identificación ni escaneo del código",
+                        "El cliente sabe que el reclamo se resuelve con el estado registrado y la falta de evidencia",
+                        "El producto voluminoso es de alto valor y el pago ya fue capturado"
+                    ],
+                    "patrones_usados": [
+                        "AV-0004",
+                        "AV-0002",
+                        "FE-01"
+                    ],
+                    "vector_practico": "Reclamo de no recibido o de retiro por un tercero en el canal de soporte del Marketplace, sobre una orden cuyo único registro es el estado entregada en delivery-api, sin firma, foto ni código escaneado.",
+                    "limites_confianza": [
+                        "LC-1",
+                        "LC-5"
+                    ]
+                }
+            ]
+        }
+    ]
+}

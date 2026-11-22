@@ -1,0 +1,446 @@
+{
+    "modelo": "claude-sonnet-5-5",
+    "run_id": "6c18dfda-d587-498f-9ca1-393d5d966e91",
+    "resumen": {
+        "tokens": {
+            "salida": 19587,
+            "entrada": 35732
+        },
+        "descartados": 0,
+        "casos_de_uso": 1,
+        "casos_de_abuso_aprobados": 4,
+        "casos_de_uso_sin_caso_de_abuso": [
+        ]
+    },
+    "generado": "2026-11-21T08:00:31.594Z",
+    "casos_de_uso": [
+        {
+            "origen": "memoria",
+            "caso_de_uso": "UC-11",
+            "descartados": [
+            ],
+            "casos_de_abuso": [
+                {
+                    "id": "AC-UC11-01",
+                    "actor": {
+                        "rol": "Repartidor",
+                        "tipo": "interno_tercero"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 3,
+                        "justificacion": "Las apps de ubicación simulada son triviales de usar en Android y no hay atestación (S-17), por lo que el abuso es muy probable y causa pérdida directa de producto de alto valor, reembolso y disputa con el proveedor."
+                    },
+                    "stride": {
+                        "principal": "S",
+                        "secundarias": [
+                            "R",
+                            "T"
+                        ]
+                    },
+                    "titulo": "Entrega registrada sin entregar mediante ubicación GPS simulada",
+                    "impacto": "Pérdida del producto y reembolso o reenvío al cliente. La orden consta como entregada, lo que debilita la trazabilidad y complica la disputa con el proveedor logístico. Pérdida económica recurrente si el repartidor repite el abuso.",
+                    "revision": {
+                        "intento": 1,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Integrar en la app del repartidor atestación del dispositivo (Play Integrity API) y exigir un veredicto válido y reciente (dispositivo íntegro, app sin modificar) vinculado a un nonce emitido por delivery-api para cada registro de entrega; sin veredicto válido no se permite registrar la entrega.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Detectar ubicación simulada en la app (flag isMock/isFromMockProvider, apps de mock location habilitadas, root, hooks Frida/Xposed) y enviar el resultado dentro del payload; delivery-api rechaza o envía a revisión manual los registros con indicadores de manipulación.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Hacer obligatorio el código de confirmación del cliente para cerrar la entrega a domicilio de alto valor, de modo que la coordenada por sí sola no baste para marcar la orden como entregada.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Análisis de trayectoria por repartidor en delivery-api: detectar saltos imposibles entre entregas, ausencia de recorrido GPS previo hacia la dirección, precisión GPS idéntica o redondeada entre registros y desfase entre marca de tiempo del dispositivo y del servidor.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Alertas por concentración de reclamos de no recibido por repartidor o ruta, con umbral y revisión semanal conjunta con el proveedor logístico.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Ante un registro sospechoso, congelar el cierre de la orden, contactar al cliente, suspender temporalmente al repartidor y activar la cláusula contractual de responsabilidad del proveedor para recuperar el costo del producto y del reembolso.",
+                            "responsable": "proveedor_logistico"
+                        }
+                    ],
+                    "supuestos": [
+                        "S-17: la ubicación es un dato generado del lado del cliente y falsificable",
+                        "No hay detección de ubicación simulada ni atestación del dispositivo en la app"
+                    ],
+                    "caso_de_uso": "UC-11",
+                    "como_ocurre": [
+                        "El repartidor recoge el producto y no se dirige al domicilio",
+                        "Activa una app de ubicación simulada (mock location) y fija las coordenadas de la dirección del cliente",
+                        "Abre la app del repartidor y registra la entrega con evidencia fabricada (foto reutilizada o tomada de otro lugar)",
+                        "La app adjunta las coordenadas simuladas y logistic envía el registro a delivery-api (F18)",
+                        "delivery-api calcula la distancia contra la dirección, la encuentra dentro del radio de tolerancia de RN-3 y marca la orden como entregada",
+                        "El repartidor se queda con el producto; el cliente reclama que no recibió nada"
+                    ],
+                    "referencias": [
+                        "FE-07",
+                        "OWASP API10:2023 Unsafe Consumption of APIs"
+                    ],
+                    "elementos_dfd": [
+                        "F17",
+                        "F18",
+                        "App del repartidor",
+                        "logistic",
+                        "delivery-api"
+                    ],
+                    "precondiciones": [
+                        "El repartidor tiene asignada una orden a domicilio de alto valor",
+                        "La ubicación la genera el dispositivo del repartidor y delivery-api la acepta sin atestación (S-17)",
+                        "El repartidor controla su dispositivo (Android con opciones de desarrollador o con root)",
+                        "Conoce la dirección de entrega o sus coordenadas desde la app"
+                    ],
+                    "patrones_usados": [
+                        "FE-07"
+                    ],
+                    "vector_practico": "Desde el dispositivo del repartidor, una app de mock location (o un Android rooteado con Frida/Xposed que hookea la API de localización) inyecta las coordenadas de la dirección de entrega. El dato manipulado son las coordenadas y su marca de tiempo en el registro enviado a delivery-api, que no valida la procedencia ni la integridad de la posición.",
+                    "limites_confianza": [
+                        "LC-4",
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC11-03",
+                    "actor": {
+                        "rol": "Cliente en colusión con repartidor",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "Requiere coordinación entre dos partes pero el reembolso se concede sin devolución física y sin contraste con el código de confirmación, y el patrón es repetible sobre productos de alto valor."
+                    },
+                    "stride": {
+                        "principal": "R",
+                        "secundarias": [
+                            "T"
+                        ]
+                    },
+                    "titulo": "Colusión cliente-repartidor para cobrar el reembolso con el producto entregado",
+                    "impacto": "Pérdida del producto y del reembolso, repudio de la entrega real por ambas partes y pérdidas repetidas si la pareja reitera el patrón sobre productos de alto valor.",
+                    "revision": {
+                        "intento": 1,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Condicionar el reembolso por rechazo o no entrega a la recepción y verificación del producto devuelto en almacén; sin devolución física comprobada no se libera el reembolso.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Exigir evidencia robusta para registrar estados de rechazo o no entregado: foto con marca de tiempo y geolocalización firmada, motivo seleccionado de catálogo cerrado y confirmación por contacto con el cliente (llamada o mensaje a canal verificado) antes de cambiar el estado.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Pasar a revisión manual las cancelaciones y reembolsos de productos de alto valor solicitados poco después de un intento de entrega rechazado o no entregado.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Análisis de relaciones repartidor-cliente en delivery-api: detectar pares que se repiten, rechazos frecuentes de productos de alto valor y cuentas de clientes vinculadas por dirección, dispositivo o medio de pago.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Reporte periódico por repartidor de tasa de rechazos y no entregados frente al promedio de su ruta, con alerta ante desviaciones.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Ante colusión confirmada, bloquear las cuentas del cliente y del repartidor, revertir reembolsos cuando sea posible, reclamar el valor al proveedor logístico según contrato y escalar a asuntos legales.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "El reembolso no está condicionado a recibir el producto de vuelta en almacén",
+                        "No se analizan relaciones repetidas repartidor-cliente"
+                    ],
+                    "caso_de_uso": "UC-11",
+                    "como_ocurre": [
+                        "El cliente compra un producto de alto valor con entrega a domicilio y se pone de acuerdo con el repartidor",
+                        "El repartidor entrega el producto en la dirección pero registra el intento como rechazado o no entregado, con una foto genérica y un motivo inventado",
+                        "delivery-api cambia el estado de la orden y no exige el código de confirmación ni la evidencia del cliente",
+                        "El cliente solicita cancelación y reembolso, que se aprueba según el estado registrado",
+                        "Cliente y repartidor se reparten el valor del producto"
+                    ],
+                    "referencias": [
+                        "FE-08",
+                        "FE-01"
+                    ],
+                    "elementos_dfd": [
+                        "F17",
+                        "F18",
+                        "delivery-api",
+                        "estados de entrega"
+                    ],
+                    "precondiciones": [
+                        "El repartidor puede registrar un resultado distinto del real (entregado, rechazado, no entregado) sin evidencia robusta",
+                        "El reembolso se concede por estado de entrega o reclamo sin devolución física del producto",
+                        "Cliente y repartidor se coordinan fuera de la plataforma"
+                    ],
+                    "patrones_usados": [
+                        "FE-08",
+                        "FE-01"
+                    ],
+                    "vector_practico": "El repartidor usa su app para registrar el estado 'rechazado' o 'no entregado' con la evidencia adjunta manipulada (foto reutilizada, motivo libre), mientras el cliente abre el reclamo en el canal de soporte. El dato manipulado es el estado y la evidencia del registro de entrega, que no se contrasta con el código de confirmación del cliente. Es el caso inverso (marcar entregado y reclamar no recibido) con el mismo mecanismo.",
+                    "limites_confianza": [
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC11-02",
+                    "actor": {
+                        "rol": "Repartidor",
+                        "tipo": "interno_tercero"
+                    },
+                    "riesgo": {
+                        "nivel": "alto",
+                        "impacto": 3,
+                        "probabilidad": 2,
+                        "justificacion": "Requiere más habilidad técnica (mitmproxy con CA propia), pero la ausencia de pinning, firma del payload y atestación lo hace viable, y el efecto es una entrega falsa válida ante RN-3 con pérdida del producto y evidencia inservible en disputas."
+                    },
+                    "stride": {
+                        "principal": "T",
+                        "secundarias": [
+                            "S",
+                            "R"
+                        ]
+                    },
+                    "titulo": "Reescritura de las coordenadas del registro de entrega en tránsito entre la app del repartidor y logistic",
+                    "impacto": "Órdenes marcadas como entregadas sin haberlo sido, con pérdida del producto, reembolsos o reenvíos, reclamos concentrados en un repartidor y registros de entrega que ya no sirven como prueba en disputas con el proveedor logístico.",
+                    "revision": {
+                        "intento": 2,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Firmar el payload del registro de entrega (coordenadas, marca de tiempo, order_id, hash de evidencia, nonce) con una clave de dispositivo respaldada por hardware (Android Keystore) atestada, y verificar la firma en delivery-api en LC-4, rechazando cualquier registro cuya firma no coincida.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Implementar certificate pinning en la app del repartidor hacia logistic y detección de proxy o CA de usuario instalada, bloqueando el envío del registro si se detecta intercepción.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "logistic debe reenviar el registro sin modificarlo junto con la firma original, y delivery-api debe revalidar integridad y frescura (nonce de un solo uso, ventana de tiempo corta, vinculación del order_id a la orden asignada a ese repartidor) en lugar de confiar en el reenvío.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Exigir en delivery-api el código de confirmación del cliente para cerrar la orden y vincular la foto o firma a la orden mediante metadatos firmados (order_id, marca de tiempo, coordenadas) en vez de aceptarlas como evidencia suelta.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Contrastar las coordenadas del registro con la telemetría de ruta continua del dispositivo (trazas GPS periódicas firmadas) y con las coordenadas EXIF de la foto; generar alerta si la posición reportada difiere de la traza más de un umbral.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Registrar en logs de auditoría inmutables en logistic y delivery-api el hash del payload recibido y el reenviado, y alertar ante discrepancias o fallos de verificación de firma por repartidor.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Ante manipulación confirmada, revocar la clave de dispositivo y la sesión del repartidor, reabrir las órdenes afectadas como no entregadas, recuperar el producto y reclamar al proveedor logístico según contrato.",
+                            "responsable": "proveedor_logistico"
+                        }
+                    ],
+                    "supuestos": [
+                        "No hay certificate pinning, firma del payload ni atestación del dispositivo en F18",
+                        "El código de confirmación es una de las evidencias alternativas y delivery-api no lo exige ni lo verifica cuando se envía foto o firma",
+                        "LC-4 se asume como el límite en el que delivery-api recibe el registro reenviado por logistic",
+                        "RN-3 solo compara las coordenadas recibidas con la dirección dentro del radio de tolerancia y no valida su origen",
+                        "El repartidor no tiene acceso directo a delivery-api, solo a través de la app y logistic"
+                    ],
+                    "caso_de_uso": "UC-11",
+                    "como_ocurre": [
+                        "El repartidor se queda con el producto de la orden B y no va a su dirección",
+                        "Configura su teléfono para que el tráfico de la app pase por mitmproxy, instalando su CA, y carga un script que reescribe el cuerpo de las peticiones de registro",
+                        "Desde un lugar distinto a la dirección de B (por ejemplo, a 4 km), abre en la app el registro de entrega de B, toma una foto cualquiera como evidencia y no usa el código de confirmación",
+                        "La app adjunta su GPS real y la marca de tiempo actual y envía el registro a logistic (F18)",
+                        "El script intercepta esa petición y sustituye los campos de latitud y longitud por las coordenadas de la dirección de entrega de B, que conoce por su ruta. No altera order_id, marca de tiempo ni evidencia",
+                        "logistic reenvía el registro a delivery-api (LC-4) sin detectar la alteración",
+                        "delivery-api calcula una distancia cercana a 0 m, cumple RN-3, acepta la foto como evidencia sin código de confirmación y marca la orden B como entregada",
+                        "El cliente de B no recibe nada, reclama, y el ecommerce reembolsa o reenvía mientras el repartidor se queda con el producto"
+                    ],
+                    "referencias": [
+                        "FE-07",
+                        "S-17"
+                    ],
+                    "elementos_dfd": [
+                        "F18",
+                        "App del repartidor",
+                        "logistic",
+                        "delivery-api"
+                    ],
+                    "precondiciones": [
+                        "El repartidor controla su propio dispositivo Android y puede configurarlo con un proxy (mitmproxy) y un certificado raíz propio, porque la app no usa certificate pinning",
+                        "El registro de entrega viaja en F18 (app→logistic) como JSON con latitud, longitud, marca de tiempo y evidencia, sin firma del payload ni atestación del dispositivo",
+                        "Tiene asignada una orden B que no va a entregar. La app le muestra su dirección y coordenadas, porque forman parte de su ruta",
+                        "El flujo acepta como evidencia el código de confirmación, la foto o la firma (paso 2 del caso de uso), y delivery-api no exige el código ni vincula la foto o firma a la orden",
+                        "logistic reenvía a delivery-api el registro tal como lo recibe, sin revalidar su integridad",
+                        "Solo accede a delivery-api a través de logistic y con la app, sin credenciales directas a delivery-api"
+                    ],
+                    "patrones_usados": [
+                        "FE-07"
+                    ],
+                    "vector_practico": "Con un addon de mitmproxy, el repartidor intercepta el POST de F18 (app→logistic) en su propio dispositivo y reescribe en el JSON los campos de latitud y longitud con las coordenadas de la dirección de la orden B, que obtiene de su ruta asignada. El dato manipulado son las coordenadas del registro, que delivery-api compara con la dirección en RN-3 sin poder comprobar que provienen del GPS real. Se diferencia del uso de una app de ubicación simulada en que la app puede detectar o no el GPS falso, pero el payload alterado en tránsito carece de firma.",
+                    "limites_confianza": [
+                        "LC-4",
+                        "LC-5"
+                    ]
+                },
+                {
+                    "id": "AC-UC11-04",
+                    "actor": {
+                        "rol": "Cliente",
+                        "tipo": "externo"
+                    },
+                    "riesgo": {
+                        "nivel": "medio",
+                        "impacto": 2,
+                        "probabilidad": 2,
+                        "justificacion": "Es sencillo para un cliente oportunista aprovechar firma o foto sin código, pero el impacto por caso se limita al valor de un pedido y se puede acotar con historial de reclamos."
+                    },
+                    "stride": {
+                        "principal": "R",
+                        "secundarias": [
+                            "S"
+                        ]
+                    },
+                    "titulo": "Reclamo falso de entrega a otra persona apoyado en que la geolocalización no prueba quién recibió",
+                    "impacto": "Reembolso o reenvío indebido con pérdida del producto, costo de disputa con el proveedor logístico, que no puede demostrar la recepción por el cliente, y posible repetición del patrón en cuentas con productos de alto valor.",
+                    "revision": {
+                        "intento": 2,
+                        "criterios": {
+                            "R1": true,
+                            "R2": true,
+                            "R3": true,
+                            "R4": true,
+                            "R5": true,
+                            "R6": true,
+                            "R7": true
+                        }
+                    },
+                    "controles": [
+                        {
+                            "tipo": "preventivo",
+                            "control": "Hacer obligatorio el código de confirmación del cliente (entregado en canal verificado, de un solo uso y ligado a la orden) como evidencia principal, aceptando firma o foto solo como complemento, con una excepción registrada y justificada si el cliente no puede darlo.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "preventivo",
+                            "control": "Exigir que la app valide la calidad de la evidencia antes de enviar (firma con trazo mínimo y nombre del receptor, foto con receptor o puerta identificable, marca de tiempo y coordenadas incrustadas) y rechace firmas ilegibles o fotos sin sujeto.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Llevar un historial de reclamos de no recibido por cliente, dirección y medio de pago, y alertar cuando se superen umbrales o los reclamos se concentren en entregas con evidencia válida y geolocalización correcta.",
+                            "responsable": "ecommerce"
+                        },
+                        {
+                            "tipo": "detectivo",
+                            "control": "Marcar en delivery-api los registros cerrados sin código de confirmación y revisar periódicamente la tasa de reclamos posteriores sobre ellos por repartidor y por cliente.",
+                            "responsable": "proveedor_logistico"
+                        },
+                        {
+                            "tipo": "correctivo",
+                            "control": "Ante un reclamo sobre una entrega sin código, contactar al cliente y revisar la evidencia antes de reembolsar; si se confirma el abuso, restringir al cliente a entregas con código obligatorio o recogida en punto, y recuperar el costo mediante la política de reclamos.",
+                            "responsable": "ecommerce"
+                        }
+                    ],
+                    "supuestos": [
+                        "El código de confirmación es opcional y puede sustituirse por firma o foto (paso 2 del flujo)",
+                        "La política de soporte no admite la geolocalización validada con RN-3 como prueba de que el cliente recibió el producto, solo de que el repartidor estuvo en la dirección",
+                        "El agente de soporte consulta el estado y la evidencia en delivery-api, pero la firma o foto registrada no permite identificar al receptor",
+                        "El repartidor no es cómplice. Si lo fuera, el caso pasaría al patrón de colusión FE-08"
+                    ],
+                    "caso_de_uso": "UC-11",
+                    "como_ocurre": [
+                        "El repartidor llega a la dirección y entrega el producto en la puerta al cliente",
+                        "El cliente recibe el producto pero, cuando le piden el código de confirmación, dice que no lo tiene a mano",
+                        "En la pantalla de la app del repartidor (F17) firma con un garabato ilegible, o deja que se tome una foto del paquete en la puerta sin que se vea quién lo recibe",
+                        "La app adjunta las coordenadas del dispositivo y la marca de tiempo, y logistic envía el registro a delivery-api (F18), que valida la distancia con RN-3 y marca la orden como entregada, con un registro sin código de confirmación",
+                        "Después el cliente abre un reclamo por el canal de soporte del Marketplace diciendo que no recibió el producto o que lo recibió otra persona",
+                        "El agente de soporte revisa el estado de entrega en delivery-api y ve ubicación válida dentro del radio, con una firma ilegible o una foto sin receptor identificable y sin código de confirmación",
+                        "Como esa evidencia prueba que el repartidor estuvo en la dirección pero no que el cliente recibió el producto, el reclamo se resuelve a favor del cliente con reembolso o reenvío, mientras el cliente conserva el producto"
+                    ],
+                    "referencias": [
+                        "FE-01"
+                    ],
+                    "elementos_dfd": [
+                        "F17",
+                        "F18",
+                        "App del repartidor",
+                        "logistic",
+                        "delivery-api",
+                        "estados de entrega"
+                    ],
+                    "precondiciones": [
+                        "El flujo acepta como evidencia el código de confirmación, la foto o la firma (paso 2 del caso de uso), y el código no es obligatorio cuando hay firma o foto",
+                        "El cliente conoce o puede obtener el código de confirmación de su orden, pero nadie lo obliga a darlo",
+                        "El repartidor registra la entrega con la geolocalización del dispositivo y delivery-api la valida con RN-3, por lo que el estado queda como entregado",
+                        "La geolocalización y su marca de tiempo solo acreditan la presencia del repartidor en la dirección, no la identidad de quien recibió el producto",
+                        "La política de reclamos de soporte considera la identidad del receptor (código o firma legible) como la prueba determinante de la recepción por el cliente"
+                    ],
+                    "patrones_usados": [
+                        "FE-01"
+                    ],
+                    "vector_practico": "El cliente firma de forma ilegible en la pantalla del repartidor, o acepta solo la foto del paquete, y se niega a dar el código de confirmación en el momento de la entrega. Después abre un reclamo de \"no recibido o recibido por otra persona\" en soporte. El dato aprovechado es el registro de evidencia (firma o foto sin código) que delivery-api guarda en el estado de entrega. Sus coordenadas validadas por RN-3 acreditan el lugar del repartidor pero no quién recibió el producto.",
+                    "limites_confianza": [
+                        "LC-5"
+                    ]
+                }
+            ]
+        }
+    ]
+}

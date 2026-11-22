@@ -152,6 +152,19 @@ alter table public.ltm_abusos      enable row level security;
 alter table public.ejecuciones     enable row level security;
 alter table public.ejecucion_pasos enable row level security;
 
+-- Permisos explícitos sobre las tablas: los proyectos nuevos de Supabase pueden no dar permisos
+-- automáticos a las tablas creadas desde el SQL Editor. Solo service_role los recibe.
+grant usage on schema public, extensions to service_role;
+grant select, insert, update, delete on
+  public.ltm_negocio, public.ltm_amenazas, public.ltm_abusos,
+  public.ejecuciones, public.ejecucion_pasos
+  to service_role;
+grant usage, select on all sequences in schema public to service_role;
+revoke all on
+  public.ltm_negocio, public.ltm_amenazas, public.ltm_abusos,
+  public.ejecuciones, public.ejecucion_pasos
+  from anon, authenticated;
+
 revoke all on function public.match_ltm_negocio(extensions.vector, int, jsonb)  from public, anon, authenticated;
 revoke all on function public.match_ltm_amenazas(extensions.vector, int, jsonb) from public, anon, authenticated;
 revoke all on function public.match_ltm_abusos(extensions.vector, int, jsonb)   from public, anon, authenticated;

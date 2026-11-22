@@ -1,0 +1,1341 @@
+{
+ "tabla": "ltm_negocio",
+ "total": 91,
+ "fragmentos": [
+  {
+   "content": "Regla de negocio RN-1: Cada cliente debe tener un único registro en la plataforma.\nCasos de uso donde aplica: UC-01, UC-04, UC-14",
+   "metadata": {
+    "fuente": "reglas",
+    "id": "RN-1",
+    "tipo": "regla",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-04",
+     "UC-14"
+    ],
+    "hash": "91872b1ddbe377732a564b1224dbab44ce84a74182c485d9e881b04bde53edfe"
+   }
+  },
+  {
+   "content": "Regla de negocio RN-2: El costo de envío se calcula según el perfil del usuario.\nCasos de uso donde aplica: UC-01, UC-03, UC-05, UC-06, UC-07, UC-14, UC-16",
+   "metadata": {
+    "fuente": "reglas",
+    "id": "RN-2",
+    "tipo": "regla",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-03",
+     "UC-05",
+     "UC-06",
+     "UC-07",
+     "UC-14",
+     "UC-16"
+    ],
+    "hash": "9cc9dd87607f086afdf6b7794ec7d7095325ee93bf5f98bb6ee2dd4b01d7a74b"
+   }
+  },
+  {
+   "content": "Regla de negocio RN-3: El entregador debe estar en la localización de entrega cuando hace el registro de entrega (entregas a domicilio).\nCasos de uso donde aplica: UC-10, UC-11, UC-16",
+   "metadata": {
+    "fuente": "reglas",
+    "id": "RN-3",
+    "tipo": "regla",
+    "casos_de_uso": [
+     "UC-10",
+     "UC-11",
+     "UC-16"
+    ],
+    "hash": "17cbaf3c50f97d71ffe95b8865082b9ad2c8c5d8854fd3de7bf1c7177eaed4fc"
+   }
+  },
+  {
+   "content": "Regla de negocio RN-4: El usuario puede utilizar cupones de descuento.\nCasos de uso donde aplica: UC-04, UC-05, UC-07, UC-13, UC-15",
+   "metadata": {
+    "fuente": "reglas",
+    "id": "RN-4",
+    "tipo": "regla",
+    "casos_de_uso": [
+     "UC-04",
+     "UC-05",
+     "UC-07",
+     "UC-13",
+     "UC-15"
+    ],
+    "hash": "3e52a67cda574f30fcac79baf17af7e89cbee1b2f1c2fa3bc2e2c4c2d156af09"
+   }
+  },
+  {
+   "content": "Límite de confianza LC-1: Internet ↔ Marketplace: el cliente (no confiable) interactúa con la plataforma.\nCasos de uso que lo cruzan: UC-01, UC-02, UC-03, UC-04, UC-05, UC-06, UC-07, UC-12, UC-13",
+   "metadata": {
+    "fuente": "limites",
+    "id": "LC-1",
+    "tipo": "limite",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-02",
+     "UC-03",
+     "UC-04",
+     "UC-05",
+     "UC-06",
+     "UC-07",
+     "UC-12",
+     "UC-13"
+    ],
+    "hash": "904682885f33deb42d009644d40b2234691b27c2819e66d7601fcc5c3ebb6548"
+   }
+  },
+  {
+   "content": "Límite de confianza LC-2: Marketplace ↔ APIs internas (clients-api, cupons-api, delivery-api).\nCasos de uso que lo cruzan: UC-01, UC-03, UC-04, UC-05, UC-06, UC-07",
+   "metadata": {
+    "fuente": "limites",
+    "id": "LC-2",
+    "tipo": "limite",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-03",
+     "UC-04",
+     "UC-05",
+     "UC-06",
+     "UC-07"
+    ],
+    "hash": "d690d729741f51aab49e644ad99c2128d595a13411be2197c087abf371f94ad6"
+   }
+  },
+  {
+   "content": "Límite de confianza LC-3: Empleados ↔ frontends administrativos internos ↔ APIs internas.\nCasos de uso que lo cruzan: UC-14, UC-15, UC-16",
+   "metadata": {
+    "fuente": "limites",
+    "id": "LC-3",
+    "tipo": "limite",
+    "casos_de_uso": [
+     "UC-14",
+     "UC-15",
+     "UC-16"
+    ],
+    "hash": "691934912e22ca3e45783bad68eab575bb596ba3834a2b5a94f9164cc05f1978"
+   }
+  },
+  {
+   "content": "Límite de confianza LC-4: Empresa de logística (tercero) ↔ delivery-api, mediante la integración logistic.\nCasos de uso que lo cruzan: UC-09, UC-10, UC-11, UC-13, UC-16",
+   "metadata": {
+    "fuente": "limites",
+    "id": "LC-4",
+    "tipo": "limite",
+    "casos_de_uso": [
+     "UC-09",
+     "UC-10",
+     "UC-11",
+     "UC-13",
+     "UC-16"
+    ],
+    "hash": "3e31f42b0f2c9fc0272e0b167cd7a6feba4ac618332af1151311a35e2f2a1781"
+   }
+  },
+  {
+   "content": "Límite de confianza LC-5: Mundo físico ↔ sistemas: dispositivo del repartidor, escaneos en almacén y centros de distribución, entrega y recolección física.\nCasos de uso que lo cruzan: UC-08, UC-09, UC-11, UC-12, UC-13",
+   "metadata": {
+    "fuente": "limites",
+    "id": "LC-5",
+    "tipo": "limite",
+    "casos_de_uso": [
+     "UC-08",
+     "UC-09",
+     "UC-11",
+     "UC-12",
+     "UC-13"
+    ],
+    "hash": "83f6b9bc330b384b942428b8f1bb414daa4c11f92189a68cd247c7ba8a0bcb60"
+   }
+  },
+  {
+   "content": "Límite de confianza LC-6: Plataforma ↔ pasarela de pago externa.\nCasos de uso que lo cruzan: UC-07, UC-13",
+   "metadata": {
+    "fuente": "limites",
+    "id": "LC-6",
+    "tipo": "limite",
+    "casos_de_uso": [
+     "UC-07",
+     "UC-13"
+    ],
+    "hash": "20a671d62a06bb8d6808aa2d02f8aac75767ccc620aa4f98867dae92e094b2bf"
+   }
+  },
+  {
+   "content": "Caso de uso UC-01: Registro y gestión de la cuenta del cliente\nEl cliente crea su cuenta en el Marketplace y mantiene sus datos de perfil (identidad, contacto, direcciones).\nActores: Cliente\nComponentes: Marketplace, clients-api\nFlujo:\n1. El cliente ingresa correo, teléfono y datos personales en el Marketplace.\n2. clients-api valida que no exista otro registro con los mismos identificadores (RN-1).\n3. Se verifican el correo y el teléfono con un código de un solo uso.\n4. El cliente inicia sesión y edita su perfil y sus direcciones.\nDatos: Datos personales, Correo y teléfono, Direcciones, Credenciales de acceso, Atributos del perfil\nReglas de negocio: RN-1, RN-2\nLímites de confianza: LC-1, LC-2\nSupuestos: S-01, S-07, S-08, S-09",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-01",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-01"
+    ],
+    "componentes": [
+     "Marketplace",
+     "clients-api"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-2"
+    ],
+    "hash": "a96877290ef48ec178418b06eb716eb383347bdf20b20a1fe3f1d0cc7c6c7d35"
+   }
+  },
+  {
+   "content": "Caso de uso UC-02: Selección del producto y carrito\nEl cliente busca un producto voluminoso, lo selecciona y lo agrega al carrito con su cantidad y variante.\nActores: Cliente\nComponentes: Marketplace\nFlujo:\n1. El cliente busca y abre la ficha del producto voluminoso.\n2. Agrega el producto al carrito indicando cantidad y variante.\n3. El Marketplace calcula el subtotal y muestra el carrito.\nDatos: Identificador del producto, Precio, Cantidad, Disponibilidad\nReglas de negocio: ninguna\nLímites de confianza: LC-1\nSupuestos: S-01, S-02, S-26",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-02",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-02"
+    ],
+    "componentes": [
+     "Marketplace"
+    ],
+    "limites_confianza": [
+     "LC-1"
+    ],
+    "hash": "f56b0ee7f48fe20bf159a5ff879a4f67fc777671e65e91f54120b0ad783c44f2"
+   }
+  },
+  {
+   "content": "Caso de uso UC-03: Captura de datos de envío y contacto\nDurante el pago, el cliente indica la dirección de entrega y los datos de contacto para la orden.\nActores: Cliente\nComponentes: Marketplace, clients-api, delivery-api\nFlujo:\n1. El cliente elige una dirección guardada o captura una nueva.\n2. Indica nombre y teléfono de contacto para la entrega.\n3. La dirección se envía a delivery-api para determinar la cobertura y el costo de envío.\nDatos: Dirección de entrega, Coordenadas o código postal, Nombre y teléfono de contacto\nReglas de negocio: RN-2\nLímites de confianza: LC-1, LC-2\nSupuestos: S-09, S-10",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-03",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-03"
+    ],
+    "componentes": [
+     "Marketplace",
+     "clients-api",
+     "delivery-api"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-2"
+    ],
+    "hash": "7b008bf03f210107a66fc9d52778e7a7a9c188e232e82caf00ba933ae4b14893"
+   }
+  },
+  {
+   "content": "Caso de uso UC-04: Aplicación de cupón de descuento\nEl cliente ingresa un código de cupón que se valida y se aplica a la orden o al envío.\nActores: Cliente\nComponentes: Marketplace, cupons-api, delivery-api\nFlujo:\n1. El cliente escribe un código de cupón en el checkout.\n2. cupons-api valida vigencia, elegibilidad del cliente, monto mínimo y usos disponibles.\n3. El descuento se aplica al total del producto o al costo de envío.\n4. El uso del cupón se consume al confirmar el pago.\nDatos: Código del cupón, Reglas del cupón, Historial de uso por cliente\nReglas de negocio: RN-4, RN-1\nLímites de confianza: LC-1, LC-2\nSupuestos: S-11, S-12, S-26",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-04",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-04"
+    ],
+    "componentes": [
+     "Marketplace",
+     "cupons-api",
+     "delivery-api"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-2"
+    ],
+    "hash": "261393216e1b26e79d8dd13b8110d26c5c3c5bc05def6a078a967961979b3fc5"
+   }
+  },
+  {
+   "content": "Caso de uso UC-05: Cálculo del costo de envío según el perfil\ndelivery-api calcula el costo de envío del producto voluminoso a partir del perfil del cliente, la dirección, el producto y los cupones.\nActores: Cliente, delivery-api\nComponentes: delivery-api, clients-api, cupons-api, Marketplace\nFlujo:\n1. El Marketplace solicita la cotización de envío a delivery-api.\n2. delivery-api consulta a clients-api los atributos del perfil (nivel, membresía, zona).\n3. delivery-api consulta a cupons-api si hay un cupón de envío aplicable.\n4. delivery-api calcula el costo según peso, volumen, distancia y perfil, y lo devuelve al Marketplace.\nDatos: Atributos del perfil, Dimensiones y peso del producto, Dirección de destino, Tarifa calculada\nReglas de negocio: RN-2, RN-4\nLímites de confianza: LC-1, LC-2\nSupuestos: S-03, S-09, S-10",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-05",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-05"
+    ],
+    "componentes": [
+     "delivery-api",
+     "clients-api",
+     "cupons-api",
+     "Marketplace"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-2"
+    ],
+    "hash": "710556a600d925086c8a2723a2f3e46610bd874fda723fde450fe17cb5398c1b"
+   }
+  },
+  {
+   "content": "Caso de uso UC-06: Elección de la modalidad de entrega\nEl cliente elige entre entrega a domicilio y recolección en tienda, con su costo y ventana de entrega.\nActores: Cliente\nComponentes: Marketplace, delivery-api\nFlujo:\n1. delivery-api devuelve las opciones disponibles con su costo y fecha estimada.\n2. El cliente selecciona entrega a domicilio o recolección en una tienda.\n3. Si elige recolección, selecciona la tienda y se asigna a la orden.\nDatos: Modalidad de entrega, Tienda de recolección, Ventana de entrega, Costo de cada opción\nReglas de negocio: RN-2\nLímites de confianza: LC-1, LC-2\nSupuestos: S-10, S-18",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-06",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-06"
+    ],
+    "componentes": [
+     "Marketplace",
+     "delivery-api"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-2"
+    ],
+    "hash": "ce4d5050749695cc230b5078fcb2c2688afb82c912a448558e500e975edec4b6"
+   }
+  },
+  {
+   "content": "Caso de uso UC-07: Pago y registro de la orden\nEl cliente paga y la orden queda registrada con su producto, precio, descuento, envío y modalidad de entrega.\nActores: Cliente, Pasarela de pago\nComponentes: Marketplace, Pasarela de pago, delivery-api\nFlujo:\n1. El Marketplace muestra el total final (producto, envío y descuentos).\n2. El cliente paga en la pasarela de pago externa.\n3. La pasarela confirma el pago al Marketplace.\n4. Se registra la orden y se crea la orden de entrega en delivery-api, que inicia la preparación.\nDatos: Total de la orden, Confirmación de pago, Medio de pago tokenizado, Orden de entrega\nReglas de negocio: RN-2, RN-4\nLímites de confianza: LC-1, LC-2, LC-6\nSupuestos: S-02, S-04, S-05, S-26",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-07",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-07"
+    ],
+    "componentes": [
+     "Marketplace",
+     "Pasarela de pago",
+     "delivery-api"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-2",
+     "LC-6"
+    ],
+    "hash": "a3a7f9d1bc376f3ccc936003842d4db78507e193f05956c9ad0668e909739c5c"
+   }
+  },
+  {
+   "content": "Caso de uso UC-08: Preparación y empaquetado en almacén\nEl almacén recibe la orden, prepara y empaqueta el producto voluminoso y lo deja listo para el proveedor logístico.\nActores: Personal de almacén\nComponentes: delivery-api, Red de logística\nFlujo:\n1. La orden aparece en la cola de preparación del almacén.\n2. El personal localiza el producto, lo inspecciona y lo empaqueta.\n3. Se registra peso y dimensiones, se etiqueta y se escanea el paquete.\n4. La orden cambia a estado listo para recolección.\nDatos: Orden de entrega, Etiqueta y código del paquete, Peso y dimensiones reales, Estado de la orden\nReglas de negocio: ninguna\nLímites de confianza: LC-5\nSupuestos: S-13, S-14, S-27",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-08",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-08"
+    ],
+    "componentes": [
+     "delivery-api",
+     "Red de logística"
+    ],
+    "limites_confianza": [
+     "LC-5"
+    ],
+    "hash": "d6341f4988498bb18bede9deba3d09a67bdf618e598fa1af73e467e140de6cbb"
+   }
+  },
+  {
+   "content": "Caso de uso UC-09: Recolección y transporte por el proveedor logístico\nEl proveedor logístico recoge el paquete y lo transporta a través de centros de distribución y puntos de control hasta el destino.\nActores: Empresa de logística, Personal de centros de distribución, Repartidor\nComponentes: Red de logística, logistic\nFlujo:\n1. El proveedor logístico recoge el paquete en el almacén y escanea la entrega.\n2. El paquete pasa por uno o más centros de distribución y puntos de control.\n3. En cada punto se escanea el paquete y se registra el evento.\n4. El paquete se asigna a una ruta y a un repartidor para la entrega final.\nDatos: Eventos de escaneo, Ubicación del paquete, Asignación de ruta y repartidor\nReglas de negocio: ninguna\nLímites de confianza: LC-4, LC-5\nSupuestos: S-06, S-14, S-15, S-27",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-09",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-09"
+    ],
+    "componentes": [
+     "Red de logística",
+     "logistic"
+    ],
+    "limites_confianza": [
+     "LC-4",
+     "LC-5"
+    ],
+    "hash": "41778aa87eaed026476c4f6e28178bf5c6d493dd2157792fd72e3f9324cc36f9"
+   }
+  },
+  {
+   "content": "Caso de uso UC-10: Actualización de estados por la integración logística\nLa empresa de logística envía a delivery-api, mediante la integración logistic, los cambios de estado de la orden de entrega.\nActores: Empresa de logística\nComponentes: logistic, delivery-api, Marketplace\nFlujo:\n1. El sistema del proveedor logístico genera un evento (recolectado, en tránsito, en reparto, entregado, fallido).\n2. logistic envía el evento a delivery-api con la credencial de la integración.\n3. delivery-api actualiza el estado de la orden de entrega.\n4. El Marketplace muestra el nuevo estado al cliente.\nDatos: Identificador de la orden, Estado de entrega, Marca de tiempo, Ubicación reportada, Credencial de integración\nReglas de negocio: RN-3\nLímites de confianza: LC-4\nSupuestos: S-06, S-15, S-16",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-10",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-10"
+    ],
+    "componentes": [
+     "logistic",
+     "delivery-api",
+     "Marketplace"
+    ],
+    "limites_confianza": [
+     "LC-4"
+    ],
+    "hash": "57a00b6afb300a966e959064d20f6bf8e8e45b306302b580043cb5e767e89bad"
+   }
+  },
+  {
+   "content": "Caso de uso UC-11: Registro de entrega a domicilio con geolocalización\nEl repartidor registra la entrega en la dirección del cliente; el registro solo es válido si su ubicación coincide con la de entrega.\nActores: Repartidor, Cliente\nComponentes: App del repartidor, logistic, delivery-api\nFlujo:\n1. El repartidor llega a la dirección y entrega el producto al cliente o a quien lo recibe.\n2. En su app registra la entrega con la evidencia (código de confirmación, foto o firma).\n3. La app adjunta la geolocalización del dispositivo.\n4. logistic envía el registro a delivery-api, que valida la distancia a la dirección de entrega (RN-3) y marca la orden como entregada.\nDatos: Coordenadas del dispositivo, Marca de tiempo, Evidencia de entrega, Código de confirmación\nReglas de negocio: RN-3\nLímites de confianza: LC-4, LC-5\nSupuestos: S-15, S-16, S-17, S-27",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-11",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-11"
+    ],
+    "componentes": [
+     "App del repartidor",
+     "logistic",
+     "delivery-api"
+    ],
+    "limites_confianza": [
+     "LC-4",
+     "LC-5"
+    ],
+    "hash": "fee885a5e3591cd7f63404b58014554039b73e8b09a28c285d131c7f56797f27"
+   }
+  },
+  {
+   "content": "Caso de uso UC-12: Recolección en tienda\nEl cliente recoge el producto voluminoso en la tienda elegida, identificándose con los datos de la orden.\nActores: Cliente, Personal de tienda\nComponentes: Marketplace, delivery-api, Punto de recolección\nFlujo:\n1. El cliente recibe la notificación de que su producto está listo para recolección.\n2. En la tienda presenta el código de retiro y una identificación.\n3. El personal valida el código contra la orden y entrega el producto.\n4. La orden se marca como entregada.\nDatos: Código de retiro, Identificación del cliente o autorizado, Estado de la orden\nReglas de negocio: ninguna\nLímites de confianza: LC-1, LC-5\nSupuestos: S-18, S-27",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-12",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-12"
+    ],
+    "componentes": [
+     "Marketplace",
+     "delivery-api",
+     "Punto de recolección"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-5"
+    ],
+    "hash": "6b44681ab6be2326968116d42bf0a5b33e7d4fdc6f12fe79b71ba8a3f6d35778"
+   }
+  },
+  {
+   "content": "Caso de uso UC-13: Cancelación posterior a la recepción y devolución\nDespués de recibir el producto, el cliente cancela la compra desde la aplicación; el producto se devuelve y se emite el reembolso.\nActores: Cliente, Empresa de logística, Personal de almacén\nComponentes: Marketplace, delivery-api, logistic, Pasarela de pago\nFlujo:\n1. El cliente solicita la cancelación desde la misma aplicación donde compró, indicando el motivo.\n2. Se genera una orden de recolección inversa del producto voluminoso.\n3. El proveedor logístico recoge el producto y lo lleva al almacén.\n4. El almacén inspecciona el producto devuelto.\n5. Se emite el reembolso y, si aplica, se restituye el cupón.\nDatos: Motivo de cancelación, Orden de recolección inversa, Resultado de la inspección, Reembolso\nReglas de negocio: RN-4\nLímites de confianza: LC-1, LC-4, LC-5, LC-6\nSupuestos: S-12, S-19, S-20, S-26",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-13",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-13"
+    ],
+    "componentes": [
+     "Marketplace",
+     "delivery-api",
+     "logistic",
+     "Pasarela de pago"
+    ],
+    "limites_confianza": [
+     "LC-1",
+     "LC-4",
+     "LC-5",
+     "LC-6"
+    ],
+    "hash": "70df7af4a13363eb91ff81b21e8ccc6c0584ea1caa39b47864afe30d1c99becb"
+   }
+  },
+  {
+   "content": "Caso de uso UC-14: Administración interna de clientes y perfiles\nUn empleado consulta y modifica clientes y sus perfiles desde clients-admin-front.\nActores: Operador de atención a clientes\nComponentes: clients-admin-front, clients-api\nFlujo:\n1. El empleado se autentica en clients-admin-front.\n2. Busca un cliente y consulta su perfil y sus datos personales.\n3. Modifica datos o atributos del perfil (por ejemplo, nivel o membresía).\n4. clients-api guarda el cambio.\nDatos: Datos personales, Atributos del perfil, Historial de cambios\nReglas de negocio: RN-1, RN-2\nLímites de confianza: LC-3\nSupuestos: S-07, S-09, S-21",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-14",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-14"
+    ],
+    "componentes": [
+     "clients-admin-front",
+     "clients-api"
+    ],
+    "limites_confianza": [
+     "LC-3"
+    ],
+    "hash": "948a77f49d2b552e2667f0c9418dd061336a80748bbe906120efa30ed56ccfd5"
+   }
+  },
+  {
+   "content": "Caso de uso UC-15: Administración interna de cupones\nUn empleado crea, modifica y distribuye cupones de descuento desde cupons-frontend.\nActores: Operador de marketing y promociones\nComponentes: cupons-frontend, cupons-api\nFlujo:\n1. El empleado se autentica en cupons-frontend.\n2. Crea o edita un cupón: valor, vigencia, usos, monto mínimo y segmento de clientes.\n3. Activa el cupón y lo asigna o distribuye.\n4. cupons-api lo deja disponible para su validación en el checkout.\nDatos: Definición del cupón, Segmento asignado, Presupuesto de la campaña\nReglas de negocio: RN-4\nLímites de confianza: LC-3\nSupuestos: S-11, S-21",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-15",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-15"
+    ],
+    "componentes": [
+     "cupons-frontend",
+     "cupons-api"
+    ],
+    "limites_confianza": [
+     "LC-3"
+    ],
+    "hash": "b38fece5b90bb8728229ff6ab3f0d9720c8999ec239135517429c1d8a06fe88d"
+   }
+  },
+  {
+   "content": "Caso de uso UC-16: Administración interna de órdenes de entrega\nUn empleado gestiona órdenes de entrega desde delivery-admin-front: consulta, reasignación, cambios de dirección y excepciones.\nActores: Operador de entregas\nComponentes: delivery-admin-front, delivery-api\nFlujo:\n1. El empleado se autentica en delivery-admin-front.\n2. Consulta órdenes de entrega y su estado.\n3. Gestiona excepciones: reprograma, cambia la dirección o la tienda, o cambia el estado manualmente.\n4. delivery-api registra el cambio y lo comunica al proveedor logístico.\nDatos: Órdenes de entrega, Direcciones, Estados, Costos de envío\nReglas de negocio: RN-2, RN-3\nLímites de confianza: LC-3, LC-4\nSupuestos: S-16, S-21",
+   "metadata": {
+    "fuente": "casos_de_uso",
+    "id": "UC-16",
+    "tipo": "caso_de_uso",
+    "casos_de_uso": [
+     "UC-16"
+    ],
+    "componentes": [
+     "delivery-admin-front",
+     "delivery-api"
+    ],
+    "limites_confianza": [
+     "LC-3",
+     "LC-4"
+    ],
+    "hash": "8f9b4123cb59c60b244edf901c5524c7893def56a10b65f3a562d69db207b77b"
+   }
+  },
+  {
+   "content": "Flujo de datos F1: Cliente → Marketplace\nDatos: Credenciales, perfil, dirección y contacto, productos, cupón, modalidad de entrega, datos de pago, solicitud de cancelación\nCasos de uso: UC-01, UC-02, UC-03, UC-04, UC-05, UC-06, UC-07, UC-12, UC-13\nLímite de confianza que cruza: LC-1",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F1",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-02",
+     "UC-03",
+     "UC-04",
+     "UC-05",
+     "UC-06",
+     "UC-07",
+     "UC-12",
+     "UC-13"
+    ],
+    "limite_confianza": "LC-1",
+    "hash": "2a5563f35b388b6c2c0016ea15ed850810d2e1381e108d46f1d66af8c701ac02"
+   }
+  },
+  {
+   "content": "Flujo de datos F2: Marketplace → Cliente\nDatos: Totales, costo de envío, estado de la orden, código de retiro\nCasos de uso: UC-02, UC-05, UC-07, UC-10, UC-12\nLímite de confianza que cruza: LC-1",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F2",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-02",
+     "UC-05",
+     "UC-07",
+     "UC-10",
+     "UC-12"
+    ],
+    "limite_confianza": "LC-1",
+    "hash": "f0b72e92bd73235696fc5c157c78929c7282f3edef1df8ebeb3aeb78657ffa53"
+   }
+  },
+  {
+   "content": "Flujo de datos F3: Marketplace → clients-api\nDatos: Alta, consulta y actualización de cliente y dirección\nCasos de uso: UC-01, UC-03\nLímite de confianza que cruza: LC-2",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F3",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-03"
+    ],
+    "limite_confianza": "LC-2",
+    "hash": "ecba6216c57d2c1e8494e62e06b0e238e613509536f10aa15ce6a41322394d9b"
+   }
+  },
+  {
+   "content": "Flujo de datos F4: Marketplace → cupons-api\nDatos: Código de cupón, cliente, carrito\nCasos de uso: UC-04\nLímite de confianza que cruza: LC-2",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F4",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-04"
+    ],
+    "limite_confianza": "LC-2",
+    "hash": "fa5a80b546f7381ac6981e33652320070014b927b1897896427d31a459ee3ee5"
+   }
+  },
+  {
+   "content": "Flujo de datos F5: Marketplace → delivery-api\nDatos: Dirección, modalidad, cotización, creación y cancelación de la orden de entrega\nCasos de uso: UC-05, UC-06, UC-07, UC-13\nLímite de confianza que cruza: LC-2",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F5",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-05",
+     "UC-06",
+     "UC-07",
+     "UC-13"
+    ],
+    "limite_confianza": "LC-2",
+    "hash": "21391e91bfd8537fd78eb72027ad9d94b6988b70bf587d9faf3553c694c1adf0"
+   }
+  },
+  {
+   "content": "Flujo de datos F6: Marketplace → Pasarela de pago\nDatos: Token del medio de pago, monto, solicitud de reembolso\nCasos de uso: UC-07, UC-13\nLímite de confianza que cruza: LC-6",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F6",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-07",
+     "UC-13"
+    ],
+    "limite_confianza": "LC-6",
+    "hash": "49ed507eef3105a3692921cc1135341d6f7cb2ca082585ba0e654caec1933c83"
+   }
+  },
+  {
+   "content": "Flujo de datos F7: Pasarela de pago → Marketplace\nDatos: Confirmación de pago o de reembolso (notificación)\nCasos de uso: UC-07, UC-13\nLímite de confianza que cruza: LC-6",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F7",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-07",
+     "UC-13"
+    ],
+    "limite_confianza": "LC-6",
+    "hash": "90a877f3903711a12ac557f33ea3c3d46795b11e8f49d6b6f9c0e3d5763df161"
+   }
+  },
+  {
+   "content": "Flujo de datos F8: Marketplace ↔ Órdenes de compra\nDatos: Productos, precios, cupón aplicado, total cobrado, referencia de pago\nCasos de uso: UC-02, UC-04, UC-07, UC-13\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F8",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-02",
+     "UC-04",
+     "UC-07",
+     "UC-13"
+    ],
+    "limite_confianza": null,
+    "hash": "fca4840261313fc0a11660119081b820e1a89104fc46a42cef778e83801f5119"
+   }
+  },
+  {
+   "content": "Flujo de datos F9: delivery-api → clients-api\nDatos: Atributos del perfil que determinan el costo de envío (RN-2)\nCasos de uso: UC-05\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F9",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-05"
+    ],
+    "limite_confianza": null,
+    "hash": "b6ce813562495f10dcd52b1013316d207108aab83ee957e2f64ca50c67953ed4"
+   }
+  },
+  {
+   "content": "Flujo de datos F10: delivery-api → cupons-api\nDatos: Cupones de envío del cliente\nCasos de uso: UC-05\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F10",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-05"
+    ],
+    "limite_confianza": null,
+    "hash": "ec863ff54245a0217c7e7120414fb12bd9647863421f4b83fcc1c41475c227d3"
+   }
+  },
+  {
+   "content": "Flujo de datos F11: clients-api ↔ Clientes y perfiles\nDatos: Registro único del cliente (RN-1), perfil, direcciones\nCasos de uso: UC-01, UC-03, UC-14\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F11",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-03",
+     "UC-14"
+    ],
+    "limite_confianza": null,
+    "hash": "956a0904f338b60106b319b7a01545383e6c3137d67c295cc246ab562567bd39"
+   }
+  },
+  {
+   "content": "Flujo de datos F12: cupons-api ↔ Cupones y usos\nDatos: Reglas del cupón, usos por cliente (RN-4)\nCasos de uso: UC-04, UC-15\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F12",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-04",
+     "UC-15"
+    ],
+    "limite_confianza": null,
+    "hash": "e1e97713c32f620ab15ad8135acaeab6244ea093fffec2c6285930bc2334976f"
+   }
+  },
+  {
+   "content": "Flujo de datos F13: delivery-api ↔ Órdenes de entrega\nDatos: Orden de entrega, estados, evidencia y ubicación de entrega\nCasos de uso: UC-05, UC-06, UC-07, UC-08, UC-09, UC-10, UC-11, UC-12, UC-13, UC-16\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F13",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-05",
+     "UC-06",
+     "UC-07",
+     "UC-08",
+     "UC-09",
+     "UC-10",
+     "UC-11",
+     "UC-12",
+     "UC-13",
+     "UC-16"
+    ],
+    "limite_confianza": null,
+    "hash": "01bc2669c1390ffca6c975ebd9f0d3a0feb109db7395095615199097fb059fa1"
+   }
+  },
+  {
+   "content": "Flujo de datos F14: delivery-api ↔ Almacén\nDatos: Orden a preparar; confirmación de empaquetado y despacho\nCasos de uso: UC-08\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F14",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-08"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "c5e2ed27635f6bac84ccfa9149c123ef7396ed7cbd6052920b1238b4960d85e7"
+   }
+  },
+  {
+   "content": "Flujo de datos F15: Almacén → Red de logística\nDatos: Paquete físico entregado al proveedor\nCasos de uso: UC-08, UC-09\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F15",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-08",
+     "UC-09"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "bda3389901667c21a4d84fc713676f2e6f390e6afbc1d5b0c4e6d26df6e623d7"
+   }
+  },
+  {
+   "content": "Flujo de datos F16: Red de logística → logistic\nDatos: Escaneos en cada traspaso de custodia\nCasos de uso: UC-09\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F16",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-09"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "0e26aa91ade4fee3f3403c2b6e8b8a9c3a47d67daf73b651a83c86138da9c414"
+   }
+  },
+  {
+   "content": "Flujo de datos F17: Repartidor → App del repartidor\nDatos: Registro de entrega, ubicación GPS, foto o firma\nCasos de uso: UC-11\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F17",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-11"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "8c84654f6ac4c1849332d6cdbc672064864c0a445214be51cf1ebf523a2a6906"
+   }
+  },
+  {
+   "content": "Flujo de datos F18: App del repartidor → logistic\nDatos: Registro de entrega con ubicación y evidencia\nCasos de uso: UC-11\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F18",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-11"
+    ],
+    "limite_confianza": null,
+    "hash": "d7c37ebeb109adff3c5afe71f0dda0585a88b5f71a43ebf5024431afe59d2da5"
+   }
+  },
+  {
+   "content": "Flujo de datos F19: logistic → delivery-api\nDatos: Eventos de estado, registro de entrega y ubicación (RN-3)\nCasos de uso: UC-09, UC-10, UC-11, UC-13\nLímite de confianza que cruza: LC-4",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F19",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-09",
+     "UC-10",
+     "UC-11",
+     "UC-13"
+    ],
+    "limite_confianza": "LC-4",
+    "hash": "c2109fb279755087fc476e90f96073c15315a2e13191b0daab304e396356d7eb"
+   }
+  },
+  {
+   "content": "Flujo de datos F20: Red de logística → Repartidor\nDatos: Paquete físico asignado a ruta\nCasos de uso: UC-09, UC-11\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F20",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-09",
+     "UC-11"
+    ],
+    "limite_confianza": null,
+    "hash": "77614b5acef4443eaf3afef437164a5e93970fae67cb50446aadd297cc5183fa"
+   }
+  },
+  {
+   "content": "Flujo de datos F21: Repartidor → Cliente\nDatos: Entrega física a domicilio\nCasos de uso: UC-11\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F21",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-11"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "0659acd12c9b8572124e9e1edc2dd711ff48e31a6cf402ae9b7da42824be93c4"
+   }
+  },
+  {
+   "content": "Flujo de datos F22: Punto de recolección → Cliente o autorizado\nDatos: Entrega física contra código e identificación\nCasos de uso: UC-12\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F22",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-12"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "c5d4d8b53520907405694fcd2152dde180074179d4d167b9dfff0a46ce99fa9e"
+   }
+  },
+  {
+   "content": "Flujo de datos F23: delivery-api ↔ Punto de recolección\nDatos: Orden lista para retiro; confirmación del retiro\nCasos de uso: UC-12\nLímite de confianza que cruza: LC-5",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F23",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-12"
+    ],
+    "limite_confianza": "LC-5",
+    "hash": "6e47c220cb941e810a11170100bf59ad966426fea6cf3db482b3b1b1a9f54367"
+   }
+  },
+  {
+   "content": "Flujo de datos F24: Operador de atención → clients-admin-front\nDatos: Sesión SSO\nCasos de uso: UC-14\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F24",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-14"
+    ],
+    "limite_confianza": null,
+    "hash": "0f5fe248c70499a4b13331198f92af3615030fd3c952177e1e3f1c5416b22d9a"
+   }
+  },
+  {
+   "content": "Flujo de datos F25: Operador de marketing → cupons-frontend\nDatos: Sesión SSO\nCasos de uso: UC-15\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F25",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-15"
+    ],
+    "limite_confianza": null,
+    "hash": "5f5a73f12c48fe2d1f7bc9dec6b0b210b79ca0db7fe377ae66260f0a093263d9"
+   }
+  },
+  {
+   "content": "Flujo de datos F26: Operador de entregas → delivery-admin-front\nDatos: Sesión SSO\nCasos de uso: UC-16\nLímite de confianza que cruza: ninguno",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F26",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-16"
+    ],
+    "limite_confianza": null,
+    "hash": "ca3715e9a0b21cacd1d776ef36a521f5a12e4413cb658ffb9870e2a1de1bab7a"
+   }
+  },
+  {
+   "content": "Flujo de datos F27: clients-admin-front → clients-api\nDatos: Edición de clientes y atributos del perfil\nCasos de uso: UC-14\nLímite de confianza que cruza: LC-3",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F27",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-14"
+    ],
+    "limite_confianza": "LC-3",
+    "hash": "fe9aec0f3701da4db7c3c2ca79d66e1ea0ff7c51b3581696bac88f295d63a833"
+   }
+  },
+  {
+   "content": "Flujo de datos F28: cupons-frontend → cupons-api\nDatos: Creación y edición de cupones\nCasos de uso: UC-15\nLímite de confianza que cruza: LC-3",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F28",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-15"
+    ],
+    "limite_confianza": "LC-3",
+    "hash": "f1c22508fa5d3e1a6a03e8d3e54342f816b7b30be1f5a4f80961429613529516"
+   }
+  },
+  {
+   "content": "Flujo de datos F29: delivery-admin-front ↔ delivery-api\nDatos: Consulta de órdenes, excepciones y cambios de estado manuales\nCasos de uso: UC-16\nLímite de confianza que cruza: LC-3",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F29",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-16"
+    ],
+    "limite_confianza": "LC-3",
+    "hash": "bb2f8e4fc7aec848d59dbafcb65f1870ee37cfc4d5894423b622f7f554759453"
+   }
+  },
+  {
+   "content": "Flujo de datos F30: delivery-api → logistic\nDatos: Cambios de orden y solicitudes de recolección inversa\nCasos de uso: UC-13, UC-16\nLímite de confianza que cruza: LC-4",
+   "metadata": {
+    "fuente": "flujos",
+    "id": "F30",
+    "tipo": "flujo",
+    "casos_de_uso": [
+     "UC-13",
+     "UC-16"
+    ],
+    "limite_confianza": "LC-4",
+    "hash": "aab6c560383cefc5ad20d1d52e812cdcd3d6e1cf2fedc704e9899bb8f4bb7550"
+   }
+  },
+  {
+   "content": "Supuesto S-01 (Arquitectura): El Marketplace es el frontend web y móvil del cliente. Se comunica con las APIs internas a través de un API gateway o backend-for-frontend que no aparece en el diagrama (en el diagrama, el Marketplace no tiene flechas hacia las APIs).\nImplicación para el análisis: Las peticiones del cliente cruzan LC-1 y LC-2. Todo dato enviado desde el Marketplace se considera controlable por el cliente.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-01",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-02"
+    ],
+    "hash": "18d649b2b86b68cded206675d59901a990af6b2338f63809bf4484d1ab089ab5"
+   }
+  },
+  {
+   "content": "Supuesto S-02 (Arquitectura): El precio del producto y el total de la orden se recalculan en el servidor al confirmar el pago; el cliente solo envía identificadores, cantidades y códigos.\nImplicación para el análisis: No se conoce la implementación real. El análisis evalúa también el escenario en que algún valor (precio, descuento, costo de envío) se acepte desde el cliente.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-02",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-02",
+     "UC-07"
+    ],
+    "hash": "c87c43e82750a582e2ea7e0e2dc5878999ca56784540cd1f937250da759dc5d5"
+   }
+  },
+  {
+   "content": "Supuesto S-03 (Arquitectura): delivery-api consulta a clients-api (atributos del perfil) y a cupons-api (cupones de envío) para calcular el costo de envío, según las flechas del diagrama.\nImplicación para el análisis: delivery-api confía en los datos de las otras dos APIs: un perfil o un cupón manipulado se traduce en un costo de envío incorrecto.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-03",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-05"
+    ],
+    "hash": "e9c132b4f1ff7bc7cd38726ced076b955bcf65208302eda34c3589e481abd149"
+   }
+  },
+  {
+   "content": "Supuesto S-04 (Pagos): El pago se procesa en una pasarela externa (no dibujada). El ecommerce no almacena datos completos de tarjeta, solo tokens y la confirmación del pago.\nImplicación para el análisis: El cumplimiento PCI DSS de la pasarela queda fuera de alcance; sí se analiza la integración con ella (LC-6).",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-04",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-07"
+    ],
+    "hash": "ea1086d920e49cad52fb3b3f077cf4b80552e8a9660d6de04ebb995b7095a96e"
+   }
+  },
+  {
+   "content": "Supuesto S-05 (Pagos): La orden se registra cuando el Marketplace recibe la confirmación de pago de la pasarela (redirección o notificación asíncrona).\nImplicación para el análisis: La confirmación de pago es un punto de abuso: si no se valida su autenticidad y su monto, una orden podría registrarse como pagada sin estarlo.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-05",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-07"
+    ],
+    "hash": "97a84066537913bd43aff50d0340aeca045d22971bd433df38fef3643ac003fc"
+   }
+  },
+  {
+   "content": "Supuesto S-06 (Integración logística): La empresa de logística es un tercero. logistic es la integración entre su sistema y delivery-api (API o webhooks por internet), autenticada con una credencial de servicio compartida. El mecanismo exacto no se conoce.\nImplicación para el análisis: Se analiza la integración como un límite de confianza (LC-4): la credencial puede filtrarse y los eventos pueden falsificarse o repetirse.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-06",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-09",
+     "UC-10"
+    ],
+    "hash": "e7e932fb53bfd9e9e4fe7d7a9b615e47725eb681871a80547d351be1a8378971"
+   }
+  },
+  {
+   "content": "Supuesto S-07 (Identidad): Los clientes se autentican con usuario y contraseña, con un segundo factor opcional, y mantienen la sesión con un token.\nImplicación para el análisis: Se consideran escenarios de cuentas comprometidas (credential stuffing, robo de sesión) como origen de abusos externos.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-07",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-14"
+    ],
+    "hash": "ebb56a9c177e1eeade66bfc02928e7997f0b4eef6ca3b127b777eb7318cc0744"
+   }
+  },
+  {
+   "content": "Supuesto S-08 (Identidad): La regla de registro único (RN-1) se valida con correo y teléfono verificados. No se exige un documento de identidad.\nImplicación para el análisis: Un mismo individuo puede crear varias cuentas con correos y números distintos. Es el supuesto que más afecta a los abusos de cupones y de perfil.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-08",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-01"
+    ],
+    "hash": "f2ca2400692b6f9779b524c4cb02e5ef2fcef0b0745fafd80c4d2fae6868521f"
+   }
+  },
+  {
+   "content": "Supuesto S-09 (Perfil): El perfil que determina el costo de envío (RN-2) combina atributos editables por el cliente (direcciones, datos de contacto) con atributos que solo cambian los empleados o el sistema (nivel de lealtad, membresía, historial, zona).\nImplicación para el análisis: Ambos tipos de atributos son objetivo de abuso: los primeros por el cliente, los segundos por empleados (UC-14).",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-09",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-01",
+     "UC-03",
+     "UC-05",
+     "UC-14"
+    ],
+    "hash": "cd01e25ba2749ef1f32d6f3524958923653a5f8afe030c9d35ce5212df3b8fd2"
+   }
+  },
+  {
+   "content": "Supuesto S-10 (Envío): La cotización de envío se calcula al elegir la dirección y la modalidad, y se asume que se vuelve a validar al confirmar el pago.\nImplicación para el análisis: Se analiza el escenario en que la cotización no se revalida: cambiar dirección o perfil entre la cotización y el pago para obtener un envío más barato.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-10",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-03",
+     "UC-05",
+     "UC-06"
+    ],
+    "hash": "a3478367d7047bb33795443bb02ea5731e3481596ee8198cc2465bbc47c00829"
+   }
+  },
+  {
+   "content": "Supuesto S-11 (Cupones): Cada cupón tiene reglas de valor, vigencia, usos totales, usos por cliente, monto mínimo y segmento. Los crean empleados en cupons-frontend y los valida cupons-api.\nImplicación para el análisis: El límite de usos por cliente depende directamente de RN-1: si la unicidad del cliente se evade, también el límite del cupón.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-11",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-04",
+     "UC-15"
+    ],
+    "hash": "d0f11461f4bb9f8db63a3f1f17eb655e8287484841271646d2772ac174019fd3"
+   }
+  },
+  {
+   "content": "Supuesto S-12 (Cupones): El uso de un cupón se consume al confirmar el pago y, si la compra se cancela, el cupón se restituye. La política real de restitución no está definida.\nImplicación para el análisis: Se analiza la combinación de cupón y cancelación (UC-04 y UC-13) como vía para reutilizar cupones de un solo uso.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-12",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-04",
+     "UC-13"
+    ],
+    "hash": "2bfb5842b0c53025c482392e0350df398ad45429c1e962a1763ba019ad2d0e87"
+   }
+  },
+  {
+   "content": "Supuesto S-13 (Almacén): El almacén lo opera el propio ecommerce con personal interno y un sistema de gestión de almacén conectado a delivery-api (no dibujado).\nImplicación para el análisis: El personal de almacén se trata como usuario interno (empleado).",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-13",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-08"
+    ],
+    "hash": "36d9674a66ee66229b60d8ff70607953518770e8e97927486ff83c12ad011182"
+   }
+  },
+  {
+   "content": "Supuesto S-14 (Custodia): Cada paquete lleva una etiqueta con código único, y cada traspaso de custodia (almacén, proveedor, centro de distribución, repartidor) se registra con un escaneo.\nImplicación para el análisis: La cadena de custodia permite detectar pérdidas y sustituciones; los puntos sin escaneo son oportunidades de abuso interno.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-14",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-08",
+     "UC-09"
+    ],
+    "hash": "569033dc16e487869068c0a8557f2806da1099d95411ee1d1bf59308162bfaf0"
+   }
+  },
+  {
+   "content": "Supuesto S-15 (Actores): Los repartidores y el personal de los centros de distribución son empleados del proveedor logístico. Para el análisis se tratan como usuarios internos extendidos (insiders de un tercero).\nImplicación para el análisis: El documento pide abusos de usuarios internos (empleados) y externos (clientes). Estos actores se clasifican como internos de tercero y se reportan junto a los internos.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-15",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-09",
+     "UC-10",
+     "UC-11"
+    ],
+    "hash": "04f08ee247f37885069adc791ad355a6821a7427f7b4a30ef1978dd84ee5b07a"
+   }
+  },
+  {
+   "content": "Supuesto S-16 (Estados de entrega): Los estados de entrega, incluido \"entregado\", los reporta el proveedor a través de logistic. Además, delivery-admin-front permite cambiar estados manualmente.\nImplicación para el análisis: Un estado puede alterarse por dos vías (integración y panel interno); ambas se analizan.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-16",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-10",
+     "UC-11",
+     "UC-16"
+    ],
+    "hash": "f213d15a1ffdeffeb0783c2571fb1ae0a282b29fbb13ec82d9d412b414fc3777"
+   }
+  },
+  {
+   "content": "Supuesto S-17 (Geolocalización): La ubicación la obtiene el dispositivo móvil del repartidor y se envía al registrar la entrega. delivery-api la compara con las coordenadas de la dirección dentro de un radio de tolerancia (RN-3).\nImplicación para el análisis: La ubicación es un dato generado del lado del cliente (el dispositivo del repartidor) y, por tanto, falsificable. Es el supuesto central para los abusos de UC-11.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-17",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-11"
+    ],
+    "hash": "f5396ed9904726af05a452e541cab9d469b25a4db93be8c7ea3b761bbef0a351"
+   }
+  },
+  {
+   "content": "Supuesto S-18 (Recolección en tienda): Las tiendas de recolección las opera el ecommerce o un aliado. El retiro se valida con un código de la orden y una identificación, y el cliente puede autorizar a un tercero.\nImplicación para el análisis: El personal de tienda se trata como usuario interno; la autorización a terceros es un punto de abuso.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-18",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-06",
+     "UC-12"
+    ],
+    "hash": "c1da719d1e7c1a227ce9daf92c4a9888784b06469f4b7f6a55f8e0cc619a04d0"
+   }
+  },
+  {
+   "content": "Supuesto S-19 (Cancelación): La cancelación posterior a la recepción requiere una recolección inversa del producto voluminoso. El reembolso se emite cuando el proveedor confirma la recolección y el almacén inspecciona el producto, dentro de una ventana de días desde la entrega.\nImplicación para el análisis: No se conoce si el reembolso se emite antes de la inspección. El análisis evalúa ambos escenarios, porque determinan el riesgo de devolver un artículo distinto o dañado.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-19",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-13"
+    ],
+    "hash": "057cea2fffa38eb49a1fae187d36eb41d06a6bd9484258272fb716bc65df1b29"
+   }
+  },
+  {
+   "content": "Supuesto S-20 (Cancelación): El reembolso se realiza al medio de pago original a través de la pasarela.\nImplicación para el análisis: Se analiza el desvío de reembolsos (cambio del medio de reembolso) solo si se permitiera; por defecto se asume que no.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-20",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-13"
+    ],
+    "hash": "a5da737123eb2a112fed3b3f671a0582649d2d86a46608ae8da383b8cc940b98"
+   }
+  },
+  {
+   "content": "Supuesto S-21 (Identidad interna): Los empleados se autentican con el SSO corporativo y cada frontend administrativo tiene roles. No se conoce la granularidad: si existen aprobaciones dobles, límites por monto o segregación de funciones.\nImplicación para el análisis: Se analiza el caso en que un solo empleado puede crear y usar beneficios (cupones, cambios de perfil o de estado) sin aprobación de otra persona.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-21",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-14",
+     "UC-15",
+     "UC-16"
+    ],
+    "hash": "d2cd61ca55ebf127a77bf2fcb4607528323abd80e52abe079cf070e36569b15c"
+   }
+  },
+  {
+   "content": "Supuesto S-22 (Alcance): El análisis se centra en la lógica de negocio y en las integraciones del flujo. Quedan fuera de alcance los ataques volumétricos de denegación de servicio, la infraestructura de nube y la seguridad física de los almacenes, salvo cuando afectan la lógica del flujo (por ejemplo, el robo interno de un paquete).\nImplicación para el análisis: El informe prioriza abusos que explotan reglas y procesos, que es lo que pide el reto.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-22",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "b869b51c91144ce534d48a38efc78f70819685d14aa9c030375683ab5aeb170f"
+   }
+  },
+  {
+   "content": "Supuesto S-23 (Alcance): Los productos voluminosos son de alto valor y difíciles de manipular: la entrega se agenda, puede requerir dos personas y deja evidencia (foto, firma o código de confirmación).\nImplicación para el análisis: El alto valor por orden aumenta el impacto de cada abuso exitoso; la evidencia de entrega es un control a evaluar.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-23",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "24c476bed748cfaec0131c50b5ac028a5afe672d6aa02bb0d6aecfd70dcea837"
+   }
+  },
+  {
+   "content": "Supuesto S-24 (Arquitectura): La comunicación entre componentes usa HTTPS y las APIs internas no están expuestas a internet, salvo a través del gateway del Marketplace (S-01) y de la integración logística (S-06).\nImplicación para el análisis: Las amenazas de interceptación en la red interna se consideran de baja probabilidad y no son foco del análisis.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-24",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "ce43e3981ef48f26288d28a6d39b0a06f935bc6f10bb839bc10eb05c1587b2d5"
+   }
+  },
+  {
+   "content": "Supuesto S-25 (Actores de amenaza): Externos: clientes legítimos que abusan de las reglas, defraudadores organizados y atacantes con cuentas robadas. Internos: empleados del ecommerce (atención a clientes, marketing, entregas, almacén, tiendas). Internos de tercero: repartidores y personal del proveedor logístico.\nImplicación para el análisis: Cada caso de abuso del informe indica a cuál de estos grupos pertenece el actor.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-25",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "8f0ed6e61bfb8d5a3ee72ecda8f11bdf898b25d960475ab911030a5f953c3cfa"
+   }
+  },
+  {
+   "content": "Supuesto S-26 (Arquitectura): El Marketplace (o su backend) guarda las órdenes de compra: productos, precios, cupón aplicado, total cobrado y referencia del pago. delivery-api guarda solo la orden de entrega asociada. Ninguno de estos dos almacenes de datos aparece en el diagrama original.\nImplicación para el análisis: Existen dos registros de la misma compra que deben mantenerse consistentes: una discrepancia entre el total cobrado y la orden de entrega (o entre los estados de ambas) es una oportunidad de abuso.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-26",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-02",
+     "UC-04",
+     "UC-07",
+     "UC-13"
+    ],
+    "hash": "a4c19f9e46c387f8b2fab51e7bba393bcd3020b7ff248d9ef94f1299603a4b9c"
+   }
+  },
+  {
+   "content": "Supuesto S-27 (Operación física): El almacén y el punto de recolección reciben de delivery-api las órdenes que deben preparar o entregar y confirman cada paso (empaquetado, entrega al proveedor, retiro del cliente) con su propio sistema o con el delivery-admin-front.\nImplicación para el análisis: Los traspasos de custodia del paquete (almacén → proveedor → repartidor → cliente, o tienda → cliente) son puntos donde un actor interno puede registrar un paso que no ocurrió.",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-27",
+    "tipo": "supuesto",
+    "casos_de_uso": [
+     "UC-08",
+     "UC-09",
+     "UC-11",
+     "UC-12"
+    ],
+    "hash": "707e9fc8f1d95e319469801c67eadcbe3436c3182dcbae518e3db2097ad94058"
+   }
+  },
+  {
+   "content": "Supuesto S-28 (Arquitectura de agentes): Las fuentes públicas (CAPEC, OWASP) son confiables en su origen, pero su contenido se trata siempre como datos y nunca como instrucciones\nImplicación para el análisis: Una fuente alterada no puede cambiar el comportamiento de los agentes; el hash detecta cambios",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-28",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "b2ac3e2723a1bbf53960648807fcb805a0171fd2ce415d7d9559b5d235eab5b1"
+   }
+  },
+  {
+   "content": "Supuesto S-29 (Arquitectura de agentes): El orden de los pasos de WF-2 es fijo, por eso el orquestador es determinista y no un LLM\nImplicación para el análisis: Ejecuciones reproducibles y auditables; si se quisiera un orquestador autónomo, se cambia ese nodo",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-29",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "df2c8cc033c713abcc3615dc6484ab9f6585c87933e1159aa2fbe3845ab9b8f7"
+   }
+  },
+  {
+   "content": "Supuesto S-30 (Arquitectura de agentes): Una persona (el analista de seguridad) revisa la salida antes de consolidar casos en ltm_abusos\nImplicación para el análisis: La memoria de largo plazo solo crece con casos validados; evita que errores del modelo se refuercen",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-30",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "dc993711e80ae46b7ce9c1a2677756e98198b86529692e7ce421d0241ed8ff6e"
+   }
+  },
+  {
+   "content": "Supuesto S-31 (Arquitectura de agentes): Los embeddings se calculan con bge-m3 en Ollama local (1024 dimensiones)\nImplicación para el análisis: Cambiar de modelo obliga a recalcular las tres tablas de largo plazo",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-31",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "79d52c5360fc9a676da5efb1fa905dd33916e1158f46ba973dad008fd77ce938"
+   }
+  },
+  {
+   "content": "Supuesto S-32 (Arquitectura de agentes): Supabase se usa en un proyecto dedicado del plan gratuito, sin datos reales de clientes\nImplicación para el análisis: Los límites del plan gratuito se verifican en la Fase 4",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-32",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "18e4e762ef102ca5112f28b7ecc5632c5c83748bf14951d1efc442eb998b0da9"
+   }
+  },
+  {
+   "content": "Supuesto S-33 (Arquitectura de agentes): n8n y Ollama corren en la VM Kali con Podman y solo son accesibles desde la propia VM\nImplicación para el análisis: Sin exposición a internet; las evidencias se capturan localmente",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-33",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "144002bb5dc83fdc9d730609eb459c792623cb91ed91122170588b731daf94e1"
+   }
+  },
+  {
+   "content": "Supuesto S-34 (Arquitectura de agentes): Los modelos de Claude se eligen por ID fijo (claude-sonnet-5-5, claude-haiku-5-5)\nImplicación para el análisis: Los resultados no cambian por una actualización silenciosa del modelo; si el nodo de n8n no lista el modelo, se escribe el ID",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-34",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "c3d98c849f00e99833408e189f0aee309c8950efa80890d4efcdf3056cf46e5f"
+   }
+  },
+  {
+   "content": "Supuesto S-35 (Arquitectura de agentes): El formato JSON de salida lo agrega el parser estructurado de n8n y no forma parte del prompt de ≤100 palabras\nImplicación para el análisis: El prompt público sigue funcionando en cualquier LLM, que responderá en texto con las mismas secciones",
+   "metadata": {
+    "fuente": "supuestos",
+    "id": "S-35",
+    "tipo": "supuesto",
+    "casos_de_uso": [],
+    "hash": "9034b6b9952105042a06e01022a0ed679d9db78e062e45e7bb7b7dbf7f8630a8"
+   }
+  }
+ ]
+}

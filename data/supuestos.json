@@ -1,0 +1,356 @@
+{
+  "fuente": "docs/01-casos-de-uso-y-supuestos.md, docs/03-arquitectura.md",
+  "supuestos": [
+    {
+      "id": "S-01",
+      "tema": "Arquitectura",
+      "supuesto": "El Marketplace es el frontend web y móvil del cliente. Se comunica con las APIs internas a través de un API gateway o backend-for-frontend que no aparece en el diagrama (en el diagrama, el Marketplace no tiene flechas hacia las APIs).",
+      "implicacion": "Las peticiones del cliente cruzan LC-1 y LC-2. Todo dato enviado desde el Marketplace se considera controlable por el cliente.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-01",
+        "UC-02"
+      ]
+    },
+    {
+      "id": "S-02",
+      "tema": "Arquitectura",
+      "supuesto": "El precio del producto y el total de la orden se recalculan en el servidor al confirmar el pago; el cliente solo envía identificadores, cantidades y códigos.",
+      "implicacion": "No se conoce la implementación real. El análisis evalúa también el escenario en que algún valor (precio, descuento, costo de envío) se acepte desde el cliente.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-02",
+        "UC-07"
+      ]
+    },
+    {
+      "id": "S-03",
+      "tema": "Arquitectura",
+      "supuesto": "delivery-api consulta a clients-api (atributos del perfil) y a cupons-api (cupones de envío) para calcular el costo de envío, según las flechas del diagrama.",
+      "implicacion": "delivery-api confía en los datos de las otras dos APIs: un perfil o un cupón manipulado se traduce en un costo de envío incorrecto.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-05"
+      ]
+    },
+    {
+      "id": "S-04",
+      "tema": "Pagos",
+      "supuesto": "El pago se procesa en una pasarela externa (no dibujada). El ecommerce no almacena datos completos de tarjeta, solo tokens y la confirmación del pago.",
+      "implicacion": "El cumplimiento PCI DSS de la pasarela queda fuera de alcance; sí se analiza la integración con ella (LC-6).",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-07"
+      ]
+    },
+    {
+      "id": "S-05",
+      "tema": "Pagos",
+      "supuesto": "La orden se registra cuando el Marketplace recibe la confirmación de pago de la pasarela (redirección o notificación asíncrona).",
+      "implicacion": "La confirmación de pago es un punto de abuso: si no se valida su autenticidad y su monto, una orden podría registrarse como pagada sin estarlo.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-07"
+      ]
+    },
+    {
+      "id": "S-06",
+      "tema": "Integración logística",
+      "supuesto": "La empresa de logística es un tercero. logistic es la integración entre su sistema y delivery-api (API o webhooks por internet), autenticada con una credencial de servicio compartida. El mecanismo exacto no se conoce.",
+      "implicacion": "Se analiza la integración como un límite de confianza (LC-4): la credencial puede filtrarse y los eventos pueden falsificarse o repetirse.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-09",
+        "UC-10"
+      ]
+    },
+    {
+      "id": "S-07",
+      "tema": "Identidad",
+      "supuesto": "Los clientes se autentican con usuario y contraseña, con un segundo factor opcional, y mantienen la sesión con un token.",
+      "implicacion": "Se consideran escenarios de cuentas comprometidas (credential stuffing, robo de sesión) como origen de abusos externos.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-01",
+        "UC-14"
+      ]
+    },
+    {
+      "id": "S-08",
+      "tema": "Identidad",
+      "supuesto": "La regla de registro único (RN-1) se valida con correo y teléfono verificados. No se exige un documento de identidad.",
+      "implicacion": "Un mismo individuo puede crear varias cuentas con correos y números distintos. Es el supuesto que más afecta a los abusos de cupones y de perfil.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-01"
+      ]
+    },
+    {
+      "id": "S-09",
+      "tema": "Perfil",
+      "supuesto": "El perfil que determina el costo de envío (RN-2) combina atributos editables por el cliente (direcciones, datos de contacto) con atributos que solo cambian los empleados o el sistema (nivel de lealtad, membresía, historial, zona).",
+      "implicacion": "Ambos tipos de atributos son objetivo de abuso: los primeros por el cliente, los segundos por empleados (UC-14).",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-01",
+        "UC-03",
+        "UC-05",
+        "UC-14"
+      ]
+    },
+    {
+      "id": "S-10",
+      "tema": "Envío",
+      "supuesto": "La cotización de envío se calcula al elegir la dirección y la modalidad, y se asume que se vuelve a validar al confirmar el pago.",
+      "implicacion": "Se analiza el escenario en que la cotización no se revalida: cambiar dirección o perfil entre la cotización y el pago para obtener un envío más barato.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-03",
+        "UC-05",
+        "UC-06"
+      ]
+    },
+    {
+      "id": "S-11",
+      "tema": "Cupones",
+      "supuesto": "Cada cupón tiene reglas de valor, vigencia, usos totales, usos por cliente, monto mínimo y segmento. Los crean empleados en cupons-frontend y los valida cupons-api.",
+      "implicacion": "El límite de usos por cliente depende directamente de RN-1: si la unicidad del cliente se evade, también el límite del cupón.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-04",
+        "UC-15"
+      ]
+    },
+    {
+      "id": "S-12",
+      "tema": "Cupones",
+      "supuesto": "El uso de un cupón se consume al confirmar el pago y, si la compra se cancela, el cupón se restituye. La política real de restitución no está definida.",
+      "implicacion": "Se analiza la combinación de cupón y cancelación (UC-04 y UC-13) como vía para reutilizar cupones de un solo uso.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-04",
+        "UC-13"
+      ]
+    },
+    {
+      "id": "S-13",
+      "tema": "Almacén",
+      "supuesto": "El almacén lo opera el propio ecommerce con personal interno y un sistema de gestión de almacén conectado a delivery-api (no dibujado).",
+      "implicacion": "El personal de almacén se trata como usuario interno (empleado).",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-08"
+      ]
+    },
+    {
+      "id": "S-14",
+      "tema": "Custodia",
+      "supuesto": "Cada paquete lleva una etiqueta con código único, y cada traspaso de custodia (almacén, proveedor, centro de distribución, repartidor) se registra con un escaneo.",
+      "implicacion": "La cadena de custodia permite detectar pérdidas y sustituciones; los puntos sin escaneo son oportunidades de abuso interno.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-08",
+        "UC-09"
+      ]
+    },
+    {
+      "id": "S-15",
+      "tema": "Actores",
+      "supuesto": "Los repartidores y el personal de los centros de distribución son empleados del proveedor logístico. Para el análisis se tratan como usuarios internos extendidos (insiders de un tercero).",
+      "implicacion": "El documento pide abusos de usuarios internos (empleados) y externos (clientes). Estos actores se clasifican como internos de tercero y se reportan junto a los internos.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-09",
+        "UC-10",
+        "UC-11"
+      ]
+    },
+    {
+      "id": "S-16",
+      "tema": "Estados de entrega",
+      "supuesto": "Los estados de entrega, incluido \"entregado\", los reporta el proveedor a través de logistic. Además, delivery-admin-front permite cambiar estados manualmente.",
+      "implicacion": "Un estado puede alterarse por dos vías (integración y panel interno); ambas se analizan.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-10",
+        "UC-11",
+        "UC-16"
+      ]
+    },
+    {
+      "id": "S-17",
+      "tema": "Geolocalización",
+      "supuesto": "La ubicación la obtiene el dispositivo móvil del repartidor y se envía al registrar la entrega. delivery-api la compara con las coordenadas de la dirección dentro de un radio de tolerancia (RN-3).",
+      "implicacion": "La ubicación es un dato generado del lado del cliente (el dispositivo del repartidor) y, por tanto, falsificable. Es el supuesto central para los abusos de UC-11.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-11"
+      ]
+    },
+    {
+      "id": "S-18",
+      "tema": "Recolección en tienda",
+      "supuesto": "Las tiendas de recolección las opera el ecommerce o un aliado. El retiro se valida con un código de la orden y una identificación, y el cliente puede autorizar a un tercero.",
+      "implicacion": "El personal de tienda se trata como usuario interno; la autorización a terceros es un punto de abuso.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-06",
+        "UC-12"
+      ]
+    },
+    {
+      "id": "S-19",
+      "tema": "Cancelación",
+      "supuesto": "La cancelación posterior a la recepción requiere una recolección inversa del producto voluminoso. El reembolso se emite cuando el proveedor confirma la recolección y el almacén inspecciona el producto, dentro de una ventana de días desde la entrega.",
+      "implicacion": "No se conoce si el reembolso se emite antes de la inspección. El análisis evalúa ambos escenarios, porque determinan el riesgo de devolver un artículo distinto o dañado.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-13"
+      ]
+    },
+    {
+      "id": "S-20",
+      "tema": "Cancelación",
+      "supuesto": "El reembolso se realiza al medio de pago original a través de la pasarela.",
+      "implicacion": "Se analiza el desvío de reembolsos (cambio del medio de reembolso) solo si se permitiera; por defecto se asume que no.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-13"
+      ]
+    },
+    {
+      "id": "S-21",
+      "tema": "Identidad interna",
+      "supuesto": "Los empleados se autentican con el SSO corporativo y cada frontend administrativo tiene roles. No se conoce la granularidad: si existen aprobaciones dobles, límites por monto o segregación de funciones.",
+      "implicacion": "Se analiza el caso en que un solo empleado puede crear y usar beneficios (cupones, cambios de perfil o de estado) sin aprobación de otra persona.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-14",
+        "UC-15",
+        "UC-16"
+      ]
+    },
+    {
+      "id": "S-22",
+      "tema": "Alcance",
+      "supuesto": "El análisis se centra en la lógica de negocio y en las integraciones del flujo. Quedan fuera de alcance los ataques volumétricos de denegación de servicio, la infraestructura de nube y la seguridad física de los almacenes, salvo cuando afectan la lógica del flujo (por ejemplo, el robo interno de un paquete).",
+      "implicacion": "El informe prioriza abusos que explotan reglas y procesos, que es lo que pide el reto.",
+      "fase": "1-2",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-23",
+      "tema": "Alcance",
+      "supuesto": "Los productos voluminosos son de alto valor y difíciles de manipular: la entrega se agenda, puede requerir dos personas y deja evidencia (foto, firma o código de confirmación).",
+      "implicacion": "El alto valor por orden aumenta el impacto de cada abuso exitoso; la evidencia de entrega es un control a evaluar.",
+      "fase": "1-2",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-24",
+      "tema": "Arquitectura",
+      "supuesto": "La comunicación entre componentes usa HTTPS y las APIs internas no están expuestas a internet, salvo a través del gateway del Marketplace (S-01) y de la integración logística (S-06).",
+      "implicacion": "Las amenazas de interceptación en la red interna se consideran de baja probabilidad y no son foco del análisis.",
+      "fase": "1-2",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-25",
+      "tema": "Actores de amenaza",
+      "supuesto": "Externos: clientes legítimos que abusan de las reglas, defraudadores organizados y atacantes con cuentas robadas. Internos: empleados del ecommerce (atención a clientes, marketing, entregas, almacén, tiendas). Internos de tercero: repartidores y personal del proveedor logístico.",
+      "implicacion": "Cada caso de abuso del informe indica a cuál de estos grupos pertenece el actor.",
+      "fase": "1-2",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-26",
+      "tema": "Arquitectura",
+      "supuesto": "El Marketplace (o su backend) guarda las órdenes de compra: productos, precios, cupón aplicado, total cobrado y referencia del pago. delivery-api guarda solo la orden de entrega asociada. Ninguno de estos dos almacenes de datos aparece en el diagrama original.",
+      "implicacion": "Existen dos registros de la misma compra que deben mantenerse consistentes: una discrepancia entre el total cobrado y la orden de entrega (o entre los estados de ambas) es una oportunidad de abuso.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-02",
+        "UC-04",
+        "UC-07",
+        "UC-13"
+      ]
+    },
+    {
+      "id": "S-27",
+      "tema": "Operación física",
+      "supuesto": "El almacén y el punto de recolección reciben de delivery-api las órdenes que deben preparar o entregar y confirman cada paso (empaquetado, entrega al proveedor, retiro del cliente) con su propio sistema o con el delivery-admin-front.",
+      "implicacion": "Los traspasos de custodia del paquete (almacén → proveedor → repartidor → cliente, o tienda → cliente) son puntos donde un actor interno puede registrar un paso que no ocurrió.",
+      "fase": "1-2",
+      "casos_de_uso": [
+        "UC-08",
+        "UC-09",
+        "UC-11",
+        "UC-12"
+      ]
+    },
+    {
+      "id": "S-28",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "Las fuentes públicas (CAPEC, OWASP) son confiables en su origen, pero su contenido se trata siempre como datos y nunca como instrucciones",
+      "implicacion": "Una fuente alterada no puede cambiar el comportamiento de los agentes; el hash detecta cambios",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-29",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "El orden de los pasos de WF-2 es fijo, por eso el orquestador es determinista y no un LLM",
+      "implicacion": "Ejecuciones reproducibles y auditables; si se quisiera un orquestador autónomo, se cambia ese nodo",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-30",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "Una persona (el analista de seguridad) revisa la salida antes de consolidar casos en ltm_abusos",
+      "implicacion": "La memoria de largo plazo solo crece con casos validados; evita que errores del modelo se refuercen",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-31",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "Los embeddings se calculan con bge-m3 en Ollama local (1024 dimensiones)",
+      "implicacion": "Cambiar de modelo obliga a recalcular las tres tablas de largo plazo",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-32",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "Supabase se usa en un proyecto dedicado del plan gratuito, sin datos reales de clientes",
+      "implicacion": "Los límites del plan gratuito se verifican en la Fase 4",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-33",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "n8n y Ollama corren en la VM Kali con Podman y solo son accesibles desde la propia VM",
+      "implicacion": "Sin exposición a internet; las evidencias se capturan localmente",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-34",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "Los modelos de Claude se eligen por ID fijo (claude-sonnet-5-5, claude-haiku-5-5)",
+      "implicacion": "Los resultados no cambian por una actualización silenciosa del modelo; si el nodo de n8n no lista el modelo, se escribe el ID",
+      "fase": "3",
+      "casos_de_uso": []
+    },
+    {
+      "id": "S-35",
+      "tema": "Arquitectura de agentes",
+      "supuesto": "El formato JSON de salida lo agrega el parser estructurado de n8n y no forma parte del prompt de ≤100 palabras",
+      "implicacion": "El prompt público sigue funcionando en cualquier LLM, que responderá en texto con las mismas secciones",
+      "fase": "3",
+      "casos_de_uso": []
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+{
+  "name": "WF-1 · Ingesta de la memoria de largo plazo",
+  "nodes": [
+    {
+      "id": "78717efb-205f-46c3-9ab0-26050d675ce1",
+      "name": "Inicio",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f634ecc1-b518-41e3-a4bb-e6953df20887",
+      "name": "Configuración",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5726dfd9-33bf-459e-a504-a7fec94c3332",
+              "name": "supabase_url",
+              "value": "https://TU-PROYECTO.supabase.co",
+              "type": "string"
+            },
+            {
+              "id": "bc182c0a-d658-4203-b062-77930091ce8b",
+              "name": "ollama_url",
+              "value": "http://ollama:11434",
+              "type": "string"
+            },
+            {
+              "id": "beb10336-c480-44f3-a562-8a345139cc11",
+              "name": "modelo_embeddings",
+              "value": "bge-m3",
+              "type": "string"
+            },
+            {
+              "id": "390c2a7e-a4be-489b-972f-5d4daa709a04",
+              "name": "tamano_lote",
+              "value": 16,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "cdc770f5-77c4-40e4-9b51-550e803e8c2d",
+      "name": "Leer archivos de memoria",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "fileSelector": "/files/data/memoria/*.json",
+        "options": {}
+      }
+    },
+    {
+      "id": "6b329851-023a-4bc9-9573-470e4476dc74",
+      "name": "Extraer JSON",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      }
+    },
+    {
+      "id": "32b1cb11-6ba5-4745-8571-4c3dee1a9b41",
+      "name": "Fuentes a reemplazar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Valida los archivos y obtiene las fuentes que se van a reemplazar.\n// La reingesta borra primero los fragmentos de cada fuente para no duplicarlos.\nconst PERMITIDAS = ['ltm_negocio', 'ltm_amenazas'];   // ltm_abusos solo la escribe WF-3\nconst pares = new Map();\nfor (const item of $input.all()) {\n  const archivo = item.json.data;\n  if (!archivo || !PERMITIDAS.includes(archivo.tabla) || !Array.isArray(archivo.fragmentos)) {\n    throw new Error(`Archivo de memoria no válido o tabla no permitida: ${archivo && archivo.tabla}`);\n  }\n  if (archivo.fragmentos.length !== archivo.total) {\n    throw new Error(`${archivo.tabla}: el archivo dice ${archivo.total} fragmentos y trae ${archivo.fragmentos.length}`);\n  }\n  for (const f of archivo.fragmentos) {\n    if (!f.content || !f.metadata || !f.metadata.fuente || !f.metadata.id) {\n      throw new Error(`${archivo.tabla}: fragmento sin content, fuente o id`);\n    }\n    pares.set(`${archivo.tabla}|${f.metadata.fuente}`, { tabla: archivo.tabla, fuente: f.metadata.fuente });\n  }\n}\nreturn [...pares.values()].map(p => ({ json: p }));\n"
+      }
+    },
+    {
+      "id": "98b2c263-5e18-41a8-8ff1-60c47aa6e664",
+      "name": "Borrar fragmentos anteriores",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuración').first().json.supabase_url }}/rest/v1/rpc/ltm_borrar_fuente",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_tabla: $json.tabla, p_fuente: $json.fuente }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "REEMPLAZAR",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "id": "9acab6a7-b600-47ee-bbf4-667294573cef",
+      "name": "Agrupar en lotes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Agrupa los fragmentos en lotes: una petición a Ollama calcula los embeddings de un lote completo.\nconst tamano = $('Configuración').first().json.tamano_lote;\nconst lotes = [];\nfor (const item of $('Extraer JSON').all()) {\n  const { tabla, fragmentos } = item.json.data;\n  for (let i = 0; i < fragmentos.length; i += tamano) {\n    const parte = fragmentos.slice(i, i + tamano);\n    lotes.push({ json: { tabla, lote: lotes.length + 1, fragmentos: parte, textos: parte.map(f => f.content) } });\n  }\n}\nreturn lotes;\n"
+      }
+    },
+    {
+      "id": "c1bb3746-9cc1-4eb3-b048-a462c142b4f8",
+      "name": "Lote por lote",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1540,
+        300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "61279a93-b30e-476d-98ef-f58c04a1665f",
+      "name": "Calcular embeddings (Ollama)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuración').first().json.ollama_url }}/api/embed",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Configuración').first().json.modelo_embeddings, input: $json.textos }) }}",
+        "options": {
+          "timeout": 600000
+        }
+      }
+    },
+    {
+      "id": "3e507427-0faa-431a-a21d-67ffa8730ddf",
+      "name": "Unir vectores",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        140
+      ],
+      "parameters": {
+        "jsCode": "// Une cada fragmento del lote actual con su vector y valida la dimensión (bge-m3 = 1024).\nconst DIMENSION = 1024;\nconst lote = $('Lote por lote').first().json;\nconst vectores = $input.first().json.embeddings || [];\nif (vectores.length !== lote.fragmentos.length) {\n  throw new Error(`Lote ${lote.lote}: ${lote.fragmentos.length} fragmentos y ${vectores.length} vectores`);\n}\nconst filas = lote.fragmentos.map((f, j) => {\n  if (vectores[j].length !== DIMENSION) {\n    throw new Error(`Vector de dimensión ${vectores[j].length}; se esperaba ${DIMENSION}`);\n  }\n  return { content: f.content, metadata: f.metadata, embedding: vectores[j] };\n});\nreturn [{ json: { tabla: lote.tabla, lote: lote.lote, filas } }];\n"
+      }
+    },
+    {
+      "id": "e00c9c7e-81c6-42ca-a1dc-6172d93abc4d",
+      "name": "Insertar en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuración').first().json.supabase_url }}/rest/v1/{{ $json.tabla }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.filas) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "REEMPLAZAR",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "id": "b087462f-e97c-4c49-8dec-d7a79974bd13",
+      "name": "Resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        520
+      ],
+      "parameters": {
+        "jsCode": "// Resumen de la ingesta: fragmentos cargados por tabla y por fuente.\n// Se llega aquí solo si todos los lotes se insertaron sin error.\nconst resumen = {};\nconst lotes = $('Agrupar en lotes').all();\nfor (const item of lotes) {\n  for (const f of item.json.fragmentos) {\n    const t = item.json.tabla, fuente = f.metadata.fuente;\n    resumen[t] = resumen[t] || { total: 0, por_fuente: {} };\n    resumen[t].total += 1;\n    resumen[t].por_fuente[fuente] = (resumen[t].por_fuente[fuente] || 0) + 1;\n  }\n}\nconst borrados = $('Borrar fragmentos anteriores').all().reduce((s, i) => s + (Number(i.json.data ?? i.json) || 0), 0);\nreturn [{ json: { terminado: new Date().toISOString(), lotes: lotes.length,\n                  fragmentos_anteriores_borrados: borrados, insertados: resumen } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Inicio": {
+      "main": [
+        [
+          {
+            "node": "Configuración",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuración": {
+      "main": [
+        [
+          {
+            "node": "Leer archivos de memoria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer archivos de memoria": {
+      "main": [
+        [
+          {
+            "node": "Extraer JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer JSON": {
+      "main": [
+        [
+          {
+            "node": "Fuentes a reemplazar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fuentes a reemplazar": {
+      "main": [
+        [
+          {
+            "node": "Borrar fragmentos anteriores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Borrar fragmentos anteriores": {
+      "main": [
+        [
+          {
+            "node": "Agrupar en lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar en lotes": {
+      "main": [
+        [
+          {
+            "node": "Lote por lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lote por lote": {
+      "main": [
+        [
+          {
+            "node": "Resumen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calcular embeddings (Ollama)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular embeddings (Ollama)": {
+      "main": [
+        [
+          {
+            "node": "Unir vectores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unir vectores": {
+      "main": [
+        [
+          {
+            "node": "Insertar en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Lote por lote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

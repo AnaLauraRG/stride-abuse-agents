@@ -1,0 +1,2660 @@
+{
+  "modelo": "claude-sonnet-5-5",
+  "run_id": "bc4a02d5-95b7-45f4-b862-b02d880e6e2b",
+  "resumen": {
+    "tokens": {
+      "salida": 80905,
+      "entrada": 230163
+    },
+    "descartados": 0,
+    "casos_de_uso": 5,
+    "casos_de_abuso_aprobados": 28,
+    "casos_de_uso_sin_caso_de_abuso": []
+  },
+  "generado": "2026-11-22T00:31:40.566Z",
+  "casos_de_uso": [
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-01",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC01-01",
+          "actor": {
+            "rol": "Atacante o grupo organizado que abusa de beneficios por cliente",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "El registro es público y la unicidad (RN-1) depende solo de correo y teléfono, así que automatizar altas con datos desechables es barato y muy probable, aunque el daño se limita a pérdida por beneficios repetidos y a datos de clientes contaminados."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Registro masivo de cuentas con correos desechables y teléfonos virtuales para eludir la unicidad del cliente",
+          "impacto": "Se rompe la regla de un único registro por cliente, lo que permite cobrar beneficios de primera compra varias veces y ensucia la base de clientes con identidades falsas. También facilita abusos posteriores con cuentas masivas, como los de pedidos y recolección.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Proteger el formulario de registro con captcha o prueba de humanidad adaptativa y límite de tasa por IP, dispositivo y subred, validado en el servidor del Marketplace antes de reenviar por F3 a clients-api.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Rechazar dominios de correo desechable y rangos de numeración de SMS virtual (VoIP) en el alta, con listas actualizadas y verificación del tipo de línea; exigir un teléfono móvil real.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar el beneficio de primera compra a una vez por dirección de entrega normalizada y por medio de pago tokenizado, no solo por cuenta, correo o teléfono.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar un límite de beneficios de nuevo cliente por huella de tarjeta (fingerprint del token) y rechazar la promoción cuando el mismo instrumento ya la usó en otra cuenta.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por ráfagas de altas desde el mismo dispositivo o ASN y por clusters de cuentas con la misma dirección de entrega normalizada o patrón de correo (por ejemplo, secuencias alfanuméricas).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando varios pedidos de cuentas distintas con beneficio de primera compra converjan en la misma dirección de entrega, para detectarlo antes del despacho.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Suspender y fusionar o revocar las cuentas del cluster detectado, anular los beneficios aplicados y retener los pedidos pendientes hasta validar la identidad del cliente.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No hay límite por dirección de entrega ni por medio de pago asociado a la cuenta",
+            "Se asume que S-08 no exige verificación de un teléfono físico real"
+          ],
+          "caso_de_uso": "UC-01",
+          "como_ocurre": [
+            "El atacante prepara un lote de buzones de correo desechables y números de SMS virtuales de alquiler",
+            "Mediante una herramienta de automatización de navegador completa el formulario de registro del Marketplace repetidamente, variando correo, teléfono y nombre",
+            "Marketplace envía cada alta a clients-api por F3; clients-api compara solo correo y teléfono y no encuentra duplicados",
+            "El atacante lee los códigos de un solo uso en los buzones y paneles de SMS virtuales y verifica cada cuenta",
+            "Cada cuenta registra la misma dirección de entrega o una con variaciones menores",
+            "Con las cuentas activas reclama el beneficio de primera compra o de nuevo cliente varias veces"
+          ],
+          "referencias": [
+            "CAPEC-202",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F3",
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "El formulario de registro del Marketplace es público y accesible sin autenticación previa",
+            "La unicidad del cliente (RN-1) se valida solo por correo y teléfono",
+            "El código de un solo uso se envía a cualquier correo o número, incluidos desechables y virtuales",
+            "No hay huella de dispositivo ni protección contra automatización en el registro (S-01, S-07, S-08 no la garantizan)"
+          ],
+          "patrones_usados": [
+            "FE-03",
+            "AV-0008"
+          ],
+          "vector_practico": "Acción: alta automatizada y en ráfaga de cuentas. Herramienta: automatización de navegador sin interfaz, servicios de correo desechable y de SMS virtual. Dato manipulado: correo y teléfono, únicos identificadores que clients-api usa para la regla RN-1, variados en cada alta mientras la dirección y el dispositivo permanecen constantes.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC01-02",
+          "actor": {
+            "rol": "Atacante con credenciales filtradas de otros servicios",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 3,
+            "justificacion": "El relleno de credenciales con listas filtradas es muy frecuente, y sin segundo factor, límites de intentos ni avisos permite robar datos personales, desviar envíos y bloquear al titular."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T",
+              "I"
+            ]
+          },
+          "titulo": "Toma de cuenta por relleno de credenciales y cambio de dirección y contacto en el perfil",
+          "impacto": "El atacante accede a datos personales del cliente, redirige envíos y se apropia de la cuenta, lo que genera fraude, pérdida del acceso legítimo y exposición de información personal.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Ofrecer autenticación multifactor (OTP o passkey) en el inicio de sesión del Marketplace, obligatoria ante dispositivo o país nuevo, y consultar contraseñas filtradas (listas de contraseñas comprometidas) al crear o cambiar la clave.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar intentos de inicio de sesión por cuenta, IP, dispositivo y a nivel global, con bloqueo progresivo y captcha tras fallos, de modo que la rotación de IP con un intento por par también se detecte por la tasa de fallos distribuidos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir reautenticación o confirmación con OTP para cambiar correo, teléfono o direcciones en clients-api, y bloquear cambios de dirección en pedidos ya pagados.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir 3-D Secure o reingreso del CVV al pagar con un medio de pago guardado desde un dispositivo no reconocido.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Detectar patrones de relleno de credenciales (muchos fallos contra muchas cuentas, inicio de sesión desde dispositivo o país nuevo seguido de cambio de dirección o contacto) y generar alertas de riesgo en tiempo casi real.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Notificar al correo y teléfono anteriores del titular cada cambio de contacto, dirección o credenciales, con enlace para revertir el cambio.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante una cuenta tomada, cerrar sesiones, forzar el cambio de contraseña, revertir las modificaciones del perfil, retener los pedidos con dirección modificada y recuperar la cuenta con verificación de identidad.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Redirigir o detener envíos en tránsito cuando el Marketplace confirme el desvío, con un canal de cancelación de entrega acordado.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "No se confirma si existe autenticación multifactor en el inicio de sesión del Marketplace"
+          ],
+          "caso_de_uso": "UC-01",
+          "como_ocurre": [
+            "El atacante obtiene un listado de correos y contraseñas filtrados de otros servicios",
+            "Con una herramienta de automatización envía intentos de inicio de sesión al Marketplace distribuidos entre muchas IP, probando cada par una sola vez",
+            "Al entrar a una cuenta, abre el perfil y lee nombre, teléfono, correo y direcciones guardadas",
+            "Edita el teléfono de contacto y agrega una dirección controlada por él; Marketplace envía la actualización a clients-api por F3",
+            "clients-api guarda el cambio sin pedir reautenticación y sin avisar al correo o teléfono anteriores",
+            "El atacante usa la cuenta para comprar con la dirección nueva, o bloquea al titular cambiando el correo y el teléfono"
+          ],
+          "referencias": [
+            "OWASP API2:2023 Broken Authentication"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F3",
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "Existen clientes que reutilizan contraseña en otros servicios filtrados",
+            "El inicio de sesión no exige un segundo factor ni limita intentos por cuenta, IP o dispositivo",
+            "La edición de direcciones y contacto no pide reautenticación ni notifica al titular"
+          ],
+          "patrones_usados": [
+            "FE-11",
+            "AV-0009"
+          ],
+          "vector_practico": "Acción: relleno de credenciales seguido de edición del perfil. Herramienta: automatización de solicitudes de inicio de sesión con rotación de IP. Dato manipulado: credenciales de acceso reutilizadas, y luego teléfono, correo y direcciones del perfil, que clients-api acepta sin segundo factor ni aviso al titular.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC01-04",
+          "actor": {
+            "rol": "Atacante que busca perfilar clientes para fraude o phishing",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "Distinguir respuestas de duplicado es trivial de automatizar con rotación de IP; el impacto es medio porque solo revela que una persona tiene cuenta, pero habilita phishing y relleno de credenciales dirigidos."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": []
+          },
+          "titulo": "Enumeración de clientes registrados mediante las respuestas de duplicado del registro",
+          "impacto": "Se expone qué personas tienen cuenta en la plataforma, lo que facilita phishing dirigido, toma de cuentas y vulneración de la privacidad de los clientes.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Unificar la respuesta del registro para identificadores existentes y nuevos (mensaje, código HTTP y tiempo de respuesta), y notificar el duplicado solo por correo al titular real, sin revelarlo en pantalla.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar límite de tasa y captcha en registro y verificación de unicidad por IP, dispositivo e identificador consultado, con cuotas diarias.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear volúmenes anómalos de solicitudes de registro con identificadores distintos sin completar la verificación OTP, y la proporción de duplicados por origen.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Bloquear temporalmente orígenes y dispositivos con patrón de sondeo y alertar a los clientes que aparecieron como existentes si se confirma una campaña de phishing asociada.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el mensaje de error de duplicado no está unificado con una respuesta genérica"
+          ],
+          "caso_de_uso": "UC-01",
+          "como_ocurre": [
+            "El atacante reúne listas de correos y teléfonos de objetivos obtenidas de filtraciones o de listas comerciales",
+            "Con una herramienta de automatización envía solicitudes de registro con cada identificador a través del Marketplace",
+            "clients-api ejecuta la validación de unicidad y el Marketplace devuelve un mensaje o código distinto cuando el identificador ya está registrado",
+            "El atacante clasifica qué personas son clientes del Marketplace según la diferencia de respuesta",
+            "Usa esa lista para campañas de phishing dirigidas o para priorizar el relleno de credenciales sobre cuentas existentes"
+          ],
+          "referencias": [
+            "CAPEC-575",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F3",
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "clients-api responde de forma distinguible cuando un correo o teléfono ya existe (RN-1)",
+            "El formulario de registro no tiene límite de tasa ni protección contra automatización"
+          ],
+          "patrones_usados": [
+            "CAPEC-575",
+            "FE-11"
+          ],
+          "vector_practico": "Acción: sondeo masivo del registro para detectar duplicados. Herramienta: script de automatización de solicitudes con rotación de IP. Dato manipulado: correo y teléfono enviados al validador de unicidad, cuya respuesta diferenciada revela la existencia de la cuenta.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC01-05",
+          "actor": {
+            "rol": "Cliente registrado con conocimientos técnicos",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Requiere cuenta e interceptación de solicitudes, algo accesible para perfiles técnicos, y el impacto es económico acotado por los beneficios de nivel o membresía."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Manipulación de atributos del perfil enviados por el cliente para escalar nivel o membresía",
+          "impacto": "El cliente obtiene beneficios o precios a los que no tiene derecho, lo que genera pérdida económica y corrompe los atributos de perfil que usan otros procesos.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Definir en clients-api una lista blanca de campos editables por el cliente (DTO de entrada), ignorar o rechazar con error cualquier otro campo como nivel, membresía o estado, y asignar esos atributos solo desde el flujo interno de UC-14 con rol de operador.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Calcular el nivel y los beneficios en el servidor al momento de la compra a partir de datos autoritativos, sin confiar en atributos enviados por el cliente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar los intentos de enviar campos protegidos en actualizaciones de perfil, y conciliar periódicamente los cambios de nivel o membresía contra operaciones internas autorizadas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir los niveles asignados sin autorización, recalcular los pedidos con beneficios indebidos y suspender las cuentas reincidentes.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que nivel y membresía son atributos del mismo objeto que el cliente edita, o que el filtrado de campos no está implementado en clients-api"
+          ],
+          "caso_de_uso": "UC-01",
+          "como_ocurre": [
+            "El cliente inicia sesión y edita un dato permitido de su perfil, por ejemplo una dirección",
+            "Con un proxy de interceptación observa la solicitud de actualización que envía el Marketplace por F1",
+            "Agrega o cambia en el cuerpo de la solicitud campos como nivel, membresía o estado del perfil, que conoce por inferencia o por respuestas previas de la API",
+            "Marketplace reenvía el objeto a clients-api por F3, que lo guarda sin comprobar que esos atributos solo los gestiona un empleado desde UC-14",
+            "En la siguiente compra el cliente recibe beneficios del nuevo nivel"
+          ],
+          "referencias": [
+            "OWASP API3:2023 Broken Object Property Level Authorization"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F3",
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "La actualización del perfil viaja del Marketplace a clients-api con un objeto de perfil que puede incluir atributos internos como nivel o membresía",
+            "clients-api acepta los campos recibidos sin filtrar cuáles puede modificar el cliente",
+            "El cliente puede interceptar y modificar sus propias solicitudes desde el navegador"
+          ],
+          "patrones_usados": [
+            "CAPEC-202",
+            "AV-0003"
+          ],
+          "vector_practico": "Acción: modificación de la solicitud de edición de perfil para añadir atributos protegidos. Herramienta: proxy de interceptación en el navegador. Dato manipulado: campos de nivel o membresía del objeto de perfil enviado a clients-api, que debería reservarse a operadores internos.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC01-06",
+          "actor": {
+            "rol": "Cliente autenticado con malas intenciones",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Basta una cuenta propia y un proxy para probar BOLA con identificadores predecibles; si funciona, expone datos personales en masa y permite alterar direcciones de envío."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "T",
+              "E"
+            ]
+          },
+          "titulo": "Acceso a perfil y direcciones de otro cliente cambiando el identificador en las llamadas a clients-api",
+          "impacto": "Se expone en masa información personal de clientes y se pueden alterar sus direcciones de envío, lo que permite fraude, desvío de pedidos e incumplimiento de normas de protección de datos.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Verificar en clients-api, en cada consulta o actualización de perfil y direcciones, que el recurso pertenece al cliente autenticado, derivando el identificador de cliente del token de sesión y no del parámetro de la solicitud.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Usar identificadores no secuenciales de alta entropía (UUID v4) para clientes y direcciones, y pruebas automatizadas de autorización por objeto en el pipeline.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Detectar y alertar sesiones que consulten muchos identificadores distintos al propio o acumulen respuestas 403 o 404 por acceso a recursos ajenos, con registro de acceso a datos personales.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar la sesión y bloquear la cuenta atacante, restaurar las direcciones y contactos alterados desde el historial de cambios, notificar a los clientes afectados y activar el protocolo de brecha de datos personales.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener o redirigir pedidos cuya dirección de entrega haya sido alterada por acceso indebido, cuando el Marketplace lo notifique antes de la entrega.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "Se asume que los identificadores no son aleatorios de alta entropía ni están ligados a la sesión"
+          ],
+          "caso_de_uso": "UC-01",
+          "como_ocurre": [
+            "El atacante crea su propia cuenta y abre su perfil, observando con un proxy las solicitudes que Marketplace envía hacia clients-api",
+            "Identifica el identificador de cliente o de dirección en la ruta o en el cuerpo",
+            "Con una herramienta de automatización sustituye ese identificador por valores cercanos y repite la consulta",
+            "clients-api devuelve nombres, teléfonos, correos y direcciones de otros clientes porque solo valida que la sesión sea válida",
+            "Para modificar, repite el proceso con la solicitud de actualización y cambia la dirección o el contacto de otra cuenta"
+          ],
+          "referencias": [
+            "OWASP API1:2023 Broken Object Level Authorization"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F3",
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "Las consultas y actualizaciones de perfil y direcciones usan un identificador de cliente o de dirección en la solicitud",
+            "clients-api no verifica que el recurso pertenezca al cliente autenticado en la sesión",
+            "Los identificadores son predecibles o secuenciales"
+          ],
+          "patrones_usados": [
+            "FE-11",
+            "CAPEC-575"
+          ],
+          "vector_practico": "Acción: sustitución secuencial de identificadores de recurso en las solicitudes de perfil y direcciones. Herramienta: proxy de interceptación y automatización de peticiones. Dato manipulado: identificador de cliente o de dirección en la solicitud hacia clients-api, sin verificación de propiedad.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC01-03",
+          "actor": {
+            "rol": "Atacante que conoce el número de teléfono de una víctima que aún no tiene cuenta",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "La fuerza bruta sobre un OTP corto sin límite de intentos es técnicamente simple, pero exige conocer el teléfono de una víctima sin cuenta; el impacto es medio: cuenta fraudulenta y bloqueo del registro de la víctima."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "D"
+            ]
+          },
+          "titulo": "Verificación del teléfono de una víctima adivinando el código de un solo uso en un registro con correo propio del atacante",
+          "impacto": "El atacante obtiene una cuenta con el teléfono de la víctima marcado como verificado. Puede hacer pedidos con ese contacto y la víctima recibe notificaciones que no solicitó. Cuando la víctima intenta registrarse, clients-api rechaza el alta por duplicado (RN-1), con riesgo de fraude y daño reputacional para la plataforma.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Limitar a 3 a 5 los intentos de verificación del OTP por registro pendiente y por teléfono, invalidando el código y exigiendo uno nuevo tras superar el límite, con un bloqueo por origen y dispositivo además del de registro.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Reducir la validez del OTP a 5 minutos o menos, usar un código de al menos 6 dígitos generado con un CSPRNG, ligarlo al registro pendiente, de un solo uso, y limitar los reenvíos de SMS por teléfono.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir que la verificación de correo y teléfono sea secuencial y esté vinculada a la misma sesión de registro, y no activar la cuenta hasta completar ambas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por alto volumen de verificaciones fallidas contra un mismo registro pendiente o teléfono y por registros pendientes con correo desechable y teléfono ya objeto de muchos intentos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Anular cuentas verificadas tras una ráfaga de intentos fallidos, liberar el teléfono para que su titular real se registre y ofrecer un canal de reclamación de identificadores secuestrados.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que la política de intentos máximos y de expiración del código de un solo uso (S-08) no está definida o no se aplica de forma estricta en el endpoint de verificación",
+            "Se asume que el registro permite verificar correo y teléfono por separado, con un correo bajo control del atacante"
+          ],
+          "caso_de_uso": "UC-01",
+          "como_ocurre": [
+            "El atacante abre el formulario de registro del Marketplace e ingresa un correo desechable que controla, el número de teléfono de la víctima y datos personales inventados",
+            "clients-api crea el registro pendiente, comprueba que el teléfono no existe (RN-1) y envía el código al teléfono de la víctima; el atacante no lo recibe",
+            "El atacante verifica el correo con el código que llega a su buzón desechable",
+            "Con un proxy de interceptación captura la petición de verificación del teléfono y la repite de forma automatizada contra el endpoint de verificación de clients-api, recorriendo en orden todo el espacio de códigos posibles dentro de la ventana de validez",
+            "clients-api acepta el código correcto en alguna de las peticiones y marca el teléfono como verificado, porque no bloquea tras intentos fallidos",
+            "El atacante inicia sesión con la cuenta recién verificada, que queda asociada al teléfono de la víctima, y edita el perfil y las direcciones"
+          ],
+          "referencias": [
+            "OWASP API2:2023 Broken Authentication",
+            "OWASP API4:2023 Unrestricted Resource Consumption",
+            "CAPEC-49 Password Brute Forcing"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F3",
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "El número de teléfono de la víctima no está registrado en clients-api (RN-1)",
+            "El código de un solo uso del teléfono es numérico y corto, y el endpoint de verificación de clients-api no limita los intentos fallidos por registro pendiente ni por origen",
+            "El código sigue siendo válido durante una ventana de varios minutos y no se invalida tras N intentos fallidos",
+            "El atacante controla un correo desechable propio, con el que supera la verificación del correo sin dificultad"
+          ],
+          "patrones_usados": [
+            "FE-03"
+          ],
+          "vector_practico": "Acción: repetir de forma automatizada las peticiones de verificación del teléfono hasta acertar el código, sin que el endpoint limite los intentos. Herramienta: proxy de interceptación con repetición automatizada de solicitudes sobre el endpoint de verificación expuesto por el Marketplace hacia clients-api. Dato manipulado: el valor del campo del código de un solo uso, enviado junto con el identificador del registro pendiente asociado al teléfono de la víctima.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-02",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC02-01",
+          "actor": {
+            "rol": "Cliente con cuenta que usa un proxy de interceptación",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 3,
+            "justificacion": "Interceptar y alterar peticiones del carrito con un proxy es trivial para cualquier cliente con cuenta, y si el servidor confía en el precio recibido cada venta se subvalora con pérdida económica directa y envíos reales a costo del ecommerce."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Manipulación de precio, cantidad o variante en la petición del carrito",
+          "impacto": "Venta de productos voluminosos por debajo de su precio, con pérdida económica directa y órdenes con totales que no coinciden con el catálogo. El almacén y la logística ejecutan preparación y envío con costos reales sobre una venta subvaluada, y la reconciliación contable queda inconsistente.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "En F1 el Marketplace acepta solo identificador de producto, identificador de variante y cantidad. Ignora y rechaza cualquier campo de precio o subtotal enviado por el navegador. Consulta el precio y la relación variante-producto en el catálogo del servidor en cada alta, cada actualización del carrito y al crear la orden, y recalcula subtotal, envío y total en el servidor.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Validar el esquema de la petición de carrito: cantidad entera mayor que 0 y con tope máximo por producto voluminoso, variante que pertenezca al producto indicado, y rechazo de propiedades no esperadas (mass assignment) con error 400.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Al iniciar el cobro, la pasarela de pago recibe el monto calculado por el servidor del ecommerce, y el ecommerce verifica que el monto autorizado coincida con el total recalculado antes de confirmar la orden.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliación automática al crear cada orden: comparar el total con la suma de precios vigentes del catálogo y con el monto autorizado por la pasarela. Alertar y retener la orden si hay diferencia, y registrar en bitácora las peticiones rechazadas por campos de precio o cantidades inválidas, agrupadas por cuenta.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener las órdenes marcadas con total inconsistente antes de su asignación a logística, cancelarlas o recalcularlas con el precio correcto y notificar al cliente. Si ya se despacharon, notificar al proveedor logístico para detener el envío. Suspender la cuenta reincidente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Detener la recolección o el despacho de órdenes voluminosas cuando el ecommerce notifique que la orden fue retenida por inconsistencia de total, y devolver el producto al almacén.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el Marketplace podría confiar en valores enviados por el cliente al calcular el subtotal; debe validarse contra el diseño real",
+            "S-01, S-02 y S-26 no excluyen explícitamente este escenario"
+          ],
+          "caso_de_uso": "UC-02",
+          "como_ocurre": [
+            "El cliente abre la ficha del producto voluminoso y agrega una unidad al carrito con un proxy de interceptación activo entre su navegador y el Marketplace",
+            "Intercepta la petición de alta al carrito, que cruza LC-1 por F1, y ubica los campos de precio unitario, cantidad y variante",
+            "Reemplaza el precio por un valor menor, o asocia el identificador de una variante barata con el producto de una variante cara, o usa una cantidad negativa o cero que reduce el subtotal",
+            "El Marketplace recalcula el subtotal con esos datos y devuelve por F2 un carrito con totales alterados",
+            "El cliente avanza al pago y, si el Marketplace no recalcula los montos con el catálogo en el servidor, la orden se crea con el total manipulado y se asigna a logística"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CAPEC-202",
+            "OWASP API3:2023 Broken Object Property Level Authorization"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F2",
+            "Marketplace",
+            "LC-1"
+          ],
+          "precondiciones": [
+            "El cliente puede abrir la ficha de un producto voluminoso y agregarlo al carrito con cuenta propia",
+            "El Marketplace acepta del navegador campos de precio, subtotal o variante junto con el identificador del producto, o confía en ellos al calcular el subtotal",
+            "No hay una regla de negocio que limite cantidad o precio mínimo en el carrito"
+          ],
+          "patrones_usados": [
+            "FE-13",
+            "CAPEC-39"
+          ],
+          "vector_practico": "El cliente usa un proxy de interceptación sobre la petición de agregar al carrito y modifica los campos de precio unitario, cantidad y variante que el Marketplace toma como válidos. Dato manipulado: precio y relación variante-producto en el cuerpo de la petición de F1. El fallo radica en que el servidor no vuelve a consultar el catálogo para fijar el precio.",
+          "limites_confianza": [
+            "LC-1"
+          ]
+        },
+        {
+          "id": "AC-UC02-02",
+          "actor": {
+            "rol": "Atacante o competidor con cuentas de cliente automatizadas",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Automatizar carritos con cuentas desechables es sencillo y afecta productos con poco stock y alta demanda, pero el daño es una pérdida de ventas temporal y reversible si se liberan las reservas."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Denegación de inventario con carritos o reservas masivas de productos voluminosos",
+          "impacto": "El producto aparece agotado para clientes legítimos, con pérdida de ventas y de ingresos y daño a la confianza en la disponibilidad real. El atacante puede ser un competidor, y los datos de disponibilidad dejan de reflejar la demanda real.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Reservar stock solo con caducidad corta (por ejemplo 15 minutos) que no se renueve automáticamente al volver a agregar el mismo producto. Descontar stock definitivo solo al confirmar el pago, o, si hay reserva en el carrito, limitar la fracción del stock de un producto voluminoso que pueden retener los carritos sin pagar.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar por cuenta, dispositivo e IP la cantidad máxima por producto voluminoso y el número de carritos con reserva activa, y aplicar protección anti-automatización (desafío CAPTCHA o similar, huella de dispositivo) al agregar al carrito cuando el comportamiento sea anómalo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear la razón entre unidades reservadas en carritos y unidades pagadas por producto, cuentas con muchos carritos que nunca llegan al pago, renovaciones periódicas y ráfagas de altas de cuentas o de peticiones de carrito. Alertar al superar umbrales sobre productos con stock bajo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Liberar de inmediato las reservas de las cuentas señaladas, bloquear temporalmente a esas cuentas, dispositivos e IP, restituir la disponibilidad real del producto y ajustar los umbrales de reserva según el incidente.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que el Marketplace descuenta o reserva stock al agregar al carrito; si solo lo hace al pagar, este caso no aplica",
+            "S-26 no define límites de reserva por carrito"
+          ],
+          "caso_de_uso": "UC-02",
+          "como_ocurre": [
+            "El atacante crea o compra varias cuentas de cliente y automatiza con un script de navegador la sesión de cada una",
+            "Cada cuenta busca el mismo producto voluminoso y lo agrega al carrito con la cantidad máxima aceptada, por F1",
+            "El Marketplace marca como no disponible el stock retenido en esos carritos y lo comunica en F2 a los demás clientes",
+            "El atacante renueva periódicamente los carritos antes de que caduquen la reserva y nunca avanza al pago",
+            "Los clientes legítimos ven el producto agotado o no pueden agregar la cantidad que necesitan y compran con la competencia"
+          ],
+          "referencias": [
+            "OWASP OAT-021 Denial of Inventory",
+            "CAPEC-125"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F2",
+            "Marketplace",
+            "LC-1"
+          ],
+          "precondiciones": [
+            "El Marketplace reserva o descuenta disponibilidad al agregar al carrito, o muestra agotado según carritos activos",
+            "No existe límite por cuenta, dirección IP o dispositivo en cantidad por producto ni caducidad corta de la reserva",
+            "El producto voluminoso tiene stock reducido y alta demanda"
+          ],
+          "patrones_usados": [
+            "OAT-021",
+            "AV-0008"
+          ],
+          "vector_practico": "Un script automatizado sobre cuentas de cliente envía repetidamente la acción de agregar al carrito con la cantidad máxima de un producto voluminoso concreto y la renueva antes de que caduque la reserva. Dato manipulado: cantidad y disponibilidad del producto retenida por carritos que nunca se pagan.",
+          "limites_confianza": [
+            "LC-1"
+          ]
+        },
+        {
+          "id": "AC-UC02-03",
+          "actor": {
+            "rol": "Competidor o revendedor que usa una o varias cuentas de cliente registradas para hacer scraping del carrito",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "El sondeo automatizado con cuentas registradas es factible si no hay límite de tasa y filtra información comercial sensible, pero no expone datos personales ni causa pérdida directa por sí solo."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "D"
+            ]
+          },
+          "titulo": "Sondeo de disponibilidad con cuenta de cliente para reconstruir el stock exacto por variante y tienda",
+          "impacto": "Fuga de información comercial sensible sobre niveles de inventario por variante y tienda, y sobre su rotación y reposición. Beneficia a competidores y permite planear abusos dirigidos, como inmovilizar variantes con poco stock. El precio no se considera confidencial porque la ficha ya lo muestra a cualquier cliente. Las operaciones masivas de carrito también generan carga innecesaria sobre el Marketplace.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "No exponer en F2 el stock exacto ni el tope de unidades por variante y tienda: mostrar solo estados genéricos (disponible, pocas unidades, agotado) y devolver el mismo mensaje de error cuando la cantidad pedida supere el stock, sin revelar el límite numérico.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar límite de tasa a las operaciones de carrito por cuenta, dispositivo e IP, con tope de variaciones de cantidad sobre la misma variante por sesión, y exigir desafío anti-automatización cuando se detecten recorridos secuenciales de identificadores de producto o variante.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Detectar patrones de sondeo: cuentas que agregan cantidades crecientes a muchas variantes sin llegar al pago, recorrido secuencial de identificadores, uso de varias cuentas desde el mismo dispositivo o IP, y volumen de peticiones de carrito anómalo frente a la línea base. Generar alertas y revisarlas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Bloquear o limitar de forma progresiva las cuentas, dispositivos e IP identificados como rastreadores, invalidar sus sesiones y revisar la bitácora para estimar qué datos de inventario se pudieron reconstruir, ajustando los mensajes de disponibilidad expuestos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Se asume que la disponibilidad exacta por variante y tienda se expone al cliente; debe confirmarse con el diseño real del Marketplace",
+            "Nuevo supuesto: el Marketplace no aplica límite de tasa ni detección de automatización a las operaciones de carrito de una cuenta autenticada; debe confirmarse",
+            "Nuevo supuesto: el sondeo se hace con cuentas de cliente registradas y no de forma anónima, porque el carrito exige sesión; la creación de cuentas desechables puede ser sencilla (ver FE-03)"
+          ],
+          "caso_de_uso": "UC-02",
+          "como_ocurre": [
+            "El atacante inicia sesión con una o varias cuentas de cliente y obtiene las sesiones que el rastreador reutilizará",
+            "Un rastreador automatizado recorre los identificadores de producto y de variante de los productos voluminosos del catálogo",
+            "Para cada variante, el rastreador agrega al carrito cantidades crecientes por F1 y lee en la respuesta de F2 el mensaje de disponibilidad o el tope máximo de unidades aceptado",
+            "Repite el sondeo a intervalos regulares y con varias cuentas para esquivar bloqueos por cuenta, y registra el stock exacto por variante y tienda",
+            "Con las series de datos reconstruye la rotación y las reposiciones, y fija sus precios, anticipa reposiciones o elige productos con poco stock para otros abusos"
+          ],
+          "referencias": [
+            "OWASP OAT-011 Scraping",
+            "OWASP API4:2023 Unrestricted Resource Consumption",
+            "CAPEC-202 Create Malicious Client"
+          ],
+          "elementos_dfd": [
+            "F1",
+            "F2",
+            "Marketplace",
+            "LC-1"
+          ],
+          "precondiciones": [
+            "El atacante dispone de una o más cuentas de cliente registradas y con sesión iniciada, porque agregar productos al carrito en UC-02 exige cuenta",
+            "El carrito o la ficha muestran en F2 el stock exacto, el tope de unidades o un mensaje de disponibilidad por variante y por tienda",
+            "El Marketplace no limita la tasa de operaciones de carrito por cuenta, por dispositivo ni por dirección IP"
+          ],
+          "patrones_usados": [
+            "OAT-011",
+            "FE-13"
+          ],
+          "vector_practico": "Acción: agregar al carrito cantidades crecientes de cada variante y leer el límite que devuelve el Marketplace. Herramienta: rastreador automatizado con sesiones de cuentas de cliente registradas. Dato manipulado: el parámetro de cantidad de la petición de carrito (F1). Dato obtenido: el stock exacto por variante y tienda que la respuesta de F2 expone mediante el mensaje de disponibilidad o el tope de unidades.",
+          "limites_confianza": [
+            "LC-1"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-03",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC03-01",
+          "actor": {
+            "rol": "Cliente",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Manipular campos con un proxy es trivial y S-10 indica que delivery-api confía en la zona enviada, pero la pérdida se limita al diferencial de tarifa por orden."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Alteración del código postal y las coordenadas enviados a delivery-api para abaratar el envío o forzar la cobertura",
+          "impacto": "Pérdida económica por envíos subcotizados, pedidos fuera de zona de cobertura que generan fallos de entrega y devoluciones, e incumplimiento de RN-2 en el cálculo del costo.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Que el Marketplace ignore el código postal y las coordenadas del navegador y los derive en servidor de la dirección normalizada y guardada en clients-api, enviando a delivery-api solo el identificador de dirección verificado para cotizar (F5).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Que delivery-api valide que el código postal y las coordenadas recibidos correspondan a la dirección textual mediante geocodificación inversa y rechace la cotización si la distancia entre ambos supera un umbral.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar sobre órdenes cuyo código postal cotizado difiera del código postal de la dirección textual registrada, y sobre clientes con discrepancias repetidas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Recalcular el costo de envío con la dirección real antes del despacho, cobrar el diferencial o cancelar la orden fuera de cobertura (RN-2), y marcar la cuenta para revisión.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Cuando el repartidor detecte que la dirección de entrega queda fuera de la zona cotizada, registrarlo como incidencia y reportarlo al ecommerce para conciliar el costo.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "S-10: delivery-api confía en la zona enviada por el Marketplace",
+            "No hay firma ni recálculo del lado servidor a partir de la dirección guardada"
+          ],
+          "caso_de_uso": "UC-03",
+          "como_ocurre": [
+            "El cliente captura una dirección real de una zona de alto costo o sin cobertura",
+            "Antes de que la petición llegue al Marketplace, la intercepta con un proxy de depuración (Burp Suite)",
+            "Sustituye el código postal y las coordenadas por los de una zona cercana a la tienda, con tarifa baja y cobertura",
+            "delivery-api calcula costo y cobertura con los datos alterados y devuelve la cotización favorable",
+            "El cliente completa el pago y la orden se registra con la dirección textual real y el costo del código postal falso"
+          ],
+          "referencias": [
+            "CAPEC-277",
+            "OWASP API3:2023"
+          ],
+          "elementos_dfd": [
+            "F5",
+            "Marketplace",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "El cliente tiene una cuenta y un producto voluminoso en el carrito",
+            "La cotización y la cobertura se calculan con el código postal o las coordenadas que llegan en la petición del navegador",
+            "delivery-api no contrasta esos datos con la dirección normalizada y guardada en clients-api (S-10)"
+          ],
+          "patrones_usados": [
+            "AV-0003"
+          ],
+          "vector_practico": "Con un proxy de interceptación en su navegador, el cliente modifica los campos de código postal y coordenadas de la solicitud de cotización (F5) para que no correspondan con la dirección textual de entrega, y obtiene una tarifa menor o una cobertura que no le corresponde.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC03-02",
+          "actor": {
+            "rol": "Cliente autenticado con cuenta propia",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "S-09 deja sin confirmar la autorización por objeto y los identificadores son predecibles, lo que permite extracción masiva de domicilios y teléfonos con impacto regulatorio y de seguridad física."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Lectura de direcciones guardadas, nombres y teléfonos de otros clientes cambiando el identificador en clients-api",
+          "impacto": "Divulgación masiva de datos personales (domicilio, teléfono, nombre), riesgo de acoso y de robo dirigido a domicilios con compras de alto valor, y exposición regulatoria por protección de datos.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Autorización a nivel de objeto en clients-api: toda consulta de dirección o contacto debe comprobar que el objeto pertenece al cliente de la sesión autenticada, y el identificador de cliente se toma del token y no de la petición.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Reemplazar los identificadores secuenciales de direcciones por UUID aleatorios y devolver una respuesta uniforme 404 cuando el objeto no pertenezca al solicitante.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando una misma sesión o IP consulte muchos identificadores de dirección distintos o acumule respuestas 403/404 en clients-api, y limitar la frecuencia por cuenta.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante un acceso indebido confirmado, bloquear la cuenta y las sesiones del atacante, identificar los registros expuestos, notificar a los titulares y a la autoridad de protección de datos, y añadir pruebas automáticas de BOLA al pipeline.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-09: la autorización por objeto en clients-api no está confirmada",
+            "Los identificadores de dirección son secuenciales o predecibles"
+          ],
+          "caso_de_uso": "UC-03",
+          "como_ocurre": [
+            "El cliente abre el paso de selección de dirección y observa en las herramientas del navegador la petición que trae sus direcciones guardadas",
+            "La reenvía con Burp Repeater cambiando el identificador de dirección o de cliente por valores consecutivos o inferidos",
+            "clients-api devuelve direcciones completas, coordenadas, nombre y teléfono de contacto de otras cuentas",
+            "El atacante automatiza la iteración sobre el rango de identificadores y conserva los resultados",
+            "Con los datos arma una base de domicilios y teléfonos de clientes que compraron productos de alto valor"
+          ],
+          "referencias": [
+            "OWASP API1:2023 BOLA",
+            "OWASP API3:2023"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "clients-api"
+          ],
+          "precondiciones": [
+            "El cliente puede iniciar sesión y abrir el paso de dirección guardada durante el pago",
+            "La consulta de direcciones y contactos de clients-api recibe un identificador de dirección o de cliente en la petición",
+            "clients-api no verifica que el objeto consultado pertenezca a la sesión que lo pide (S-09)"
+          ],
+          "patrones_usados": [
+            "FE-11"
+          ],
+          "vector_practico": "Con un proxy de repetición de peticiones, el cliente cambia el identificador del objeto dirección o cliente en la consulta de direcciones guardadas y recorre el rango de valores para extraer nombre, teléfono y domicilio de terceros.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC03-04",
+          "actor": {
+            "rol": "Atacante externo, anónimo o con cuenta desechable",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "No hay rate limiting confirmado y delivery-api es compartido, de modo que una saturación afecta la creación de órdenes de entrega ya pagadas, además del costo de geocodificación."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": []
+          },
+          "titulo": "Consumo masivo de la consulta de cobertura y costo de envío para saturar delivery-api",
+          "impacto": "Indisponibilidad del cálculo de envío y de la creación de órdenes de entrega en pleno pago, ventas perdidas, retrasos en la preparación y aumento del costo de servicios de terceros.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Rate limiting y cuotas en el endpoint de cotización y cobertura por cuenta, IP, dispositivo y dirección, con CAPTCHA o reto adaptativo en el paso de dirección para tráfico anónimo o de cuentas nuevas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aislar la capacidad de delivery-api: separar el endpoint de cotización del de creación, preparación y cancelación de órdenes mediante pools o colas independientes, con caché de resultados por código postal y tope de gasto en el proveedor de mapas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear la tasa de consultas de cobertura por cliente, la latencia de delivery-api y el consumo de cuota de geocodificación, con alertas por umbral y por picos de direcciones únicas desde pocas fuentes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Activar bloqueo temporal de IPs y cuentas abusivas, degradar a cotización por zona precalculada y reprocesar la cola de órdenes de entrega pendientes de pagos ya confirmados.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se ha confirmado rate limiting en el endpoint de cotización ni en el de cobertura"
+          ],
+          "caso_de_uso": "UC-03",
+          "como_ocurre": [
+            "El atacante crea una cuenta y un carrito, y observa la petición de cobertura del paso de dirección",
+            "Con una herramienta de pruebas de carga (k6 o similar) repite la consulta con miles de combinaciones de direcciones, códigos postales y coordenadas",
+            "Cada consulta provoca cálculos de distancia y llamadas a servicios externos de geocodificación",
+            "delivery-api agota sus recursos y degrada o rechaza las operaciones de otros clientes",
+            "Los pagos ya hechos no pueden crear la orden de entrega o se retrasan, y suben los costos del proveedor de mapas"
+          ],
+          "referencias": [
+            "OWASP API4:2023"
+          ],
+          "elementos_dfd": [
+            "F5",
+            "Marketplace",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "La validación de cobertura y costo se dispara con cada dirección capturada, sin límite de frecuencia por cuenta, IP o dirección",
+            "delivery-api es compartido con otros procesos críticos: entrega, preparación y cancelación de órdenes (F5)",
+            "La cotización consulta servicios de geocodificación o mapas con costo por consulta"
+          ],
+          "patrones_usados": [],
+          "vector_practico": "Con un generador de carga y varias cuentas o IPs, el atacante envía en paralelo consultas de cobertura y costo con direcciones y coordenadas variadas contra el endpoint de cotización de delivery-api, hasta degradar el servicio y consumir la cuota de geocodificación.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC03-06",
+          "actor": {
+            "rol": "Cliente",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "La orden guarda una referencia editable a la dirección sin evidencia de confirmación, lo que facilita reclamos falsos, aunque el daño se limita al valor de cada orden."
+          },
+          "stride": {
+            "principal": "R",
+            "secundarias": [
+              "S"
+            ]
+          },
+          "titulo": "Cliente que niega haber capturado la dirección y el contacto de la orden para reclamar la entrega fallida",
+          "impacto": "Fraude por reembolso o reenvío, pérdida del producto y costo de envío, e imposibilidad de atribuir al cliente la dirección y el contacto de la orden en las disputas.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Guardar en la orden una copia inmutable de la dirección y del contacto confirmados, con marca de tiempo, IP, dispositivo y hash, y exigir una confirmación explícita del cliente antes del pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir código de confirmación al recibir y foto de entrega con marca de tiempo y geolocalización, y entregarlos al ecommerce como evidencia de la entrega a la dirección confirmada.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando una dirección se edite o elimine tras el pago o tras un intento de entrega, y cuando un cliente acumule reclamos por dirección o contacto desconocidos, cruzando historial por cliente, dirección y medio de pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Resolver las disputas con el registro inmutable y la evidencia de entrega, rechazar el reembolso cuando coincidan con lo reclamado y limitar los reembolsos o reenvíos futuros de cuentas con reclamos repetidos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "La orden de entrega referencia la dirección y no guarda un registro inmutable de lo confirmado por el cliente"
+          ],
+          "caso_de_uso": "UC-03",
+          "como_ocurre": [
+            "El cliente compra un producto de alto valor y captura una dirección y un teléfono de un tercero, o los de un domicilio sin vigilancia",
+            "Tras el intento de entrega o la entrega a esa dirección, edita o borra la dirección guardada en su perfil",
+            "Abre un reclamo en el que afirma que nunca indicó esa dirección ni ese contacto y que la orden fue manipulada",
+            "Soporte no encuentra una prueba firmada de lo capturado durante el pago y no puede refutar la afirmación",
+            "Se aprueba el reembolso o el reenvío y el cliente conserva el producto"
+          ],
+          "referencias": [],
+          "elementos_dfd": [
+            "Marketplace",
+            "clients-api",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "La orden guarda una referencia a la dirección editable y no una copia inmutable con fecha, IP y dispositivo desde el que se confirmó",
+            "No hay confirmación explícita del cliente sobre la dirección y el contacto finales antes del pago",
+            "Las disputas se resuelven con el soporte del Marketplace revisando el estado actual de la cuenta"
+          ],
+          "patrones_usados": [
+            "FE-01"
+          ],
+          "vector_practico": "Desde su perfil en el Marketplace, el cliente edita o elimina la dirección y el contacto guardados después del pago y presenta un reclamo por soporte en el que niega haberlos capturado, apoyándose en que la orden no conserva una copia inmutable con evidencia de la confirmación.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC03-03",
+          "actor": {
+            "rol": "Atacante con credenciales filtradas del cliente",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "El relleno de credenciales es frecuente y no hay segundo factor ni aviso por direcciones nuevas; el daño es por orden fraudulenta (contracargo y producto perdido), aunque escalable."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Cuenta tomada que agrega una dirección nueva y un contacto falsos durante el pago para desviar la compra",
+          "impacto": "Compra fraudulenta con cargo al titular, contracargos, pérdida del producto y exposición de las direcciones y los contactos guardados en la cuenta comprometida.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir reautenticación o segundo factor al agregar una dirección o teléfono nuevos durante el pago, y MFA o verificación de riesgo en el inicio de sesión desde dispositivo o país nuevo, con protección contra relleno de credenciales (límites por IP, dispositivo y bot detection).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir autenticación reforzada (3-D Secure) del titular cuando se paga con un token guardado y la dirección de envío es nueva para esa cuenta.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Reglas de riesgo que marquen órdenes de alto valor con dirección y teléfono nuevos tras un inicio de sesión desde un dispositivo nuevo, y detectar ráfagas de inicios fallidos contra muchas cuentas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Enviar al titular una notificación por correo o SMS ante cada dirección o contacto nuevos y retener la orden unos minutos para permitir cancelarla.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Cancelar o retener el despacho de órdenes marcadas, restablecer credenciales y revocar sesiones de la cuenta, y gestionar el contracargo con la evidencia del dispositivo y la dirección.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Supuesto propio de este caso: no hay segundo factor ni notificación al titular por nuevas direcciones o contactos. No se apoya en un supuesto numerado, porque UC-03 solo declara S-09 y S-10.",
+            "La orden pagada se despacha sin una verificación adicional de que la dirección es nueva para esa cuenta"
+          ],
+          "caso_de_uso": "UC-03",
+          "como_ocurre": [
+            "El atacante prueba las credenciales filtradas con una herramienta de relleno de credenciales contra el inicio de sesión del Marketplace y entra a la cuenta",
+            "Agrega un producto de alto valor al carrito y llega al paso de datos de envío de UC-03",
+            "Captura como dirección nueva un domicilio de paso o un punto de reexpedición controlado por él, con un nombre y un teléfono de contacto propios",
+            "clients-api guarda la dirección y el contacto en el perfil, y el Marketplace envía la dirección a delivery-api (F5), que valida la cobertura y calcula el costo",
+            "Paga con el medio de pago guardado y la orden de entrega se genera hacia la dirección del atacante sin que el titular reciba ninguna notificación"
+          ],
+          "referencias": [
+            "OWASP API2:2023 Broken Authentication",
+            "CAPEC-49 Password Brute Forcing (relleno de credenciales)"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "clients-api",
+            "delivery-api",
+            "F5"
+          ],
+          "precondiciones": [
+            "El atacante tiene credenciales del cliente obtenidas de otra filtración y el inicio de sesión no exige un segundo factor",
+            "La cuenta tiene un medio de pago tokenizado guardado",
+            "Agregar una dirección nueva y un teléfono de contacto durante el pago no exige reautenticación ni genera aviso al titular"
+          ],
+          "patrones_usados": [
+            "FE-11",
+            "AV-0009"
+          ],
+          "vector_practico": "Con credenciales reutilizadas y una herramienta de relleno de credenciales, el atacante inicia sesión y, desde el formulario normal de envío del Marketplace, registra una dirección y un teléfono de contacto propios (datos manipulados: dirección de entrega y contacto de la orden). Con ellos compra con el medio de pago tokenizado de la víctima. Se diferencia de AV-0009 (UC-12), donde el atacante registra una persona autorizada para retirar en tienda. Aquí el dato suplantado es la dirección y el contacto de envío capturados en el pago (UC-03), y el producto se desvía por entrega a domicilio sin que intervenga ninguna persona autorizada ni un código de retiro.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC03-05",
+          "actor": {
+            "rol": "Cliente malintencionado",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Los campos de texto libre llegan sin sanear a paneles internos con sesiones privilegiadas, y una ejecución exitosa expone datos de muchos clientes y permite acciones con permisos de empleado."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "I"
+            ]
+          },
+          "titulo": "Texto malicioso en nombre de contacto y referencias de entrega que se ejecuta con la sesión privilegiada de un empleado en un panel interno",
+          "impacto": "Divulgación de datos personales y de entrega de otros clientes, acciones no autorizadas sobre pedidos y reembolsos con los permisos del empleado, y pérdida de confianza entre clientes, soporte y logística.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Validar en servidor longitud y juego de caracteres de nombre, calle y referencias de entrega en el Marketplace y en clients-api, y codificar por contexto toda salida en los paneles internos de soporte y preparación de pedidos, sin renderizar HTML crudo.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar una Content-Security-Policy estricta y cookies HttpOnly y SameSite en los paneles internos, para que un script inyectado no lea la sesión ni envíe datos a dominios externos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar y alertar sobre direcciones o contactos con etiquetas HTML o patrones de script, y reportes CSP de violaciones y de conexiones salientes a dominios no autorizados desde los paneles.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Ante una ejecución confirmada, sanear o eliminar los registros afectados, revocar las sesiones del empleado, revisar el acceso a órdenes ajenas y notificar a los titulares expuestos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Los paneles internos (soporte, preparación de pedidos) no figuran entre los componentes de UC-03. Se asumen como consumidores de los datos de la orden que delivery-api conserva, y por eso este caso no declara LC-4.",
+            "La app del repartidor queda fuera de este caso; solo se consideran los paneles internos que reciben la orden.",
+            "Los campos de texto libre de dirección y contacto no se sanean ni se codifican en las vistas internas"
+          ],
+          "caso_de_uso": "UC-03",
+          "como_ocurre": [
+            "El cliente captura una dirección nueva y, en nombre de contacto y en referencias de entrega, escribe una cadena con una etiqueta de script incrustada en lugar de datos reales",
+            "El Marketplace envía la dirección a delivery-api (F5), clients-api guarda el perfil con ese texto sin alterarlo y la orden de entrega lo conserva igual",
+            "Un agente de soporte o un operador abre la orden en su panel interno y el navegador interpreta el texto como código",
+            "El script corre con la sesión del empleado: consulta órdenes de otros clientes que ese empleado puede ver y envía su contenido a un dominio controlado por el atacante",
+            "El atacante recibe nombres, teléfonos y direcciones de terceros, o consigue que se ejecuten acciones sobre pedidos ajenos con los permisos del empleado"
+          ],
+          "referencias": [
+            "CAPEC-63 Cross-Site Scripting (XSS)",
+            "OWASP Top 10 2021 A03 Injection"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "clients-api",
+            "delivery-api",
+            "F5"
+          ],
+          "precondiciones": [
+            "Los campos de nombre de contacto, calle y referencias de entrega aceptan texto libre sin validar longitud ni caracteres",
+            "Algún panel interno que consume los datos de la orden desde delivery-api (por ejemplo, soporte o preparación de pedidos) los muestra sin codificar",
+            "Ese panel se usa con sesiones de empleados con privilegios elevados sobre órdenes de otros clientes"
+          ],
+          "patrones_usados": [],
+          "vector_practico": "El cliente usa el formulario normal de dirección del Marketplace desde su navegador, sin herramientas especiales. Guarda en los campos de nombre de contacto y referencias de entrega una cadena con una etiqueta de script incrustada. Esa cadena, al renderizarse en el panel interno, lee las órdenes ajenas visibles para el empleado y las envía a un dominio del atacante. El dato manipulado es el texto libre de la dirección y del contacto, que cruza LC-1 y LC-2 sin saneamiento. Se clasifica como elevación de privilegios porque el texto del cliente termina ejecutándose con la autoridad de la sesión del empleado, y la divulgación de datos de otras órdenes es consecuencia de eso.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-04",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC04-01",
+          "actor": {
+            "rol": "Atacante externo con automatización y cuenta de cliente",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Un script con una cuenta válida puede probar sufijos si los códigos son predecibles y no hay límite de intentos, pero cada descuento obtenido es acotado y se puede cortar al detectarlo."
+          },
+          "stride": {
+            "principal": "I",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Enumeración automatizada de códigos de cupón para obtener descuentos no asignados",
+          "impacto": "Pérdida de margen por descuentos otorgados a quien no era destinatario, agotamiento del presupuesto de campañas, reventa de códigos y sobrecarga de cupons-api por validaciones masivas.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Generar los códigos de cupón nuevos con al menos 10 caracteres aleatorios criptográficamente seguros, sin prefijo de campaña ni secuencia, y ligar a la cuenta destinataria los cupones personales o de segmento pequeño para que cupons-api rechace su uso por otras cuentas.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Limitar en cupons-api los intentos de validación fallidos por cuenta, IP y dispositivo (por ejemplo 5 por 10 minutos), con retraso progresivo y CAPTCHA o desafío anti-bot en el checkout tras superar el umbral.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Devolver la misma respuesta genérica y con tiempo similar para códigos inexistentes, vencidos o no elegibles, de modo que la respuesta de F4 no permita distinguir códigos válidos de inválidos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando una cuenta, IP o dispositivo acumule muchas validaciones fallidas, y cuando un cupón personal sea canjeado por una cuenta distinta a la destinataria. Revisar las alertas en el SOC.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Bloquear temporalmente las cuentas y dispositivos implicados, invalidar y reemplazar los códigos que se hayan enumerado y revisar o revertir las órdenes que los usaron antes del despacho.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11: las reglas incluyen usos por cliente y segmento, pero se asume que no todos los cupones están ligados a una cuenta.",
+            "No se conoce si cupons-api aplica límite de intentos o protección contra automatización."
+          ],
+          "caso_de_uso": "UC-04",
+          "como_ocurre": [
+            "El atacante observa un cupón legítimo recibido por correo o publicado en una campaña y deduce la estructura del código (prefijo de campaña y secuencia).",
+            "Captura con un proxy de interceptación la petición de validación del Marketplace a cupons-api (F4), que lleva código, cliente y carrito.",
+            "Automatiza con una herramienta de repetición de peticiones la variación del sufijo del código sobre esa petición, desde varias IP.",
+            "Distingue por la respuesta de cupons-api los códigos válidos de los inválidos y registra los válidos, incluidos los de alto valor o de otros segmentos.",
+            "Usa los códigos en sus propias órdenes, o los revende a otros clientes, y cada uso se consume al confirmar el pago."
+          ],
+          "referencias": [
+            "OWASP OAT-002 Token Cracking",
+            "CAPEC-112 Brute Force",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "F4",
+            "Marketplace",
+            "cupons-api",
+            "F12"
+          ],
+          "precondiciones": [
+            "Los códigos de cupón siguen un patrón corto o predecible (prefijo de campaña más número consecutivo).",
+            "La validación de cupón en checkout no limita los intentos fallidos por cuenta, IP o dispositivo.",
+            "El atacante tiene una cuenta de cliente válida y un carrito que cumple el monto mínimo.",
+            "Algunos cupones no están ligados a la cuenta destinataria, o su segmento es amplio."
+          ],
+          "patrones_usados": [
+            "FE-04"
+          ],
+          "vector_practico": "Un script con una herramienta de repetición de peticiones, apoyado en un proxy de interceptación, manipula el campo código de cupón en la validación del checkout (F4) y lee las diferencias en la respuesta de cupons-api para identificar códigos válidos no otorgados.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC04-02",
+          "actor": {
+            "rol": "Cliente con un cupón de un solo uso o de usos limitados",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "La condición de carrera se explota con peticiones concurrentes simples porque el uso se consume tras el pago, y la pérdida es directa por cupón pero limitada a cupones de un solo uso."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Uso simultáneo de un cupón de un solo uso en varias órdenes antes de que se consuma",
+          "impacto": "Un cupón de un solo uso se aplica a varias órdenes, con pérdida económica directa en descuentos, incumplimiento de las reglas de RN-4 y consumo del presupuesto de campaña por encima de lo aprobado.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Reservar el cupón de forma atómica en cupons-api al iniciar la confirmación de la orden, con restricción única sobre cupón y orden (o cupón y cliente) o con bloqueo transaccional, y consumirlo definitivamente solo cuando el pago quede confirmado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Exigir una clave de idempotencia por orden en las peticiones de pago y rechazar confirmaciones duplicadas o concurrentes para la misma intención de pago.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Ejecutar una conciliación periódica y una alerta que detecten cupones de un solo uso asociados a más de una orden confirmada, o con usos que superan el límite de la regla, y revisen cupones aplicados en órdenes con segundos de diferencia.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Cancelar o retener las órdenes excedentes antes del despacho y generar la orden de entrega en delivery-api solo si la reserva del cupón es válida. Liberar las reservas que expiren sin pago para no bloquear a clientes legítimos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-26: se asume que el consumo del cupón ocurre al confirmar el pago y no hay bloqueo previo.",
+            "No se sabe si cupons-api tiene restricción única sobre el par cupón-cliente."
+          ],
+          "caso_de_uso": "UC-04",
+          "como_ocurre": [
+            "El cliente prepara varios carritos en sesiones paralelas del Marketplace y aplica el mismo cupón en cada uno; cupons-api responde que es válido en todos porque aún figura sin usar.",
+            "Con una herramienta de envío de peticiones concurrentes, lanza casi a la vez las confirmaciones de pago de los carritos hacia la pasarela y el Marketplace.",
+            "Cada confirmación llega a cupons-api antes de que el contador de usos se actualice en F12, por lo que todas se aceptan.",
+            "El descuento queda aplicado en todas las órdenes y se crean las órdenes de entrega en delivery-api.",
+            "El cliente repite la maniobra en cada campaña que tenga cupones de un solo uso."
+          ],
+          "referencias": [
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows",
+            "CAPEC-26 Leveraging Race Conditions"
+          ],
+          "elementos_dfd": [
+            "F4",
+            "F12",
+            "cupons-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "El cliente posee un cupón válido de un solo uso o con pocos usos por cliente.",
+            "El uso del cupón se consume al confirmar el pago (paso 4), no al validarlo.",
+            "No hay reserva atómica ni restricción única que ligue el cupón a una orden antes del cobro.",
+            "El cliente puede abrir varias sesiones de checkout con carritos distintos."
+          ],
+          "patrones_usados": [
+            "FE-13"
+          ],
+          "vector_practico": "Con una herramienta de peticiones concurrentes o dos o más pestañas sincronizadas, el cliente envía en paralelo las confirmaciones de varias órdenes que referencian el mismo código de cupón, aprovechando que la marca de usado se escribe después de la validación.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC04-03",
+          "actor": {
+            "rol": "Cliente o grupo organizado que crea cuentas desechables",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "Crear cuentas desechables es barato y común cuando la unicidad solo depende de correo y teléfono, aunque el impacto por cuenta es bajo y acotado al valor del cupón."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Cuentas múltiples para repetir cupones de primera compra o con límite por cliente",
+          "impacto": "El límite por cliente deja de funcionar: se multiplican los descuentos de primera compra, se pierde margen y se distorsionan las métricas de adquisición de las campañas.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Aplicar en el registro protección contra automatización (CAPTCHA, límite de altas por IP y dispositivo), bloquear dominios de correo desechable y exigir verificación por código de un teléfono real, rechazando rangos de números virtuales conocidos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Validar los cupones de primera compra y con límite por cliente contra la huella de dispositivo, la dirección de entrega normalizada y el medio de pago (token o huella de tarjeta), y no solo contra el identificador de cuenta.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Proveer una huella estable del instrumento de pago y aplicar verificación 3-D Secure o autenticación reforzada en el primer pago con cupón. Rechazar tarjetas virtuales prepago de alto riesgo según el scoring del emisor.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar cuando varias cuentas compartan dirección de entrega, dispositivo, tarjeta o patrón de correo, o cuando se creen cuentas en ráfagas, y cruzar los canjes de primera compra con esas señales.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener para revisión manual las órdenes con cupón de primera compra que coincidan con las señales, cancelar las del grupo detectado antes del despacho, suspender las cuentas vinculadas y añadir sus identificadores a listas de bloqueo.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-11: el límite de usos por cliente depende de RN-1, por lo que evadir la unicidad del cliente evade el límite.",
+            "Se asume que no hay huella de dispositivo ni límites por dirección o medio de pago."
+          ],
+          "caso_de_uso": "UC-04",
+          "como_ocurre": [
+            "El atacante crea en ráfaga cuentas con correos desechables y números virtuales usando una herramienta de automatización de registro.",
+            "Cada cuenta nueva figura sin historial de uso en cupons-api, por lo que cumple la elegibilidad del cupón.",
+            "Con cada cuenta arma un carrito sobre el monto mínimo y aplica el mismo cupón; cupons-api valida el límite de usos por cliente contra el historial de esa cuenta (F12).",
+            "Paga con el mismo medio de pago o con tarjetas virtuales y recibe todo en la misma dirección de entrega.",
+            "El grupo repite el proceso en cada campaña y revende los productos o los usa en reventa."
+          ],
+          "referencias": [
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows",
+            "CAPEC-94 Adversary in the Middle (no aplicable); CAPEC-210 Abuse Existing Functionality"
+          ],
+          "elementos_dfd": [
+            "F4",
+            "F12",
+            "cupons-api",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "Existe un cupón de primera compra o con límite de usos por cliente.",
+            "La unicidad del cliente (RN-1) se valida solo por correo y teléfono.",
+            "El registro permite correos desechables y números virtuales sin protección contra automatización.",
+            "El historial de uso por cliente se calcula por identificador de cuenta."
+          ],
+          "patrones_usados": [
+            "FE-03"
+          ],
+          "vector_practico": "Un script de registro automatizado, con correos desechables y números virtuales como dato de identidad, genera cuentas nuevas que eluden RN-1 y reinician el contador de usos por cliente que cupons-api consulta en el historial.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC04-04",
+          "actor": {
+            "rol": "Cliente que intercepta las peticiones del checkout",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Interceptar y alterar peticiones con un proxy es trivial para un cliente, pero el descuento indebido se limita a una orden y desaparece si el servidor recalcula los montos."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Manipulación del total o de las reglas de elegibilidad en la petición de aplicación del cupón",
+          "impacto": "Descuentos superiores a los permitidos, envío gratuito sin derecho a él, órdenes cuyo total no coincide con el catálogo y pérdida de margen por validaciones evadidas.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Recalcular en el servidor subtotal, cantidades, costo de envío y descuento a partir del catálogo y de la cotización almacenada, ignorando cualquier importe enviado por el cliente. Revalidar vigencia, elegibilidad y monto mínimo con el carrito final justo antes de confirmar el pago.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Firmar o guardar en servidor la cotización de envío (modalidad, costo, vigencia) y verificar en el pago que la modalidad y el costo coincidan. Si el cliente cambia carrito o modalidad tras aplicar el cupón, revalidar el cupón desde cero.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Comparar el total de cada orden con el recalculado desde catálogo, cupón y envío, y alertar sobre diferencias, sobre cambios de carrito o modalidad entre la validación del cupón y el pago, y sobre descuentos de envío superiores al costo real.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Bloquear la orden cuyo total no coincida y pedir al cliente que confirme el total recalculado. Si el pago ya se hizo, ajustar la diferencia o cancelar y reembolsar antes del despacho.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se confirma si el Marketplace recalcula el total en servidor entre la validación del cupón y el pago.",
+            "S-12: se asume que la modalidad y el costo de envío pueden cambiar durante el checkout."
+          ],
+          "caso_de_uso": "UC-04",
+          "como_ocurre": [
+            "El cliente arma un carrito con productos de alto valor y aplica un cupón con monto mínimo bajo, o con descuento sobre el envío.",
+            "Intercepta con un proxy de interceptación la petición de validación o de cotización (F4) y cambia el subtotal, la cantidad o el costo de envío a valores que cumplen el mínimo o inflan el descuento.",
+            "Una vez aceptado el cupón, restaura el carrito real o cambia la cantidad o la modalidad de entrega, de modo que el descuento queda aplicado a una orden que no cumpliría las reglas.",
+            "Si el descuento sobre el envío se calcula con un costo enviado por el cliente, el cupón se aplica a un valor alterado.",
+            "El Marketplace muestra el total final reducido, el cliente paga y la orden se registra con el descuento indebido."
+          ],
+          "referencias": [
+            "CAPEC-39 Manipulating Opaque Client-based Data Tokens",
+            "OWASP API6:2023"
+          ],
+          "elementos_dfd": [
+            "F4",
+            "Marketplace",
+            "cupons-api",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "El checkout envía a cupons-api o a delivery-api valores como subtotal, costo de envío o destino del descuento (producto o envío) que provienen del cliente.",
+            "El servidor no recalcula montos ni vuelve a verificar el monto mínimo antes de confirmar el pago.",
+            "El cliente puede interceptar su propio tráfico con un proxy."
+          ],
+          "patrones_usados": [
+            "FE-13"
+          ],
+          "vector_practico": "Con un proxy de interceptación, el cliente modifica los campos de subtotal, cantidad, costo de envío o modalidad en la petición de aplicación del cupón y en la de confirmación, para que cupons-api valide con datos distintos a los de la orden final.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC04-05",
+          "actor": {
+            "rol": "Operador de marketing y promociones con acceso a cupons-frontend",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Un operador interno con permisos amplios y sin aprobación ni alertas puede crear cupones sin límite, y la pérdida puede ser grande y difícil de atribuir hasta revisar márgenes."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "R"
+            ]
+          },
+          "titulo": "Cupón sin límite creado en UC-15 por un operador interno y canjeado en el checkout de UC-04 por cuentas allegadas",
+          "impacto": "Pérdida económica por descuentos no autorizados y sin tope, consumo del presupuesto de campaña en beneficio personal y reventa del código. Los canjes legítimos de la campaña se confunden con los fraudulentos y el responsable es difícil de identificar sin aprobación doble ni bitácora inmutable.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Exigir en cupons-frontend aprobación doble por una segunda persona autorizada para crear o editar cupones con descuento sobre un umbral, sin límite de usos totales, con vigencia ampliada o con segmento amplio, y aplicar topes de descuento, usos y vigencia por rol.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Impedir que cupons-api active para el checkout cupones sin campaña aprobada asociada, y rechazar reglas fuera de rango (descuento máximo, usos totales obligatorios) aunque el operador las haya guardado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Registrar en una bitácora inmutable (append-only) cada creación o cambio de cupón con operador, valores anteriores y nuevos. Alertar sobre cupones creados fuera de campañas y sobre uso concentrado en pocas cuentas relacionadas o con tasa de canje anómala.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Desactivar de inmediato el cupón sospechoso, retener las órdenes canjeadas pendientes de despacho, revisar los canjes con la bitácora, revocar o limitar los permisos del operador e iniciar el proceso disciplinario o de recuperación de pérdidas.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Nuevo: el abuso se origina en UC-15 (cupons-frontend, LC-3), que UC-04 no incluye entre sus componentes ni límites. Se vincula a UC-04 porque se materializa en su checkout con cupons-api (F4, F12, LC-2). Se declara así para trazabilidad y no porque UC-04 los liste.",
+            "Nuevo: se asume que no existe aprobación de una segunda persona para cupones de alto descuento o sin límite de usos.",
+            "Nuevo: se asume que no existen topes de descuento por rol, alertas por uso concentrado ni bitácora inmutable de cambios en cupones. No se confirma ninguno de estos controles en el contexto entregado.",
+            "S-11 se usa solo en lo que describe: los empleados crean los cupones en cupons-frontend y cupons-api los valida."
+          ],
+          "caso_de_uso": "UC-04",
+          "como_ocurre": [
+            "En cupons-frontend (UC-15, LC-3) el operador crea un cupón con descuento alto, sin límite de usos totales y con segmento amplio. También puede ampliar la vigencia de un cupón existente o quitarle el monto mínimo.",
+            "El operador activa el cupón y cupons-api lo guarda en el almacén de cupones y usos (F12) como disponible para validación en el checkout.",
+            "El operador entrega el código a conocidos o lo vende por canales externos.",
+            "Los beneficiarios, con cuentas distintas, escriben el código en el checkout del Marketplace (UC-04). El Marketplace envía a cupons-api el código, el cliente y el carrito (F4, LC-2).",
+            "cupons-api valida el cupón con las reglas ya alteradas: vigencia, elegibilidad, monto mínimo y usos disponibles. El resultado es válido, el descuento se aplica al producto o al envío y el uso se consume al confirmar el pago, de modo que parece un canje legítimo.",
+            "El abuso solo se detecta al revisar los márgenes de la campaña. Sin bitácora inmutable ni aprobación doble, es difícil atribuir el cambio al operador y distinguirlo de un canje normal."
+          ],
+          "referencias": [
+            "CAPEC-122 Privilege Abuse",
+            "OWASP API6:2023 Unrestricted Access to Sensitive Business Flows"
+          ],
+          "elementos_dfd": [
+            "cupons-frontend",
+            "cupons-api",
+            "F12",
+            "F4",
+            "Marketplace"
+          ],
+          "precondiciones": [
+            "El operador está autenticado en cupons-frontend y puede crear o editar cupones, como describe UC-15, el caso de uso donde nace el abuso.",
+            "Según S-11, las reglas del cupón (valor, vigencia, usos totales, usos por cliente, monto mínimo y segmento) las define el empleado en cupons-frontend y las valida cupons-api. Por eso cualquier regla alterada en origen se acepta como legítima en el checkout de UC-04.",
+            "Supuesto nuevo: no hay aprobación de una segunda persona para cupones de alto descuento o sin límite de usos, ni topes de descuento por rol.",
+            "Supuesto nuevo: no hay alertas por uso concentrado de un cupón ni una bitácora inmutable que atribuya los cambios al operador."
+          ],
+          "patrones_usados": [
+            "FE-05"
+          ],
+          "vector_practico": "El operador usa la pantalla de creación y edición de cupones de cupons-frontend para modificar el valor del descuento, el límite de usos, la vigencia y el segmento del cupón. Después distribuye el código fuera de la campaña aprobada. Cada canje pasa por la validación de cupons-api en el checkout de UC-04 como si el cupón perteneciera a una campaña autorizada.",
+          "limites_confianza": [
+            "LC-3",
+            "LC-2"
+          ]
+        }
+      ]
+    },
+    {
+      "origen": "memoria",
+      "caso_de_uso": "UC-05",
+      "descartados": [],
+      "casos_de_abuso": [
+        {
+          "id": "AC-UC05-01",
+          "actor": {
+            "rol": "Cliente con cuenta en el Marketplace",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Interceptar la petición de perfil es trivial, pero depende de que clients-api acepte esos campos sin validar (por confirmar); cada orden pierde solo el diferencial de envío."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Alteración de atributos de perfil (nivel, membresía, zona) para obtener un envío más barato o gratis",
+          "impacto": "Pérdida de ingresos por envíos de productos voluminosos cobrados por debajo de la tarifa real, con costos de logística no recuperados. Se incumple RN-2 y se distorsionan las métricas de membresía y zonas. El abuso se replica si se difunde entre otros clientes.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "En clients-api, lista blanca de campos editables por el cliente en la petición de perfil: rechazar con 403 y no persistir nivel, membresía y zona (mass assignment, API3:2023). Esos atributos solo los cambian procesos del servidor con credencial de servicio.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Recalcular la cotización de envío con los atributos vigentes al confirmar el pago, y cobrar el valor recalculado, no el mostrado antes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Auditar cada cambio de nivel, membresía o zona con origen (cliente, operador, proceso) y alertar si hay un cambio de beneficio seguido de compra en menos de N minutos, o si el atributo se restaura tras la compra.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revertir los atributos alterados, recotizar o facturar el diferencial de envío de las órdenes afectadas y bloquear la edición de perfil de las cuentas reincidentes.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-03: delivery-api confía en los datos de clients-api",
+            "Se asume que el perfil es editable por el cliente mediante una API del Marketplace; debe confirmarse qué campos acepta realmente"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El cliente inicia sesión en el Marketplace y observa la petición de actualización de perfil con un proxy de interceptación",
+            "Agrega o modifica en esa petición los campos de nivel de cliente, membresía o zona, con valores de un nivel superior o de una zona de tarifa reducida",
+            "clients-api acepta el cambio y lo persiste en el almacén de clientes, sin validar que el atributo es solo de servidor",
+            "El cliente agrega al carrito un producto voluminoso y el Marketplace pide la cotización a delivery-api (F5)",
+            "delivery-api consulta a clients-api (F9), recibe los atributos alterados y aplica la tarifa preferencial según RN-2",
+            "El Marketplace muestra el envío reducido o gratis y el cliente paga la orden con ese costo",
+            "Tras la compra, el cliente restaura los valores originales del perfil para no dejar rastro"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CAPEC-202",
+            "OWASP API3:2023 Broken Object Property Level Authorization"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "clients-api",
+            "delivery-api",
+            "F9",
+            "F5"
+          ],
+          "precondiciones": [
+            "El cliente tiene una cuenta activa y puede editar su perfil desde el Marketplace",
+            "clients-api acepta cambios sobre atributos de beneficio (nivel, membresía, zona) sin distinguir los editables por el cliente de los reservados al servidor",
+            "delivery-api confía en los atributos que devuelve clients-api (S-03) y no los contrasta con otra fuente",
+            "La cotización no se recalcula al confirmar el pago"
+          ],
+          "patrones_usados": [
+            "FE-06"
+          ],
+          "vector_practico": "Con un proxy de interceptación sobre su propia sesión, el cliente modifica en la petición de actualización de perfil los campos de nivel, membresía y zona que clients-api acepta sin validación. delivery-api los consume después como verdaderos para calcular la tarifa.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC05-02",
+          "actor": {
+            "rol": "Operador de atención al cliente con acceso de edición a perfiles en clients-api",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "El operador tiene acceso legítimo y no hay doble aprobación confirmada, así que el abuso es plausible y difícil de ver, pero el descuento por orden es acotado."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "R"
+            ]
+          },
+          "titulo": "Operador de atención cambia atributos de perfil de conocidos para darles envío reducido",
+          "impacto": "Descuentos de envío no autorizados y sostenidos en el tiempo, con pérdida económica difícil de detectar porque el costo se calcula de forma legítima sobre atributos adulterados. Si no hay bitácora fiable, no se puede atribuir el cambio al operador.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "En la herramienta administrativa, exigir un ticket de soporte asociado y justificación obligatoria para cambiar nivel, membresía o zona, con aprobación de un segundo usuario (cuatro ojos) y permiso separado por rol para editar atributos de beneficio.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Bitácora inmutable (append-only, fuera del control del operador) que registre quién cambió qué atributo, el valor anterior y el nuevo, y el ticket asociado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Reporte y alerta de cambios de atributos de beneficio hechos por el mismo operador sobre varias cuentas, de cuentas que compran justo tras el cambio y de reversiones posteriores a la compra. Revisión mensual por una función independiente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar el permiso de edición al operador implicado, revertir los atributos y recuperar el diferencial de envío según el proceso disciplinario.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Los operadores de atención pueden editar atributos de beneficio en clients-api",
+            "No se confirmó que exista doble aprobación para esos cambios"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "Un conocido del operador le pide una tarifa de envío menor para una compra de producto voluminoso",
+            "El operador abre el perfil en la herramienta administrativa y sube el nivel o la membresía, o cambia la zona a una de tarifa menor",
+            "clients-api guarda el cambio sin pedir justificación ni aprobación",
+            "Cuando el conocido solicita la cotización, delivery-api consulta clients-api (F9) y calcula un costo reducido o nulo por RN-2",
+            "El conocido paga la orden con el envío reducido",
+            "El operador revierte los atributos, o repite el patrón con otras cuentas, sin que el cambio quede asociado a un caso de soporte"
+          ],
+          "referencias": [
+            "CAPEC-39"
+          ],
+          "elementos_dfd": [
+            "clients-api",
+            "delivery-api",
+            "F9"
+          ],
+          "precondiciones": [
+            "El operador puede editar atributos de perfil de clientes desde una herramienta administrativa",
+            "No hay justificación obligatoria ni aprobación de un segundo usuario para cambiar nivel, membresía o zona",
+            "La bitácora de cambios es insuficiente o editable, o no se revisa",
+            "delivery-api consulta los atributos en cada cotización (F9) y no verifica su origen"
+          ],
+          "patrones_usados": [
+            "FE-06"
+          ],
+          "vector_practico": "El operador usa la herramienta administrativa de perfiles para sobrescribir nivel, membresía o zona en cuentas de conocidos. delivery-api los toma en la cotización sin verificar su origen.",
+          "limites_confianza": [
+            "LC-1"
+          ]
+        },
+        {
+          "id": "AC-UC05-03",
+          "actor": {
+            "rol": "Cliente que controla su navegador y sus peticiones",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Reemplazar un campo en la confirmación es muy simple si el servidor confía en él (S-10 por confirmar), y es automatizable, con pérdida directa en cada orden."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "E"
+            ]
+          },
+          "titulo": "Manipulación de la tarifa cotizada en el tránsito de la respuesta entre delivery-api y el Marketplace",
+          "impacto": "Envíos de productos voluminosos cobrados por debajo del costo real, con pérdidas directas por orden y riesgo de explotación masiva mediante automatización. Los registros de órdenes quedan inconsistentes con las reglas RN-2 y RN-4.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "No aceptar la tarifa de envío enviada por el cliente: el Marketplace recalcula el envío en el servidor con delivery-api al crear la orden, o valida una cotización con ID, vigencia corta y firma HMAC emitida por delivery-api y ligada al carrito, a la dirección y al perfil.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Calcular el monto de la autorización de pago en el servidor desde el total de la orden recalculado, y rechazar cualquier importe enviado por el navegador.",
+              "responsable": "pasarela_pago"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Conciliar por orden la tarifa cobrada contra la que delivery-api calcularía con los mismos datos y alertar de diferencias; registrar los intentos de firma inválida o de tarifa alterada.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Retener las órdenes con tarifa inconsistente antes del despacho, cobrar el diferencial o cancelarlas y bloquear las cuentas con intentos repetidos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "S-10: la tarifa viaja por el Marketplace entre cotización y confirmación; debe confirmarse si el servidor la recalcula"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El cliente arma un carrito con un producto voluminoso y solicita la cotización de envío",
+            "Con un proxy de interceptación identifica la respuesta con la tarifa y la petición posterior de confirmación que la incluye",
+            "Intercepta la petición de confirmación del pedido y reemplaza el valor de la tarifa por uno menor o cero",
+            "El Marketplace acepta la tarifa recibida, la registra en la orden y cobra el total reducido",
+            "La orden de entrega se crea en delivery-api (F5) con el costo manipulado y se despacha con normalidad"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CAPEC-202",
+            "OWASP API6:2023"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "F5"
+          ],
+          "precondiciones": [
+            "El Marketplace conserva en el cliente (campo de formulario, parámetro o estado del carrito) la tarifa cotizada y la reenvía al confirmar la orden",
+            "delivery-api o el Marketplace no recalculan ni verifican la firma de la tarifa al crear la orden de entrega o al cobrar",
+            "El cliente puede ver y modificar las peticiones de su propia sesión"
+          ],
+          "patrones_usados": [
+            "AV-0003",
+            "FE-06"
+          ],
+          "vector_practico": "Con un proxy de interceptación, el cliente reemplaza en la petición de confirmación el campo de tarifa de envío cotizada por un valor menor. El servidor la acepta como autoritativa porque no hay firma ni recálculo.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC05-04",
+          "actor": {
+            "rol": "Cliente que controla los parámetros de su solicitud",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 2,
+            "probabilidad": 2,
+            "justificacion": "Es fácil si delivery-api usa peso, volumen y código postal enviados por el cliente (por confirmar), pero el transportista acaba detectando la diferencia."
+          },
+          "stride": {
+            "principal": "T",
+            "secundarias": [
+              "I"
+            ]
+          },
+          "titulo": "Falsificación de dimensiones, peso o dirección en la solicitud de cotización para abaratar el envío",
+          "impacto": "Subcobro sistemático del envío de productos voluminosos y pérdida de margen. Puede generar conflictos operativos si el transportista rechaza o recobra la carga real, y datos erróneos de planificación de rutas y capacidad.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "delivery-api recibe solo SKU y cantidad y obtiene peso y volumen del catálogo interno. La dirección de destino sale de la dirección guardada o validada de la orden, nunca de campos libres de la cotización.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Validar en el servidor el esquema y los rangos de la solicitud de cotización, y rechazar campos de dimensión o peso que no esperaba recibir.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Comparar peso y volumen medidos en la recolección o el hub con los de la orden y reportar las desviaciones por encima del umbral acordado.",
+              "responsable": "proveedor_logistico"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar si el código postal de la cotización difiere del de la entrega final, o si una misma cuenta hace cotizaciones del mismo SKU con dimensiones o códigos postales distintos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Cobrar al cliente el recargo por diferencia de peso o volumen según los términos del servicio, o recotizar antes de entregar, y marcar la cuenta para revisión.",
+              "responsable": "proveedor_logistico"
+            }
+          ],
+          "supuestos": [
+            "No se conoce si delivery-api obtiene peso y volumen del catálogo o los recibe del cliente"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El cliente agrega un producto voluminoso y dispara la cotización de envío",
+            "Con un proxy de interceptación captura la petición Marketplace → delivery-api y localiza los campos de peso, volumen y código postal o coordenadas",
+            "Reduce el peso y el volumen a los de un artículo pequeño, o cambia el código postal por uno cercano al almacén, solo en la cotización",
+            "delivery-api calcula la tarifa con esos datos según peso, volumen y distancia (RN-4) y devuelve un costo bajo",
+            "El cliente continúa la compra con el costo bajo y la dirección real de entrega se registra aparte",
+            "Al llegar el producto, logística se enfrenta a un costo real mayor al cobrado"
+          ],
+          "referencias": [
+            "CAPEC-39",
+            "CAPEC-202"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "F5"
+          ],
+          "precondiciones": [
+            "La solicitud de cotización incluye peso, volumen o código postal enviados por el cliente o por el frontend del Marketplace",
+            "delivery-api calcula con los datos recibidos y no los contrasta con el catálogo ni con la dirección guardada",
+            "El cliente puede interceptar y modificar sus peticiones"
+          ],
+          "patrones_usados": [
+            "FE-06"
+          ],
+          "vector_practico": "Con un proxy de interceptación, el cliente reduce los campos de peso y volumen y cambia el código postal en la solicitud de cotización. delivery-api calcula la tarifa con esos valores sin contrastarlos con el catálogo ni con la dirección de la orden.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC05-05",
+          "actor": {
+            "rol": "Cliente que obtiene o reutiliza códigos de cupón de envío",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 2,
+            "probabilidad": 3,
+            "justificacion": "Reutilizar o compartir códigos es habitual y fácil de automatizar, y la validación de cupons-api es incompleta o no atómica (por confirmar); cada uso causa una pérdida limitada."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Abuso de un cupón de envío por cuenta distinta o fuera de condiciones al consultar cupons-api",
+          "impacto": "Pérdida de ingresos por envíos gratuitos o rebajados a quienes no cumplen las condiciones de la campaña. Erosiona el presupuesto de promociones y favorece la reventa de cupones.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "cupons-api valida en el servidor vigencia, segmento o perfil, SKU aplicable y cupo de usos, vinculando el cupón al cliente (o a la campaña) con las reglas de la campaña. delivery-api envía el ID de cliente autenticado, no uno aportado por el cliente.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Descontar los usos de forma atómica (reserva con transacción o un contador con operación condicional) al confirmar la orden, y liberarlos si se cancela, para evitar carreras entre solicitudes concurrentes.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por un mismo cupón usado desde varias cuentas, IP o dispositivos, por usos que superan el cupo o por muchas validaciones fallidas de códigos.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Revocar el cupón filtrado, anular o facturar el descuento de las órdenes fraudulentas, y emitir códigos nuevos nominales a los destinatarios legítimos.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se confirmó cómo cupons-api valida usos concurrentes ni la vinculación del cupón al perfil"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El cliente consigue un código de cupón de envío gratuito de una campaña de otro segmento o ya agotado",
+            "Agrega un producto voluminoso y solicita la cotización incluyendo el código en la petición hacia el Marketplace",
+            "El Marketplace pasa el código a delivery-api (F5), que consulta a cupons-api si aplica",
+            "cupons-api responde que es aplicable porque no verifica el perfil, el producto o el contador de usos de forma atómica",
+            "delivery-api resta el beneficio y devuelve un envío gratis o reducido",
+            "El cliente repite la operación en varias órdenes o con cuentas distintas con el mismo código"
+          ],
+          "referencias": [
+            "OWASP API6:2023",
+            "CAPEC-202"
+          ],
+          "elementos_dfd": [
+            "delivery-api",
+            "cupons-api",
+            "Marketplace",
+            "F5"
+          ],
+          "precondiciones": [
+            "delivery-api pregunta a cupons-api si hay un cupón de envío aplicable y toma su respuesta como válida (S-03)",
+            "La aplicabilidad del cupón (vigencia, perfil, producto, usos) se valida de forma incompleta o solo en el frontend",
+            "El cliente dispone de códigos filtrados, de campañas dirigidas a otro perfil o de uno ya consumido",
+            "El código se envía como dato de la solicitud de cotización"
+          ],
+          "patrones_usados": [
+            "FE-05"
+          ],
+          "vector_practico": "El cliente envía en la solicitud de cotización un código de cupón de envío que no le corresponde o ya fue usado, repitiéndolo desde varias cuentas o sesiones. cupons-api lo valida sin vincularlo al perfil ni descontar usos, y delivery-api aplica el descuento.",
+          "limites_confianza": [
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC05-06",
+          "actor": {
+            "rol": "Operador de marketing con acceso al backoffice de cupones",
+            "tipo": "interno"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 3,
+            "probabilidad": 1,
+            "justificacion": "Exige un operador interno malicioso, pero un cupón de 100 % sin límite se repite y se sostiene hasta que alguien revisa los márgenes."
+          },
+          "stride": {
+            "principal": "E",
+            "secundarias": [
+              "T",
+              "R"
+            ]
+          },
+          "titulo": "Cupón de envío con descuento excesivo o sin límite creado por un operador de marketing",
+          "impacto": "Fuga de margen por envíos de productos voluminosos sin cobrar, sostenida y repetible. Dificultad para atribuir responsabilidad si la bitácora es débil, y pérdida de confianza en el control de campañas.",
+          "revision": {
+            "intento": 1,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "En el backoffice, aprobación doble para cupones de envío con descuento superior al umbral, sin tope de usos o con vigencia ampliada, y topes máximos de descuento, usos y vigencia por rol.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "cupons-api impone campos obligatorios (tope de usos, vigencia máxima, campaña aprobada asociada) y rechaza cupones que no cumplan, aunque venga del backoffice.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertas en tiempo casi real por cupones fuera de campañas aprobadas, descuentos fuera de rango, uso concentrado en pocas cuentas relacionadas y crecimiento anómalo del costo de envío subsidiado.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Bitácora inmutable de creación y modificación de cupones, con usuario, valores anteriores y aprobador, que el operador no pueda editar ni borrar.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Desactivar de inmediato el cupón y las campañas asociadas, cuantificar el subsidio indebido y recuperar el importe según el procedimiento interno.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "El backoffice de cupones no exige doble aprobación según la información disponible"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El operador crea en el backoffice un cupón de envío del 100 % sin límite de usos o amplía la vigencia de uno existente",
+            "Se lo da o vende a conocidos o lo usa con cuentas propias",
+            "Los beneficiarios piden cotizaciones de productos voluminosos con ese código",
+            "delivery-api consulta a cupons-api, que lo da como aplicable, y calcula envío gratis para cada orden",
+            "El abuso continúa hasta que alguien revisa los márgenes de logística",
+            "El operador puede negar la creación si la bitácora no es inmutable"
+          ],
+          "referencias": [
+            "CAPEC-202"
+          ],
+          "elementos_dfd": [
+            "cupons-api",
+            "delivery-api"
+          ],
+          "precondiciones": [
+            "El backoffice permite crear o ampliar cupones de envío sin aprobación de una segunda persona",
+            "No hay topes por rol ni alertas de uso concentrado",
+            "delivery-api aplica sin verificar límites razonables el cupón que cupons-api da como aplicable (S-03)"
+          ],
+          "patrones_usados": [
+            "FE-05"
+          ],
+          "vector_practico": "El operador usa el formulario del backoffice de cupones para crear o modificar un cupón de envío con descuento total, vigencia ampliada y sin tope de usos. delivery-api aplica ese cupón en las cotizaciones de las cuentas beneficiarias.",
+          "limites_confianza": [
+            "LC-1"
+          ]
+        },
+        {
+          "id": "AC-UC05-07",
+          "actor": {
+            "rol": "Atacante externo, con o sin cuenta, con capacidad de automatizar peticiones",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "alto",
+            "impacto": 3,
+            "probabilidad": 2,
+            "justificacion": "Automatizar cotizaciones es sencillo si no hay límite de tasa (por confirmar), y el efecto se propaga a clients-api y cupons-api y afecta a otros casos de uso."
+          },
+          "stride": {
+            "principal": "D",
+            "secundarias": []
+          },
+          "titulo": "Saturación de delivery-api y de sus dependencias con cotizaciones masivas automatizadas",
+          "impacto": "Indisponibilidad del cálculo de envío para productos voluminosos, que impide cerrar compras y causa pérdida de ventas. La carga se propaga a clients-api y cupons-api y afecta a otros casos de uso que dependen de ellos.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "Límite de tasa y cuota por cuenta, IP y dirección en el endpoint de cotización, con WAF o detección de bots en el borde del Marketplace.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Caché de corta duración en delivery-api para atributos de perfil y resultados de cupón por cliente, con límites de concurrencia, timeouts y circuit breakers hacia clients-api y cupons-api. Validar rangos y cantidad de parámetros de la solicitud para evitar la variación infinita.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Monitorear volumen de cotizaciones por origen, latencia y tasa de errores de delivery-api y de sus dependencias, y alertar ante picos con alta variabilidad de parámetros.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Runbook para bloquear los orígenes abusivos, activar un modo degradado (tarifas en caché o tabla base) y escalar la capacidad de las dependencias mientras dure el incidente.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "Supuesto propio, sin etiqueta S-xx: cada cotización dispara consultas síncronas a clients-api y cupons-api",
+            "Supuesto propio, sin etiqueta S-xx: no se confirmó que existan caché de cotizaciones ni límite de tasa en el endpoint de cotización"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El atacante identifica con un proxy de inspección la petición de cotización de envío que el Marketplace envía a delivery-api (F5)",
+            "Con una herramienta de pruebas de carga envía miles de solicitudes concurrentes y varía en cada una el código postal, las dimensiones del producto y el código de cupón, para que ninguna se resuelva desde caché",
+            "Cada solicitud hace que delivery-api consulte los atributos del perfil a clients-api (F9) y el cupón de envío a cupons-api, de modo que la carga interna se multiplica respecto al tráfico recibido",
+            "Los tiempos de respuesta de delivery-api suben y las dos dependencias se saturan",
+            "Los clientes legítimos no obtienen cotizaciones de envío y abandonan la compra de productos voluminosos"
+          ],
+          "referencias": [
+            "OWASP API4:2023 Unrestricted Resource Consumption"
+          ],
+          "elementos_dfd": [
+            "Marketplace",
+            "delivery-api",
+            "clients-api",
+            "cupons-api",
+            "F5",
+            "F9"
+          ],
+          "precondiciones": [
+            "El endpoint de cotización es accesible desde el Marketplace sin un límite de tasa efectivo por cuenta, IP o dirección",
+            "Cada cotización dispara consultas a clients-api y a cupons-api (supuesto declarado más abajo)",
+            "No hay caché de cotizaciones ni protección contra la variación de parámetros"
+          ],
+          "patrones_usados": [],
+          "vector_practico": "Con una herramienta de pruebas de carga, el atacante envía solicitudes concurrentes de cotización y varía el código postal, las dimensiones y el cupón. Cada una provoca consultas a clients-api y cupons-api, y los parámetros distintos evitan cualquier caché.",
+          "limites_confianza": [
+            "LC-1",
+            "LC-2"
+          ]
+        },
+        {
+          "id": "AC-UC05-08",
+          "actor": {
+            "rol": "Atacante con control de un servicio o contenedor vecino en la red interna de delivery-api",
+            "tipo": "externo"
+          },
+          "riesgo": {
+            "nivel": "medio",
+            "impacto": 3,
+            "probabilidad": 1,
+            "justificacion": "Requiere presencia previa en la red interna y suplantación de resolución o ARP, pero permitiría fijar a voluntad perfiles y cupones sin dejar rastro en los datos originales."
+          },
+          "stride": {
+            "principal": "S",
+            "secundarias": [
+              "T"
+            ]
+          },
+          "titulo": "Suplantación de clients-api y cupons-api frente a delivery-api para inyectar atributos de perfil y cupones falsos",
+          "impacto": "Control del costo de envío calculado sin modificar los datos originales de clients-api ni cupons-api, lo que dificulta la detección por auditoría de cambios. Subcobro sistemático de envíos de productos voluminosos y posible alcance a otros consumidores internos de esas APIs que confíen en sus respuestas.",
+          "revision": {
+            "intento": 2,
+            "criterios": {
+              "R1": true,
+              "R2": true,
+              "R3": true,
+              "R4": true,
+              "R5": true,
+              "R6": true,
+              "R7": true
+            }
+          },
+          "controles": [
+            {
+              "tipo": "preventivo",
+              "control": "mTLS entre delivery-api, clients-api y cupons-api, con verificación del certificado y de la identidad del servicio según el nombre esperado, y credenciales de servicio con alcance mínimo (service mesh o equivalente).",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "preventivo",
+              "control": "Segmentación de red y políticas de red que limiten qué cargas de trabajo pueden resolver y alcanzar clients-api y cupons-api, con protección del DNS o del registro de servicios (control de escritura) y mitigación de ARP spoofing en el segmento.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "detectivo",
+              "control": "Alertar por cambios en el registro de descubrimiento de servicios o en el DNS interno, por fallos de validación de certificados y por cotizaciones cuyo perfil o cupón no coincide con el de una consulta de control a clients-api y cupons-api.",
+              "responsable": "ecommerce"
+            },
+            {
+              "tipo": "correctivo",
+              "control": "Aislar el contenedor o servicio comprometido, rotar certificados y credenciales de servicio, y recotizar o facturar el diferencial de las órdenes creadas durante la ventana afectada.",
+              "responsable": "ecommerce"
+            }
+          ],
+          "supuestos": [
+            "No se conoce si existe autenticación mutua entre APIs internas; se asume que LC-2 separa esos servicios sin garantizarla",
+            "El flujo entre delivery-api y cupons-api no tiene un identificador en el contexto recibido (F9 corresponde a clients-api), por lo que no se le asigna ninguno",
+            "Se asume que la resolución de nombres o el segmento de red permiten a un servicio comprometido desviar el tráfico interno"
+          ],
+          "caso_de_uso": "UC-05",
+          "como_ocurre": [
+            "El atacante, desde el servicio vecino que controla, captura con un analizador de tráfico las consultas y respuestas reales entre delivery-api y clients-api (F9) y entre delivery-api y cupons-api, y registra el formato de los campos de perfil (nivel, membresía, zona) y de cupón de envío",
+            "Con una herramienta de suplantación ARP o editando la entrada del nombre de clients-api en el registro de resolución de nombres o descubrimiento de servicios, hace que delivery-api envíe sus consultas de perfil al equipo del atacante, y repite lo mismo con el nombre de cupons-api",
+            "En su equipo levanta un proxy que reenvía sin cambios las consultas de las cuentas ajenas al servicio real y, para los identificadores de cliente de sus cuentas, responde con nivel máximo, membresía activa y zona de tarifa preferente",
+            "Para esas mismas cuentas responde a la consulta de cupón con un cupón de envío aplicable con descuento total",
+            "Cuando el Marketplace solicita la cotización (F5), delivery-api calcula el costo con RN-2 usando los datos falsos y devuelve al Marketplace un envío gratuito o reducido",
+            "Las cuentas del atacante crean órdenes de productos voluminosos con ese costo, mientras los registros en clients-api y cupons-api permanecen sin cambios"
+          ],
+          "referencias": [
+            "CAPEC-202",
+            "CAPEC-94 Adversary in the Middle",
+            "FE-06"
+          ],
+          "elementos_dfd": [
+            "delivery-api",
+            "clients-api",
+            "cupons-api",
+            "F9"
+          ],
+          "precondiciones": [
+            "Las llamadas de delivery-api hacia clients-api y cupons-api no usan autenticación mutua ni verificación de la identidad del servicio que responde",
+            "El atacante controla un servicio o contenedor en el mismo segmento de red que delivery-api y puede alterar la resolución de nombres o suplantar direcciones en ese segmento",
+            "delivery-api confía en el contenido de las respuestas de ambas APIs (S-03)",
+            "El atacante dispone de cuentas propias del Marketplace cuyos identificadores de cliente conoce"
+          ],
+          "patrones_usados": [
+            "AV-0003"
+          ],
+          "vector_practico": "Desde un servicio vecino en la red interna, con una herramienta de suplantación ARP o la edición del registro de nombres de clients-api y cupons-api, el atacante desvía las consultas de delivery-api a un proxy propio. Ese proxy devuelve, solo para los identificadores de sus cuentas, los campos de perfil nivel, membresía y zona con valores máximos y un cupón de envío con descuento total. delivery-api no autentica al servicio que responde.",
+          "limites_confianza": [
+            "LC-2"
+          ]
+        }
+      ]
+    }
+  ]
+}

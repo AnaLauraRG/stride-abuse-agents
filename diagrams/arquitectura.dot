@@ -24,7 +24,7 @@ digraph ARQ {
     subgraph cluster_f_ame {
       label="Conocimiento de amenazas"; style="dashed,rounded"; color="#922B21"; fontcolor="#922B21"; fontsize=10;
       f_stride [label="STRIDE por tipo\nde elemento (curado)", shape=note, fillcolor="#FADBD8", color="#922B21"];
-      f_capec  [label="MITRE CAPEC\n(vista 1000, CSV)", shape=note, fillcolor="#FADBD8", color="#922B21"];
+      f_capec  [label="MITRE CAPEC\n(STIX, mitre/cti)", shape=note, fillcolor="#FADBD8", color="#922B21"];
       f_owasp  [label="OWASP API Top 10 2023\nOWASP Automated Threats", shape=note, fillcolor="#FADBD8", color="#922B21"];
       f_fraude [label="Patrones de fraude\nen ecommerce (curado)", shape=note, fillcolor="#FADBD8", color="#922B21"];
     }
@@ -33,7 +33,7 @@ digraph ARQ {
   // ---------------- WF-1 Ingesta ----------------
   subgraph cluster_wf1 {
     label=<<B>WF-1 · Ingesta (n8n)</B>>; style="rounded"; color="#7D3C98"; penwidth=1.6; bgcolor="#F5EEF8"; fontcolor="#6C3483";
-    i_load  [label="Cargar y\nverificar hash", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
+    i_load  [label="Leer fragmentos\n(commit fijo + hash)", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
     i_chunk [label="Normalizar,\nfragmentar y\netiquetar segmento", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
     i_emb   [label="Embeddings\nOllama bge-m3", shape=box, style="filled,rounded", fillcolor="#E8DAEF", color="#6C3483"];
   }
