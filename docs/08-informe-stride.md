@@ -1864,7 +1864,7 @@ Ordenados por su ID en la memoria de largo plazo (`ltm_abusos`). Entre paréntes
 - **Controles:**
   - *preventivo* (ecommerce): Validar en delivery-api el esquema del evento: la ubicación debe ser latitud y longitud numéricas en rango, o un texto de catálogo con longitud máxima y lista de caracteres permitidos. Rechazar marcado, URLs y cualquier campo no definido.
   - *preventivo* (ecommerce): Codificar por contexto (output encoding) toda la información del evento que renderiza el Marketplace, sin usar innerHTML ni permitir enlaces generados desde esos campos, y aplicar una Content-Security-Policy restrictiva.
-  - *detectivo* (ecommerce): Registrar y alertar los eventos rechazados por validación de ubicación y detectar patrones de marcado (<script>, URLs, javascript:) en los datos almacenados, además de monitorear violaciones de CSP en el Marketplace.
+  - *detectivo* (ecommerce): Registrar y alertar los eventos rechazados por validación de ubicación y detectar patrones de marcado (&lt;script&gt;, URLs, javascript:) en los datos almacenados, además de monitorear violaciones de CSP en el Marketplace.
   - *correctivo* (ecommerce): Sanear o eliminar los valores maliciosos ya almacenados, invalidar las sesiones de clientes que consultaron esas órdenes, avisarles del posible enlace fraudulento y revocar la credencial usada.
 - **Referencias y patrones:** OWASP API8:2023 Security Misconfiguration, CAPEC-277, FE-17
 

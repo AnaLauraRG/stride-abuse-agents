@@ -194,8 +194,13 @@ def uc_nombre(uc_id):
     return f"{uc_id} {UCS[uc_id]['nombre']}" if uc_id in UCS else uc_id
 
 
+def html(t):
+    """Escapa el texto que viene de los agentes: un '<' suelto se interpretaría como HTML."""
+    return str(t).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def esc(t):
-    return str(t).replace("|", "\\|").replace("\n", " ")
+    return html(t).replace("|", "\\|").replace("\n", " ")
 
 
 def stride_txt(c):
@@ -405,22 +410,22 @@ def anexo_a():
     for uc in sorted({c["caso_de_uso"] for c in CASOS}):
         lineas += [f"### {uc_nombre(uc)}", ""]
         for c in sorted([x for x in CASOS if x["caso_de_uso"] == uc], key=orden):
-            actor = f"{c['actor']['rol']} ({ACTOR[c['actor']['tipo']]})"
+            actor = f"{html(c['actor']['rol'])} ({ACTOR[c['actor']['tipo']]})"
             if c.get("actores_adicionales"):
                 actor += " + " + ", ".join(f"{a['rol']} ({ACTOR[a['tipo']]})" for a in c["actores_adicionales"])
             lineas += [f'<a id="{c["consolidado"].lower()}"></a>', f"#### {c['consolidado']} · {esc(c['titulo'])}", "",
                        f"- **ID de origen:** {c['id']} · **Ejecución:** {c['ejecucion']} · **Tema de riesgo:** {RIESGO_DE.get(c['id'], '—')}",
                        f"- **STRIDE:** {stride_txt(c)} — {STRIDE[c['stride']['principal']]}",
                        f"- **Actor:** {actor}",
-                       f"- **Elementos del DFD:** {', '.join(c.get('elementos_dfd', [])) or '—'} · **Límites:** {', '.join(c.get('limites_confianza', [])) or '—'}",
-                       "- **Precondiciones:**"] + [f"  - {p}" for p in c["precondiciones"]] + \
-                      ["- **Cómo ocurre:**"] + [f"  {i}. {p}" for i, p in enumerate(c["como_ocurre"], 1)] + \
-                      [f"- **Vector práctico:** {c['vector_practico']}",
-                       f"- **Impacto:** {c['impacto']}",
-                       f"- **Riesgo:** {riesgo_txt(c)}. {c['riesgo'].get('justificacion', '') if c.get('riesgo') else ''}",
-                       "- **Controles:**"] + [f"  - *{k['tipo']}* ({RESP[k['responsable']]}): {k['control']}" for k in c["controles"]]
+                       f"- **Elementos del DFD:** {html(', '.join(c.get('elementos_dfd', []))) or '—'} · **Límites:** {', '.join(c.get('limites_confianza', [])) or '—'}",
+                       "- **Precondiciones:**"] + [f"  - {html(p)}" for p in c["precondiciones"]] + \
+                      ["- **Cómo ocurre:**"] + [f"  {i}. {html(p)}" for i, p in enumerate(c["como_ocurre"], 1)] + \
+                      [f"- **Vector práctico:** {html(c['vector_practico'])}",
+                       f"- **Impacto:** {html(c['impacto'])}",
+                       f"- **Riesgo:** {riesgo_txt(c)}. {html(c['riesgo'].get('justificacion', '')) if c.get('riesgo') else ''}",
+                       "- **Controles:**"] + [f"  - *{k['tipo']}* ({RESP[k['responsable']]}): {html(k['control'])}" for k in c["controles"]]
             refs = list(dict.fromkeys(c.get("referencias", []) + c.get("patrones_usados", [])))
-            lineas.append(f"- **Referencias y patrones:** {', '.join(refs) or '—'}")
+            lineas.append(f"- **Referencias y patrones:** {html(', '.join(refs)) or '—'}")
             if c.get("ajuste_analista"):
                 lineas.append(f"- **Ajuste del analista:** {c['ajuste_analista']}")
             lineas.append("")
