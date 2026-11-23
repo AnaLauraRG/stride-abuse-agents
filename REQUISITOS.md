@@ -2,7 +2,7 @@
 
 Cada requisito está tomado del documento original del challenge (sección "2. Reto Análisis de Flujo"). La columna **Entregable** indica dónde se cumple y **Estado** se actualiza al avanzar.
 
-Estados: ⬜ pendiente · 🟨 en curso · ✅ completo
+Estados: ⬜ pendiente · 🟨 en curso · ✅ completo. El extra (sección D) es opcional y no se realizó.
 
 ## Objetivo general
 
@@ -49,10 +49,10 @@ Estados: ⬜ pendiente · 🟨 en curso · ✅ completo
 
 | ID | Requisito | Entregable | Estado |
 |---|---|---|---|
-| D1 | Diseño de arquitectura con **Componente de Memoria** y su segmentación | Documento del extra | ⬜ |
-| D2 | **Componente de Fuentes de Datos** y su comunicación con la Memoria | Documento del extra | ⬜ |
-| D3 | **Agentic Layer** con los agentes utilizados | Documento del extra | ⬜ |
-| D4 | **Prompts de cada agente** (sin límite de tamaño) | Documento del extra | ⬜ |
+| D1 | Diseño de arquitectura con **Componente de Memoria** y su segmentación | Documento del extra | No realizado (opcional) |
+| D2 | **Componente de Fuentes de Datos** y su comunicación con la Memoria | Documento del extra | No realizado (opcional) |
+| D3 | **Agentic Layer** con los agentes utilizados | Documento del extra | No realizado (opcional) |
+| D4 | **Prompts de cada agente** (sin límite de tamaño) | Documento del extra | No realizado (opcional) |
 
 ## Contexto del caso que debe respetarse
 

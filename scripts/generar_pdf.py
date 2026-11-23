@@ -14,6 +14,7 @@ import tempfile
 from pathlib import Path
 
 from pypdf import PdfReader, PdfWriter
+from pypdf.generic import ArrayObject, FloatObject, NameObject
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
@@ -23,6 +24,7 @@ SALIDA = RAIZ / "docs" / "Entrega_Reto2_STRIDE_Abuse_Agents.pdf"
 
 DOCUMENTOS = [
     ("README.md", "resumen"),
+    ("README.md", "guia"),
     ("REQUISITOS.md", "requisitos"),
     ("docs/01-casos-de-uso-y-supuestos.md", "01-casos-de-uso-y-supuestos"),
     ("docs/02-diagrama.md", "02-diagrama"),
@@ -30,6 +32,7 @@ DOCUMENTOS = [
     ("docs/04-infraestructura.md", "04-infraestructura"),
     ("docs/05-memoria.md", "05-memoria"),
     ("docs/06-agentes.md", "06-agentes"),
+    ("docs/09-componentes-y-permisos.md", "09-componentes-y-permisos"),
     ("prompts/README.md", "prompts"),
     ("docs/07-ejecucion.md", "07-ejecucion"),
     ("docs/08-informe-stride.md", "08-informe-stride"),
@@ -63,6 +66,7 @@ th, td { border: 1px solid #c9d3db; padding: 3px 5px; vertical-align: top; }
 code { font-family: 'Liberation Mono', 'DejaVu Sans Mono', monospace; font-size: 8.3pt; background: #f2f4f5; padding: 0 2px; border-radius: 2px; }
 pre { background: #f6f8fa; border: 1px solid #dde3e8; padding: 7px; font-size: 7.8pt; white-space: pre-wrap; word-break: break-word; page-break-inside: avoid; }
 pre code { background: none; padding: 0; }
+pre > code.sourceCode > span { display: inline; padding-left: 0 !important; text-indent: 0 !important; }
 img { max-width: 100%; max-height: 225mm; display: block; margin: 6px auto; page-break-inside: avoid; }
 figure { margin: 8px 0; page-break-inside: avoid; }
 figcaption { font-size: 8.3pt; color: #555; text-align: center; }
@@ -117,11 +121,31 @@ def optimizar(src: str, tmp: Path) -> str:
     return OPTIMIZADAS[src]
 
 
+GUIA = "## Paso a paso: descargar y ejecutar"
+
+
+def seccion_guia(texto: str) -> tuple[str, str]:
+    """Separa del README la guía paso a paso: (README sin la guía, guía)."""
+    inicio = texto.index(GUIA)
+    fin = texto.index("\n## ", inicio + len(GUIA))
+    return texto[:inicio] + texto[fin + 1:], texto[inicio:fin]
+
+
 def preparar_markdown(ruta: Path, ident: str) -> str:
     texto = ruta.read_text(encoding="utf-8")
-    if ruta.name == "README.md" and ruta.parent == RAIZ:
+    if ident == "guia":
+        # Capítulo propio con la guía del README: sus ## pasan a #, y sus ### a ##.
+        guia = seccion_guia(texto)[1]
+        guia = re.sub(r"^### ", "## ", guia.replace(GUIA, "# Guía: descargar y ejecutar", 1), flags=re.M)
+        texto = guia
+    elif ruta.name == "README.md" and ruta.parent == RAIZ:
+        texto = seccion_guia(texto)[0]
         texto = re.sub(r"^📄 \*\*Documento de entrega:\*\*.*\n", "", texto, flags=re.M)
         texto = texto.replace("# STRIDE Abuse Agents", "# Resumen de la entrega", 1)
+        texto = texto.replace("## Seguridad del propio sistema",
+                              "## Cómo reproducirlo\n\nEl paso a paso completo, desde clonar el repositorio hasta "
+                              "consolidar casos en la memoria, está en el capítulo [Guía: descargar y ejecutar](#doc-guia).\n\n"
+                              "## Seguridad del propio sistema", 1)
     # Las imágenes se resuelven desde la carpeta del documento.
     carpeta = ruta.parent.relative_to(RAIZ)
     def img(m):
@@ -164,23 +188,59 @@ def evidencias_md() -> str:
 
 
 def numerar(pdf: Path) -> None:
+    """Pie de página con número y enlace al índice, y números de página en el índice."""
+    from pypdf.annotations import Link
+
     lector = PdfReader(str(pdf))
     escritor = PdfWriter(clone_from=lector)
     total = len(escritor.pages)
+    destinos = lector.named_destinations
+    pagina_de = {nombre: lector.get_destination_page_number(d) for nombre, d in destinos.items()}
+    # El índice va de la página 2 hasta la anterior al primer capítulo.
+    fin_indice = pagina_de.get("/doc-resumen", 1)
+    mm = 2.835
     for i, pagina in enumerate(escritor.pages):
         if i == 0:
             continue
         buf = io.BytesIO()
         ancho = float(pagina.mediabox.width)
         c = canvas.Canvas(buf, pagesize=(ancho, float(pagina.mediabox.height)))
+        if 1 <= i < fin_indice:
+            enlaces = [a.get_object() for a in pagina.get("/Annots", []) or []]
+            enlaces = [a for a in enlaces if a.get("/Subtype") == "/Link" and a.get("/Dest") in pagina_de]
+            margen_izq = min((float(a["/Rect"][0]) for a in enlaces), default=0)
+            for a in enlaces:
+                x1, y1, x2, y2 = (float(v) for v in a["/Rect"])
+                principal = x1 < margen_izq + 4
+                numero = str(pagina_de[a["/Dest"]] + 1)
+                fuente = "Helvetica-Bold" if principal else "Helvetica"
+                y = y1 + (y2 - y1) * 0.25
+                derecha = ancho - 16 * mm
+                c.setFont(fuente, 8.5)
+                c.setFillColorRGB(0.04, 0.24, 0.38)
+                c.drawRightString(derecha, y, numero)
+                # Puntos guía entre el título y el número.
+                c.setFont("Helvetica", 8)
+                c.setFillGray(0.65)
+                inicio, fin = x2 + 6, derecha - c.stringWidth(numero, fuente, 8.5) - 6
+                paso = c.stringWidth(". ", "Helvetica", 8)
+                if fin > inicio + paso:
+                    c.drawString(inicio, y, ". " * int((fin - inicio) / paso))
+                # Todo el renglón, número incluido, lleva a la sección.
+                a[NameObject("/Rect")] = ArrayObject([FloatObject(x1), FloatObject(y1), FloatObject(derecha), FloatObject(y2)])
         c.setFont("Helvetica", 7.5)
         c.setFillGray(0.45)
-        c.drawString(16 * 2.835, 9 * 2.835, "STRIDE Abuse Agents · Reto 2")
-        c.drawRightString(ancho - 16 * 2.835, 9 * 2.835, f"{i + 1} / {total}")
+        c.drawString(16 * mm, 9 * mm, "STRIDE Abuse Agents · Reto 2")
+        c.drawRightString(ancho - 16 * mm, 9 * mm, f"{i + 1} / {total}")
+        c.setFillColorRGB(0.12, 0.37, 0.55)
+        c.drawCentredString(ancho / 2, 9 * mm, "Índice")
         c.save()
         buf.seek(0)
         pagina.merge_page(PdfReader(buf).pages[0])
         pagina.compress_content_streams()
+        w = c.stringWidth("Índice", "Helvetica", 7.5)
+        escritor.add_annotation(page_number=i, annotation=Link(
+            rect=(ancho / 2 - w / 2 - 3, 9 * mm - 3, ancho / 2 + w / 2 + 3, 9 * mm + 9), target_page_index=1))
     escritor.compress_identical_objects(remove_duplicates=True, remove_unreferenced=True)
     with open(pdf, "wb") as f:
         escritor.write(f)
@@ -196,7 +256,7 @@ def main():
         TMP = tmp
         mapa = {Path(r).stem if Path(r).name != "README.md" else ("prompts" if r.startswith("prompts") else "README"): i
                 for r, i in DOCUMENTOS}
-        mapa.update({"REQUISITOS": "requisitos"})
+        mapa.update({"REQUISITOS": "requisitos", "README": "resumen"})
         lua = "DOCS = {" + ", ".join(f'["{k}"]="{v}"' for k, v in mapa.items()) + "}\n" + FILTRO_LUA
         (tmp / "enlaces.lua").write_text(lua, encoding="utf-8")
         (tmp / "estilo.css").write_text(CSS, encoding="utf-8")
